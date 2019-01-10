@@ -1,4 +1,4 @@
-// --- CONFIG s---
+// --- CONFIG ---
 require('./../config/config');
 
 // +++ THIRD PARTY MODULES +++
@@ -12,7 +12,7 @@ const methodOverride = require('method-override');
 
 // +++ LOCAL +++
 let mongoose = require('./../db/mongoose').mongoose;
-let  conn = require('./../db/mongoose').conn;
+let conn = require('./../db/mongoose').conn;
 let {User} = require('./../models/user');
 let {authenticate} = require('./../middleware/authenticate');
 const crypto = require('crypto');
