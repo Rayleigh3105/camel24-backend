@@ -75,6 +75,24 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * CSV CREATION
+ */
+
+app.post('/csv', async ( req, res ) => {
+    try {
+        res.header("access-control-expose-headers",
+            ",x-auth"
+            +",Content-Length"
+        );
+        let body = req.body;
+
+    } catch (e) {
+        res.status(400).send("Es is beim erstellen deines Auftrags etwas schiefgelaufen");
+    }
+});
+
+
 
 // END ROUTES
 
