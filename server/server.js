@@ -9,6 +9,7 @@ let moment = require('moment');
 let bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 const methodOverride = require('method-override');
+let json2csv = require('json2csv');
 
 // +++ LOCAL +++
 let mongoose = require('./../db/mongoose').mongoose;
@@ -16,7 +17,7 @@ let conn = require('./../db/mongoose').conn;
 let {User} = require('./../models/user');
 let {authenticate} = require('./../middleware/authenticate');
 const crypto = require('crypto');
-
+const fs = require('fs');
 
 let app = express();
 
@@ -33,24 +34,25 @@ app.use(bodyParser.json(), cors({origin: '*'}));
 /**
  * USERS
  */
-app.post('/user', async ( req, res ) => {
+app.post('/user', async (req, res) => {
     try {
         res.header("access-control-expose-headers",
             ",x-auth"
-            +",Content-Length"
+            + ",Content-Length"
         );
-        let body = _.pick( req.body, [ 'firstName', 'lastName', 'email', 'kndnumber', 'password']);
-        let user = new User( body );
+        let body = _.pick(req.body, ['firstName', 'lastName', 'email', 'kndnumber', 'password']);
+        let user = new User(body);
 
         await user.save();
         const token = await user.generateAuthToken();
-        res.header( 'x-auth', token ).send( user_doc );
+        res.header('x-auth', token).send(user_doc);
+        console.log(`User ${user} was created`);
     } catch (e) {
         res.status(400).send("User can not be created (Invalid Username/Password or User with already exists)");
     }
 });
 
-app.post('/user/login', async (req, res)    => {
+app.post('/user/login', async (req, res) => {
     try {
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -59,8 +61,10 @@ app.post('/user/login', async (req, res)    => {
         const body = _.pick(req.body, ['email', 'password']);
 
         const user = await User.findByCredentials(body.email, body.password);
-        const token = await user.generateAuthToken()
-        res.header('x-auth', token).send( user._doc );
+        const token = await user.generateAuthToken();
+        res.header('x-auth', token).send(user._doc);
+        console.log(`User ${user} logged in`);
+
     } catch (e) {
         res.status(400).send("Something went wrong during LogIn (Invalid Username/Password), try again");
     }
@@ -79,26 +83,57 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
  * CSV CREATION
  */
 
-app.post('/csv', async ( req, res ) => {
+app.post('/csv', async (req, res) => {
     try {
         res.header("access-control-expose-headers",
             ",x-auth"
-            +",Content-Length"
+            + ",Content-Length"
         );
-        let body = req.body;
+        // Convert Object to JSON
+        let jsonObject = JSON.stringify([req.body]);
+        // Convert JSON to CSV
+        if (convertToCSV(jsonObject) !== '') {
+            fs.writeFile("/temp/test/test.csv", jsonObject,function (err) {
+                if(err){
+                    console.log(err)
+                }
+
+                res.status(200).send("File has been successfully saved")
+            } )
+        }
 
     } catch (e) {
-        res.status(400).send("Es is beim erstellen deines Auftrags etwas schiefgelaufen");
+        res.status(400).send(e);
     }
 });
 
+
+/**
+ * Converts Arrays of objects into a CSV string
+ *
+ * @param objArray - Array object which is going to be converted
+ * @return {string} - CSV confirm string from given data
+ */
+function convertToCSV(objArray) {
+    let array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+    let str = '';
+    for (let i = 0; i < array.length; i++) {
+        let line = '';
+        for (let index in array[i]) {
+            if (line != '') line += ','
+            line += array[i][index];
+        }
+        str += line + '\r\n';
+    }
+    return str;
+}
 
 
 // END ROUTES
 
 
 // Start of for NodeJs
-app.listen(port, () =>   {
+app.listen(port, () => {
     console.log(`Started up on port ${port}`);
 });
 
