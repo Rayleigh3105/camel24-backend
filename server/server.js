@@ -9,7 +9,6 @@ let moment = require('moment');
 let bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 const methodOverride = require('method-override');
-let json2csv = require('json2csv');
 
 // +++ LOCAL +++
 let mongoose = require('./../db/mongoose').mongoose;
@@ -40,15 +39,17 @@ app.post('/user', async (req, res) => {
             ",x-auth"
             + ",Content-Length"
         );
-        let body = _.pick(req.body, ['firstName', 'lastName', 'email', 'kndnumber', 'password']);
+        let body = _.pick(req.body, ['firstName', 'lastName', 'email', 'kundenNummer', 'password', 'firmenName']);
         let user = new User(body);
 
-        await user.save();
+        user = await user.save();
         const token = await user.generateAuthToken();
-        res.header('x-auth', token).send(user_doc);
-        console.log(`User ${user} was created`);
+        res.status(200).header('x-auth', token).send( user._doc );
+        let date = new Date();
+        console.log(`${date}: User ${user.firstName} ${user.lastName} with ID: ${user._id} was succesfully created`);
     } catch (e) {
-        res.status(400).send("User can not be created (Invalid Username/Password or User with already exists)");
+        console.log(e);
+        res.status(400).send(e);
     }
 });
 
@@ -58,9 +59,9 @@ app.post('/user/login', async (req, res) => {
             ",x-auth"
             + ",Content-Length"
         );
-        const body = _.pick(req.body, ['email', 'password']);
+        const body = _.pick(req.body, ['kundenNummer', 'password']);
 
-        const user = await User.findByCredentials(body.email, body.password);
+        const user = await User.findByCredentials(body.kundenNummer, body.password);
         const token = await user.generateAuthToken();
         res.header('x-auth', token).send(user._doc);
         console.log(`User ${user} logged in`);
@@ -68,6 +69,17 @@ app.post('/user/login', async (req, res) => {
     } catch (e) {
         res.status(400).send("Something went wrong during LogIn (Invalid Username/Password), try again");
     }
+});
+
+app.get('/user/me', authenticate, async ( req, res ) => {
+    try {
+        const user = await User.findByToken(req.headers.get('x-auth'));
+
+        res.send( user );
+    } catch (e) {
+        res.status(400).send("User konnte nicht gefunden werden")
+    }
+
 });
 
 app.delete('/user/me/token', authenticate, async (req, res) => {
@@ -89,24 +101,38 @@ app.post('/csv', async (req, res) => {
             ",x-auth"
             + ",Content-Length"
         );
+        // Get Kundennummer from Header
+        let kundenNummer = req.header('x-kundenNummer');
         // Convert Object to JSON
-        let jsonObject = JSON.stringify([req.body]);
+        let jsonObject = req.body;
+
         // Convert JSON to CSV
+        let date = new Date();
+        let fileName = `auftrag_${kundenNummer}.csv`;
+        let filePath = `ftp/kep/` + fileName;
+
         if (convertToCSV(jsonObject) !== '') {
-            fs.writeFile("/temp/test/test.csv", jsonObject,function (err) {
-                if(err){
-                    console.log(err)
-                }
-
-                res.status(200).send("File has been successfully saved")
-            } )
+            // Checks if File is existing
+            if(fs.existsSync(filePath)) {
+                // File is existing
+                console.log(`${date}: Datei ${fileName} kann nicht erstellt werden, da sie schon existiert.`);
+                res.status(400).send(`${date}: Datei ${fileName} kann nicht erstellt werden, da sie schon existiert.`);
+            }else {
+                // Create File
+                fs.writeFile(filePath, jsonObject,function (err) {
+                    if(err){
+                        console.log(err);
+                        res.status(400).send(err);
+                    }
+                    console.log(date + ": File " + fileName + " wurde erfolgreich erstellt.");
+                    res.status(200).send("File has been successfully saved.")
+                } )
+            }
         }
-
     } catch (e) {
         res.status(400).send(e);
     }
 });
-
 
 /**
  * Converts Arrays of objects into a CSV string
@@ -114,22 +140,18 @@ app.post('/csv', async (req, res) => {
  * @param objArray - Array object which is going to be converted
  * @return {string} - CSV confirm string from given data
  */
-function convertToCSV(objArray) {
-    let array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+function convertToCSV(jsonObject) {
     let str = '';
-    for (let i = 0; i < array.length; i++) {
-        let line = '';
-        for (let index in array[i]) {
-            if (line != '') line += ','
-            line += array[i][index];
-        }
-        str += line + '\r\n';
-    }
-    return str;
+    Object.keys(jsonObject).forEach(function (lol) {
+        str += jsonObject[lol] + ";";
+    });
+    return str.slice(0, -1);
 }
 
 
-// END ROUTES
+/**
+ * END ROUTES
+ */
 
 
 // Start of for NodeJs

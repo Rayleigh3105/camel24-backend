@@ -10,7 +10,7 @@ const _ = require('lodash');
 let UserSchema = new mongoose.Schema({
     email: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         min: 1,
         unique: true,
@@ -22,28 +22,31 @@ let UserSchema = new mongoose.Schema({
     },
     firstName: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         min: 1,
         unique: false
     },
     lastName: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         min: 1,
         unique: false
+    },
+    firmenName: {
+        type: String,
+        require: true,
     },
     password: {
         type: String,
         require: true,
         minlength: 6
     },
-    kndnumber: {
-        type: String,
+    kundenNummer: {
+        type: Number,
         require: true,
-        min: 5,
-        max: 5,
+        maxlength: 5,
         unique: true
     },
     tokens: [{
@@ -94,10 +97,10 @@ UserSchema.statics.findByToken = function ( token ) {
     })
 };
 
-UserSchema.statics.findByCredentials = function ( email, password ) {
+UserSchema.statics.findByCredentials = function ( kundenNummer, password ) {
     let User = this;
 
-    return User.findOne({ email }).then( ( user ) => {
+    return User.findOne({ kundenNummer }).then( ( user ) => {
         if ( !user ) {
             return Promise.reject();
         }
@@ -113,6 +116,7 @@ UserSchema.statics.findByCredentials = function ( email, password ) {
         });
     })
 };
+
 
 // Instance Method
 UserSchema.methods.removeToken = function ( token ) {
@@ -143,6 +147,6 @@ UserSchema.pre( 'save', function ( next ) {
 
 let User = conn.model('User', UserSchema);
 
-module.exports = {User}
+module.exports = {User};
 
 
