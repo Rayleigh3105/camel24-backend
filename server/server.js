@@ -49,7 +49,7 @@ app.post('/user', async (req, res) => {
             ",x-auth"
             + ",Content-Length"
         );
-        let body = _.pick(req.body, ['firstName', 'lastName', 'email', 'kundenNummer', 'password', 'firmenName']);
+        let body = _.pick(req.body, ['firstName', 'lastName', 'email', 'kundenNummer', 'password', 'firmenName', 'adresse', 'land', 'plz', 'ort', 'telefon']);
         let user = new User(body);
 
         user = await user.save();
