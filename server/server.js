@@ -44,7 +44,7 @@ app.post('/user', async (req, res) => {
 
         user = await user.save();
         const token = await user.generateAuthToken();
-        res.status(200).header('x-auth', token).send( user._doc );
+        res.status(200).header('x-auth', token).send(user._doc);
         let date = new Date();
         console.log(`${date}: User ${user.firstName} ${user.lastName} with ID: ${user._id} was succesfully created`);
     } catch (e) {
@@ -71,11 +71,10 @@ app.post('/user/login', async (req, res) => {
     }
 });
 
-app.get('/user/me', authenticate, async ( req, res ) => {
+app.get('/user/me', authenticate, async (req, res) => {
     try {
         const user = await User.findByToken(req.headers.get('x-auth'));
-
-        res.send( user );
+        res.send(user);
     } catch (e) {
         res.status(400).send("User konnte nicht gefunden werden")
     }
@@ -92,10 +91,21 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
 });
 
 /**
- * CSV CREATION
+ * CREATES Csv based on the given values in the request Body, also handles errors
  */
 
 app.post('/csv', async (req, res) => {
+    let options = {
+        year: '2-digit',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    };
+    let date = new Date();
+    date.toLocaleDateString("de-de", options);
+
     try {
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -103,34 +113,52 @@ app.post('/csv', async (req, res) => {
         );
         // Get Kundennummer from Header
         let kundenNummer = req.header('x-kundenNummer');
+        if (kundenNummer === null || kundenNummer === '' || kundenNummer === undefined) {
+            throw new Error('Kundennummer konnte nicht gelesen werden.')
+        }
         // Convert Object to JSON
         let jsonObject = req.body;
 
         // Convert JSON to CSV
-        let date = new Date();
         let fileName = `auftrag_${kundenNummer}.csv`;
         let filePath = `ftp/kep/` + fileName;
+        let convertedJson = convertToCSV(jsonObject);
 
-        if (convertToCSV(jsonObject) !== '') {
+        if (convertedJson !== '') {
             // Checks if File is existing
-            if(fs.existsSync(filePath)) {
+            if (fs.existsSync(filePath)) {
                 // File is existing
-                console.log(`${date}: Datei ${fileName} kann nicht erstellt werden, da sie schon existiert.`);
-                res.status(400).send(`${date}: Datei ${fileName} kann nicht erstellt werden, da sie schon existiert.`);
-            }else {
-                // Create File
-                fs.writeFile(filePath, convertToCSV(jsonObject),function (err) {
-                    if(err){
-                        console.log(err);
-                        res.status(400).send(err);
+                let fileNameForExistingFile = `auftrag_${kundenNummer}_01.csv`;
+                let filePathForExistingFile = `ftp/kep/` + fileNameForExistingFile;
+
+                // WRITE FILE
+                fs.writeFile(filePathForExistingFile, convertedJson, function (err) {
+                    if (err) {
+                        throw new Error(err);
                     }
                     console.log(date + ": File " + fileName + " wurde erfolgreich erstellt.");
                     res.status(200).send(date + ": File " + fileName + " wurde erfolgreich erstellt.")
-                } )
+                });
+                throw new Error(` Datei ${fileName} kann nicht erstellt werden, da sie schon existiert.`);
+            } else {
+                // Create File
+                fs.writeFile(filePath, convertedJson, function (err) {
+                    if (err) {
+                        throw new Error(date + ": " + err);
+                    }
+                    console.log(date + ": File " + fileName + " wurde erfolgreich erstellt.");
+                    res.status(200).send("File " + fileName + " wurde erfolgreich erstellt.")
+                })
             }
         }
     } catch (e) {
-        res.status(400).send(e);
+        console.log("--------------- ERROR START ----------------")
+        console.log(date);
+        console.log(e);
+        console.log("--------------- ERROR END ------------------")
+
+
+        res.status(400).send(date + ": " + e.message);
     }
 });
 
