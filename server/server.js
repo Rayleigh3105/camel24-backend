@@ -119,13 +119,13 @@ app.post('/csv', async (req, res) => {
                 res.status(400).send(`${date}: Datei ${fileName} kann nicht erstellt werden, da sie schon existiert.`);
             }else {
                 // Create File
-                fs.writeFile(filePath, jsonObject,function (err) {
+                fs.writeFile(filePath, convertToCSV(jsonObject),function (err) {
                     if(err){
                         console.log(err);
                         res.status(400).send(err);
                     }
                     console.log(date + ": File " + fileName + " wurde erfolgreich erstellt.");
-                    res.status(200).send("File has been successfully saved.")
+                    res.status(200).send(date + ": File " + fileName + " wurde erfolgreich erstellt.")
                 } )
             }
         }
