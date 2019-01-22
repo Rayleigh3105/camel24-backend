@@ -42,6 +42,8 @@ app.use(bodyParser.json(), cors({origin: '*'}));
  * USERS
  */
 app.post('/user', async (req, res) => {
+    let date = new Date();
+    date.toLocaleDateString("de-de", options);
     try {
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -54,7 +56,7 @@ app.post('/user', async (req, res) => {
         const token = await user.generateAuthToken();
         res.status(200).header('x-auth', token).send(user._doc);
         let date = new Date();
-        console.log(`${date}: User ${user.firstName} ${user.lastName} with ID: ${user._id} was succesfully created`);
+        console.log(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
         console.log(date);
@@ -65,6 +67,8 @@ app.post('/user', async (req, res) => {
 });
 
 app.post('/user/login', async (req, res) => {
+    let date = new Date();
+    date.toLocaleDateString("de-de", options);
     try {
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -107,13 +111,14 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
     date.toLocaleDateString("de-de", options);
     try {
         await req.user.removeToken(req.token);
-        res.status(200).send();
+        res.status(200).send(true);
+        console.log(date + "User mit Tokeen: " + req.token + " hat sich ausgeloggt.")
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
         console.log(date);
         console.log(e);
         console.log("--------------- ERROR END ------------------");
-        res.status(400).send(e)
+        res.status(400).send(false)
     }
 });
 
