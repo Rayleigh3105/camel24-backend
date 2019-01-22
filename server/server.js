@@ -17,6 +17,14 @@ let {User} = require('./../models/user');
 let {authenticate} = require('./../middleware/authenticate');
 const crypto = require('crypto');
 const fs = require('fs');
+let options = {
+    year: '2-digit',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+};
 
 let app = express();
 
@@ -48,7 +56,10 @@ app.post('/user', async (req, res) => {
         let date = new Date();
         console.log(`${date}: User ${user.firstName} ${user.lastName} with ID: ${user._id} was succesfully created`);
     } catch (e) {
+        console.log("--------------- ERROR START ----------------");
+        console.log(date);
         console.log(e);
+        console.log("--------------- ERROR END ------------------");
         res.status(400).send(e);
     }
 });
@@ -67,26 +78,42 @@ app.post('/user/login', async (req, res) => {
         console.log(`User ${user} logged in`);
 
     } catch (e) {
+        console.log("--------------- ERROR START ----------------");
+        console.log(date);
+        console.log(e);
+        console.log("--------------- ERROR END ------------------");
         res.status(400).send("Something went wrong during LogIn (Invalid Username/Password), try again");
     }
 });
 
 app.get('/user/me', authenticate, async (req, res) => {
+    let date = new Date();
+    date.toLocaleDateString("de-de", options);
     try {
         const user = await User.findByToken(req.headers.get('x-auth'));
         res.send(user);
     } catch (e) {
-        res.status(400).send("User konnte nicht gefunden werden")
+        console.log("--------------- ERROR START ----------------");
+        console.log(date);
+        console.log(e);
+        console.log("--------------- ERROR END ------------------");
+        res.status(400).send(e)
     }
 
 });
 
 app.delete('/user/me/token', authenticate, async (req, res) => {
+    let date = new Date();
+    date.toLocaleDateString("de-de", options);
     try {
         await req.user.removeToken(req.token);
         res.status(200).send();
     } catch (e) {
-        res.status(400).send()
+        console.log("--------------- ERROR START ----------------");
+        console.log(date);
+        console.log(e);
+        console.log("--------------- ERROR END ------------------");
+        res.status(400).send(e)
     }
 });
 
@@ -95,14 +122,6 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
  */
 
 app.post('/csv', async (req, res) => {
-    let options = {
-        year: '2-digit',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    };
     let date = new Date();
     date.toLocaleDateString("de-de", options);
 
@@ -137,28 +156,27 @@ app.post('/csv', async (req, res) => {
                         throw new Error(err);
                     }
                     console.log(date + ": File " + fileName + " wurde erfolgreich erstellt.");
-                    res.status(200).send(date + ": File " + fileName + " wurde erfolgreich erstellt.")
+                    res.status(200).send(true)
                 });
                 throw new Error(` Datei ${fileName} kann nicht erstellt werden, da sie schon existiert.`);
             } else {
+                // File is not existing
                 // Create File
                 fs.writeFile(filePath, convertedJson, function (err) {
                     if (err) {
                         throw new Error(date + ": " + err);
                     }
                     console.log(date + ": File " + fileName + " wurde erfolgreich erstellt.");
-                    res.status(200).send("File " + fileName + " wurde erfolgreich erstellt.")
+                    res.status(200).send(true)
                 })
             }
         }
     } catch (e) {
-        console.log("--------------- ERROR START ----------------")
+        console.log("--------------- ERROR START ----------------");
         console.log(date);
         console.log(e);
-        console.log("--------------- ERROR END ------------------")
-
-
-        res.status(400).send(date + ": " + e.message);
+        console.log("--------------- ERROR END ------------------");
+        res.status(400).send(false);
     }
 });
 
