@@ -53,31 +53,31 @@ let UserSchema = new mongoose.Schema({
         type: String,
         require: true,
         maxlength: 255,
-        unique: true
+        unique: false
     },
     land: {
         type: String,
         require: true,
         maxlength: 255,
-        unique: true
+        unique: false
     },
     plz: {
         type: String,
         require: true,
         maxlength: 255,
-        unique: true
+        unique: false
     },
     ort: {
         type: String,
         require: true,
         maxlength: 255,
-        unique: true
+        unique: false
     },
     telefon: {
         type: String,
         require: true,
         maxlength: 255,
-        unique: true
+        unique: false
     },
     tokens: [{
         access: {
