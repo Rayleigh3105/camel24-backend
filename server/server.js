@@ -136,11 +136,13 @@ app.post('/csv', async (req, res) => {
             ",x-auth"
             + ",Content-Length"
         );
+
         // Get Kundennummer from Header
         let kundenNummer = req.header('x-kundenNummer');
         if (kundenNummer === null || kundenNummer === '' || kundenNummer === undefined) {
             throw new Error('Kundennummer konnte nicht gelesen werden.')
         }
+
         // Convert Object to JSON
         let jsonObject = req.body;
 
@@ -159,12 +161,11 @@ app.post('/csv', async (req, res) => {
                 // WRITE FILE
                 fs.writeFile(filePathForExistingFile, convertedJson, function (err) {
                     if (err) {
-                        throw new Error(err);
+                        res.status(400).send(false);
                     }
                     console.log(date + ": File " + fileName + " wurde erfolgreich erstellt.");
-                    res.status(200).send(true)
+                    res.status(200).send(true);
                 });
-                throw new Error(` Datei ${fileName} kann nicht erstellt werden, da sie schon existiert.`);
             } else {
                 // File is not existing
                 // Create File
@@ -173,7 +174,7 @@ app.post('/csv', async (req, res) => {
                         throw new Error(date + ": " + err);
                     }
                     console.log(date + ": File " + fileName + " wurde erfolgreich erstellt.");
-                    res.status(200).send(true)
+                    res.status(200).send(true);
                 })
             }
         }
