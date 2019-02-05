@@ -71,8 +71,7 @@ app.post('/user', async (req, res) => {
  * Logs the user in. generates new auth token
  */
 app.post('/user/login', async (req, res) => {
-    let date = new Date();
-    date.toLocaleDateString("de-de", options);
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     try {
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -98,8 +97,7 @@ app.post('/user/login', async (req, res) => {
  * Get current info of User
  */
 app.get('/user/me', authenticate, async (req, res) => {
-    let date = new Date();
-    date.toLocaleDateString("de-de", options);
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     try {
         let user = await User.findByToken(req.header('x-auth'));
         res.send(user);
@@ -118,8 +116,7 @@ app.get('/user/me', authenticate, async (req, res) => {
  * Deletes token from user collection -> logout
  */
 app.delete('/user/me/token', authenticate, async (req, res) => {
-    let date = new Date();
-    date.toLocaleDateString("de-de", options);
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     try {
         await req.user.removeToken(req.token);
         res.status(200).send(true);
@@ -137,9 +134,14 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
  * CREATES Csv based on the given values in the request Body, also handles errors
  */
 app.post('/csv', async (req, res) => {
+    // VARIABLES
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-
-    let dateForFile = moment().format("DD-MM-YYYY");
+    let dateForFile = moment().format("DD-MM-YYYY-HH-mm-SS");
+    let isLoggedIn = req.header("x-auth");
+    let kundenNummer = req.header('x-kundenNummer');
+    let identificationNumber;
+    let order;
+    let countOrder;
 
     try {
         res.header("access-control-expose-headers",
@@ -147,36 +149,33 @@ app.post('/csv', async (req, res) => {
             + ",Content-Length"
         );
 
-        // Get Kundennummer from Header
-        let kundenNummer = req.header('x-kundenNummer');
-        if (kundenNummer === null || kundenNummer === '' || kundenNummer === undefined) {
-            throw new Error('Kundennummer konnte nicht gelesen werden.')
+        // Dont create Order when Kndnumber or email is missing
+        if (kundenNummer === null || kundenNummer === '' || kundenNummer === undefined && req.body.auftragbestEmail === null || req.body.auftragbestEmail === '' || req.body.auftragbestEmail === undefined) {
+            throw new Error('Kundennummer/Email konnte nicht gelesen werden.')
         }
 
         // Convert Object to JSON
         let jsonObject = req.body;
 
-
         // Map json Object to order so it can be saved
-        let order;
-        let countOrder;
-        if (req.header('x-auth')) {
+        if (isLoggedIn) {
             const user = await User.findByKundenNummer(kundenNummer);
             await Order.find({
                 _creator: user,
             }).count().then(count => countOrder = count);
-            if(countOrder === 0) {
-                countOrder =+ 1;
+            if (countOrder === 0) {
+                countOrder = +1;
             }
-
             if (user) {
                 order = mapOrderWithUser(jsonObject, user);
+                identificationNumber = kundenNummer + "_" + dateForFile + "_" + countOrder;
             }
+        } else {
+            identificationNumber = req.body.auftragbestEmail + "_" + dateForFile;
         }
 
         // Convert JSON to CSV
-        let fileName = `${kundenNummer}_${dateForFile}_${countOrder}.csv`;
-        let filePath = `ftp/kep/` + fileName;
+        let filePath = getFilePath(identificationNumber);
         let convertedJson = convertToCSV(jsonObject);
 
         if (convertedJson !== '') {
@@ -185,9 +184,11 @@ app.post('/csv', async (req, res) => {
                 if (err) {
                     throw new Error(date + ": " + err);
                 }
-                order = await order.save();
+                if (isLoggedIn) {
+                    order = await order.save();
+                }
 
-                console.log(date + ": Auftrag " + fileName + " wurde erstellt: " + order);
+                console.log(date + ": Auftrag " + identificationNumber + ".csv" + " wurde erstellt: ");
                 res.status(200).send(true);
             })
         }
@@ -217,10 +218,11 @@ app.get('/orders', authenticate, (req, res) => {
     })
 });
 
-
+/**
+ * Updates user with given values
+ */
 app.patch('/user/:userId', authenticate, (req, res) => {
-    let date = new Date();
-    date.toLocaleDateString("de-de", options);
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let userId = req.params.userId;
     let body = req.body;
 
@@ -316,6 +318,15 @@ function mapOrderWithUser(jsonObject, userId) {
             plz: jsonObject.rechnungPlz,
         }
     })
+}
+
+/**
+ * Get´s Path for laying down file in FTP directory
+ * @param identificationNumber
+ * @returns {string}
+ */
+function getFilePath(identificationNumber) {
+    return `ftp/kep/` + identificationNumber + ".csv"
 }
 
 
