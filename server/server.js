@@ -14,6 +14,8 @@ const methodOverride = require('method-override');
 let mongoose = require('./../db/mongoose').mongoose;
 let conn = require('./../db/mongoose').conn;
 let {User} = require('./../models/user');
+let {Order} = require('./../models/order');
+
 let {authenticate} = require('./../middleware/authenticate');
 const crypto = require('crypto');
 const fs = require('fs');
@@ -39,17 +41,15 @@ app.use(bodyParser.json(), cors({origin: '*'}));
  */
 
 /**
- * USERS
+ * Creates User and generates xauth token
  */
 app.post('/user', async (req, res) => {
-    let date = new Date();
-    date.toLocaleDateString("de-de", options);
+    let date = moment.format(new Date().getMilliseconds(), "DD-MM-YYYY, HH:mm:SS");
     try {
         res.header("access-control-expose-headers",
             ",x-auth"
             + ",Content-Length"
         );
-    // , ['firstName', 'lastName', 'email', 'kundenNummer', 'password', 'firmenName', 'adresse', 'land', 'plz', 'ort', 'telefon']);
         let body = req.body;
         let user = new User(body);
 
@@ -67,6 +67,9 @@ app.post('/user', async (req, res) => {
     }
 });
 
+/**
+ * Logs the user in. generates new auth token
+ */
 app.post('/user/login', async (req, res) => {
     let date = new Date();
     date.toLocaleDateString("de-de", options);
@@ -91,11 +94,14 @@ app.post('/user/login', async (req, res) => {
     }
 });
 
+/**
+ * Get current info of User
+ */
 app.get('/user/me', authenticate, async (req, res) => {
     let date = new Date();
     date.toLocaleDateString("de-de", options);
     try {
-        const user = await User.findByToken(req.headers.get('x-auth'));
+        let user = await User.findByToken(req.header('x-auth'));
         res.send(user);
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
@@ -107,6 +113,10 @@ app.get('/user/me', authenticate, async (req, res) => {
 
 });
 
+
+/**
+ * Deletes token from user collection -> logout
+ */
 app.delete('/user/me/token', authenticate, async (req, res) => {
     let date = new Date();
     date.toLocaleDateString("de-de", options);
@@ -126,10 +136,10 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
 /**
  * CREATES Csv based on the given values in the request Body, also handles errors
  */
-
 app.post('/csv', async (req, res) => {
-    let date = new Date();
-    date.toLocaleDateString("de-de", options);
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+
+    let dateForFile = moment().format("DD-MM-YYYY");
 
     try {
         res.header("access-control-expose-headers",
@@ -146,37 +156,40 @@ app.post('/csv', async (req, res) => {
         // Convert Object to JSON
         let jsonObject = req.body;
 
+
+        // Map json Object to order so it can be saved
+        let order;
+        let countOrder;
+        if (req.header('x-auth')) {
+            const user = await User.findByKundenNummer(kundenNummer);
+            await Order.find({
+                _creator: user,
+            }).count().then(count => countOrder = count);
+            if(countOrder === 0) {
+                countOrder =+ 1;
+            }
+
+            if (user) {
+                order = mapOrderWithUser(jsonObject, user);
+            }
+        }
+
         // Convert JSON to CSV
-        let fileName = `auftrag_${kundenNummer}.csv`;
+        let fileName = `${kundenNummer}_${dateForFile}_${countOrder}.csv`;
         let filePath = `ftp/kep/` + fileName;
         let convertedJson = convertToCSV(jsonObject);
 
         if (convertedJson !== '') {
-            // Checks if File is existing
-            if (fs.existsSync(filePath)) {
-                // File is existing
-                let fileNameForExistingFile = `auftrag_${kundenNummer}_01.csv`;
-                let filePathForExistingFile = `ftp/kep/` + fileNameForExistingFile;
+            // Create File
+            fs.writeFile(filePath, convertedJson, async function callbackCreatedFile(err) {
+                if (err) {
+                    throw new Error(date + ": " + err);
+                }
+                order = await order.save();
 
-                // WRITE FILE
-                fs.writeFile(filePathForExistingFile, convertedJson, function (err) {
-                    if (err) {
-                        res.status(400).send(false);
-                    }
-                    console.log(date + ": File " + fileName + " wurde erfolgreich erstellt.");
-                    res.status(200).send(true);
-                });
-            } else {
-                // File is not existing
-                // Create File
-                fs.writeFile(filePath, convertedJson, function (err) {
-                    if (err) {
-                        throw new Error(date + ": " + err);
-                    }
-                    console.log(date + ": File " + fileName + " wurde erfolgreich erstellt.");
-                    res.status(200).send(true);
-                })
-            }
+                console.log(date + ": Auftrag " + fileName + " wurde erstellt: " + order);
+                res.status(200).send(true);
+            })
         }
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
@@ -188,10 +201,58 @@ app.post('/csv', async (req, res) => {
 });
 
 /**
+ * Get´s Orders for customer
+ */
+app.get('/orders', authenticate, (req, res) => {
+    Order.find({
+        _creator: req.user._id,
+    }).then((order) => {
+        if (order) {
+            res.send(order);
+        } else {
+            res.status(404).send();
+        }
+    }).catch((e) => {
+        res.status(400).send();
+    })
+});
+
+
+app.patch('/user/:userId', authenticate, (req, res) => {
+    let date = new Date();
+    date.toLocaleDateString("de-de", options);
+    let userId = req.params.userId;
+    let body = req.body;
+
+
+    if (!ObjectID.isValid(userId)) {
+        return res.status(404).send();
+    }
+
+    User.findOneAndUpdate({
+        _id: userId,
+    }, {
+        $set: body
+    }, {
+        new: true
+    }).then((user) => {
+        if (!user) {
+            return res.status(404).send();
+        }
+
+        res.status(200).send(user._doc);
+    }).catch((e) => {
+        res.status(400).send(e)
+    })
+
+
+});
+
+/**
  * Converts Arrays of objects into a CSV string
  *
- * @param objArray - Array object which is going to be converted
  * @return {string} - CSV confirm string from given data
+ * @param jsonObject
  */
 function convertToCSV(jsonObject) {
     let str = '';
@@ -199,6 +260,62 @@ function convertToCSV(jsonObject) {
         str += jsonObject[lol] + ";";
     });
     return str.slice(0, -1);
+}
+
+/**
+ * Maps JsonObject to Schema
+ *
+ * @param jsonObject object that is going to be mapped
+ * @param userId
+ * @returns {@link Order}
+ */
+function mapOrderWithUser(jsonObject, userId) {
+    return new Order({
+        _creator: userId,
+        absender: {
+            firma: jsonObject.absFirma,
+            zusatz: jsonObject.absZusatz,
+            ansprechartner: jsonObject.absAnsprechartner,
+            adresse: jsonObject.absAdresse,
+            land: jsonObject.absLand,
+            plz: jsonObject.absPlz,
+            ort: jsonObject.absOrt,
+            telefon: jsonObject.absTel,
+        },
+        empfaenger: {
+            firma: jsonObject.empfFirma,
+            zusatz: jsonObject.empfZusatz,
+            ansprechartner: jsonObject.empfAnsprechartner,
+            adresse: jsonObject.empfAdresse,
+            land: jsonObject.empfLand,
+            plz: jsonObject.empfPlz,
+            ort: jsonObject.empfOrt,
+            telefon: jsonObject.empfTel,
+        },
+        abholTermin: {
+            datum: jsonObject.abholDatum
+        },
+        zustellTermin: {
+            termin: jsonObject.zustellTermin,
+            zeit: jsonObject.fixtermin,
+            art: jsonObject.sonderdienst
+        },
+        sendungsdaten: {
+            gewicht: jsonObject.sendungsdatenGewicht,
+            wert: jsonObject.sendungsdatenWert,
+            art: jsonObject.sendungsdatenArt,
+            transportVers: jsonObject.sendungsdatenVers,
+        },
+        rechnungsDaten: {
+            email: jsonObject.auftragbestEmail,
+            telefon: jsonObject.auftragbestTelefon,
+            rechnungsAdresse: jsonObject.auftragsbestRechnungsadresse,
+            adresse: jsonObject.rechnungAdresse,
+            name: jsonObject.rechnungName,
+            ort: jsonObject.rechnungOrt,
+            plz: jsonObject.rechnungPlz,
+        }
+    })
 }
 
 

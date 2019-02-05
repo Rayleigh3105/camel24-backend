@@ -2,30 +2,13 @@ const mongoose = require('mongoose');
 let conn = require('./../db/mongoose').conn;
 const validator = require('validator');
 
-
-
-let OrderSchema = new mongoose.Schema({
-    absender: [AbsEmpfSchema],
-    empfaenger: [AbsEmpfSchema],
-    abholTermin: [TerminSchema],
-    zustellTermin: [TerminSchema],
-    sendungsdaten: [SendungsDatenSchema],
-    rechnungsDaten: [RechnungsDatenSchema],
-
-});
-
-let Order = conn.model('Order', OrderSchema);
-
-module.exports = {Order};
-
-
 // //////////////////////////////////////////////////////////////////////////
 //                              SCHEMAS                                    //
 // //////////////////////////////////////////////////////////////////////////
 /**
  * ABSENDER UND EMPFÄNGER SCHEMA
  */
-let AbsEmpfSchema = new mongoose.Schema({
+let AbsEmpfSchema = mongoose.Schema({
     firma: {
         type: String,
         required: true,
@@ -89,7 +72,7 @@ let AbsEmpfSchema = new mongoose.Schema({
  */
 let TerminSchema = mongoose.Schema({
     datum: {
-        type: String,
+        type: Date,
         required: false,
         trim: true,
         min: 1,
@@ -104,11 +87,18 @@ let TerminSchema = mongoose.Schema({
     },
     termin: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         min: 1,
         unique: false
     },
+    art: {
+        type: String,
+        required: false,
+        trim: true,
+        min: 1,
+        unique: false
+    }
 });
 
 /**
@@ -164,14 +154,62 @@ let RechnungsDatenSchema = mongoose.Schema({
         min: 1,
         unique: false
     },
-    rechnugsadresse: {
+    rechnungsAdresse: {
         type: String,
         required: true,
         trim: true,
         min: 1,
         unique: false
     },
+    name: {
+        type: String,
+        required: false,
+        trim: true,
+        min: 1,
+        unique: false
+    },
+    adresse: {
+        type: String,
+        required: false,
+        trim: true,
+        min: 1,
+        unique: false
+    },
+    plz: {
+        type: String,
+        required: false,
+        trim: true,
+        min: 1,
+        unique: false
+    },
+    ort: {
+        type: String,
+        required: false,
+        trim: true,
+        min: 1,
+        unique: false
+    },
 });
+
+
+
+let OrderSchema = new mongoose.Schema({
+    absender: AbsEmpfSchema,
+    empfaenger: AbsEmpfSchema,
+    abholTermin: TerminSchema,
+    zustellTermin: TerminSchema,
+    sendungsdaten: SendungsDatenSchema,
+    rechnungsDaten: RechnungsDatenSchema,
+    _creator: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
+    },
+
+});
+
+let Order = conn.model('Order', OrderSchema);
+
+module.exports = {Order};
 
 
 

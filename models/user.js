@@ -147,6 +147,19 @@ UserSchema.statics.findByCredentials = function ( kundenNummer, password ) {
     })
 };
 
+UserSchema.statics.findByKundenNummer = function ( kundenNummer) {
+    let User = this;
+
+    return User.findOne({ kundenNummer }).then( ( user ) => {
+        if ( !user ) {
+            return Promise.reject();
+        }
+
+        return Promise.resolve( user );
+    })
+};
+
+
 
 // Instance Method
 UserSchema.methods.removeToken = function ( token ) {
