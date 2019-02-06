@@ -204,6 +204,10 @@ let OrderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
+    createdAt:{
+        type: String,
+        default: null
+    }
 
 });
 

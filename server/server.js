@@ -111,6 +111,49 @@ app.get('/user/me', authenticate, async (req, res) => {
 
 });
 
+/**
+ * Updates user with given values
+ */
+app.patch('/user/:userId', authenticate, (req, res) => {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let userId = req.params.userId;
+    let body = req.body;
+
+
+    if (!ObjectID.isValid(userId)) {
+        return res.status(404).send();
+    }
+
+    User.findOneAndUpdate({
+        _id: userId,
+    }, {
+        $set: {
+            email: body.email,
+            adresse: body.adresse,
+            ort: body.ort,
+            plz: body.plz,
+            land: body.land,
+            telefon: body.telefon,
+            firstName: body.firstName,
+            lastName: body.lastName,
+            firmenName: body.firmenName,
+        }
+    }, {
+        new: true
+    }).then((user) => {
+        if (!user) {
+            return res.status(404).send();
+        }
+
+        res.status(200).send(user._doc);
+    }).catch((e) => {
+        res.status(400).send(e)
+    })
+
+
+});
+
+
 
 /**
  * Deletes token from user collection -> logout
@@ -137,6 +180,7 @@ app.post('/csv', async (req, res) => {
     // VARIABLES
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let dateForFile = moment().format("DD-MM-YYYY-HH-mm-SS");
+    let formattedDateForFrontend = moment().format("DD.MM.YYYY HH:mm:SS");
     let isLoggedIn = req.header("x-auth");
     let kundenNummer = req.header('x-kundenNummer');
     let identificationNumber;
@@ -167,7 +211,8 @@ app.post('/csv', async (req, res) => {
                 countOrder = +1;
             }
             if (user) {
-                order = mapOrderWithUser(jsonObject, user);
+
+                order = mapOrderWithUser(jsonObject, user, formattedDateForFrontend);
                 identificationNumber = kundenNummer + "_" + dateForFile + "_" + countOrder;
             }
         } else {
@@ -218,50 +263,6 @@ app.get('/orders', authenticate, (req, res) => {
     })
 });
 
-/**
- * Updates user with given values
- */
-app.patch('/user/:userId', authenticate, (req, res) => {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let userId = req.params.userId;
-    let body = req.body;
-
-
-    if (!ObjectID.isValid(userId)) {
-        return res.status(404).send();
-    }
-
-    User.findOneAndUpdate({
-        _id: userId,
-    }, {
-        $set: {
-            email: body.email,
-            adresse: body.adresse,
-            ort: body.ort,
-            plz: body.plz,
-            land: body.land,
-            telefon: body.telefon,
-            firstName: body.firstName,
-            lastName: body.lastName,
-            firmenName: body.firmenName,
-
-
-
-        }
-    }, {
-        new: true
-    }).then((user) => {
-        if (!user) {
-            return res.status(404).send();
-        }
-
-        res.status(200).send(user._doc);
-    }).catch((e) => {
-        res.status(400).send(e)
-    })
-
-
-});
 
 /**
  * Converts Arrays of objects into a CSV string
@@ -284,9 +285,11 @@ function convertToCSV(jsonObject) {
  * @param userId
  * @returns {@link Order}
  */
-function mapOrderWithUser(jsonObject, userId) {
+function mapOrderWithUser(jsonObject, userId, createdAt) {
+
     return new Order({
         _creator: userId,
+        createdAt,
         absender: {
             firma: jsonObject.absFirma,
             zusatz: jsonObject.absZusatz,
