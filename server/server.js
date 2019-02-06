@@ -44,7 +44,7 @@ app.use(bodyParser.json(), cors({origin: '*'}));
  * Creates User and generates xauth token
  */
 app.post('/user', async (req, res) => {
-    let date = moment.format(new Date().getMilliseconds(), "DD-MM-YYYY, HH:mm:SS");
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     try {
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -234,7 +234,20 @@ app.patch('/user/:userId', authenticate, (req, res) => {
     User.findOneAndUpdate({
         _id: userId,
     }, {
-        $set: body
+        $set: {
+            email: body.email,
+            adresse: body.adresse,
+            ort: body.ort,
+            plz: body.plz,
+            land: body.land,
+            telefon: body.telefon,
+            firstName: body.firstName,
+            lastName: body.lastName,
+            firmenName: body.firmenName,
+
+
+
+        }
     }, {
         new: true
     }).then((user) => {
