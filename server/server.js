@@ -9,6 +9,8 @@ let moment = require('moment');
 let bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 const methodOverride = require('method-override');
+const bwipjs = require('bwip-js');
+
 
 // +++ LOCAL +++
 let mongoose = require('./../db/mongoose').mongoose;
@@ -154,7 +156,6 @@ app.patch('/user/:userId', authenticate, (req, res) => {
 });
 
 
-
 /**
  * Deletes token from user collection -> logout
  */
@@ -232,10 +233,9 @@ app.post('/csv', async (req, res) => {
                 if (isLoggedIn) {
                     order = await order.save();
                 }
-
                 console.log(date + ": Auftrag " + identificationNumber + ".csv" + " wurde erstellt: ");
                 res.status(200).send(true);
-            })
+            });
         }
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
@@ -311,7 +311,7 @@ function mapOrderWithUser(jsonObject, userId, createdAt) {
             telefon: jsonObject.empfTel,
         },
         abholTermin: {
-            datum: jsonObject.abholDatum
+            datum: moment(jsonObject.abholDatum).format("DD.MM.YYYY")
         },
         zustellTermin: {
             termin: jsonObject.zustellTermin,

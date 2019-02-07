@@ -72,7 +72,7 @@ let AbsEmpfSchema = mongoose.Schema({
  */
 let TerminSchema = mongoose.Schema({
     datum: {
-        type: Date,
+        type: String,
         required: false,
         trim: true,
         min: 1,
