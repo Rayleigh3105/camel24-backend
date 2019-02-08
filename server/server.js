@@ -225,6 +225,14 @@ app.post('/csv', async (req, res) => {
         let convertedJson = convertToCSV(jsonObject);
 
         if (convertedJson !== '') {
+
+            let dir = './tmp';
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir);
+            }
+
+            await createBarcode(identificationNumber, kundenNummer, dir, countOrder);
+
             // Create File
             fs.writeFile(filePath, convertedJson, async function callbackCreatedFile(err) {
                 if (err) {
@@ -262,6 +270,52 @@ app.get('/orders', authenticate, (req, res) => {
         res.status(400).send();
     })
 });
+
+/**
+ * Makes directory on server when its not available for the Kundennummer and given day and creates Barcode
+ * @param identificationNumber - number that will be a barcode
+ * @param kundenNummer - currentKundennummer
+ * @param dir - tmp dir
+ */
+async function createBarcode(identificationNumber, kundenNummer, dir, countOrder) {
+    let kndDir = `${dir}/${kundenNummer}`;
+    let dateDir = moment().format("DD.MM.YYYY");
+    let kndDateDir = `${kndDir}/${dateDir}`;
+    let kndDateCountDir = `${kndDateDir}/${countOrder}`;
+    // Creates ./tmp/kundenNummer
+    if (!fs.existsSync(kndDir)) {
+        fs.mkdirSync(kndDir)
+    }
+
+    // Creates ./tmp/kundenNummer/date
+    if (!fs.existsSync(kndDateDir)) {
+        fs.mkdirSync(kndDateDir)
+    }
+
+    // Creates ./tmp/kundenNummer/date/count
+    if (!fs.existsSync(kndDateCountDir)) {
+        fs.mkdirSync(kndDateCountDir)
+    }
+
+    await bwipjs.toBuffer({
+        bcid: 'code128',       // Barcode type
+        text: identificationNumber,    // Text to encode
+        scale: 2,               // 3x scaling factor
+        height: 30,              // Bar height, in millimeters
+        includetext: true,            // Show human-readable text
+        textxalign: 'center',        // Always good to set this
+    }, function (err, png) {
+        if (err) {
+            // Decide how to handle the error
+            // `err` may be a string or Error object
+        } else {
+            fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', function(err){
+                if (err) throw err;
+                console.log("Verzeichnis:" + kndDateCountDir + "/" + identificationNumber + ".png wurde erstellt")
+            });
+        }
+    });
+}
 
 
 /**
