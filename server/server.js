@@ -231,7 +231,6 @@ app.post('/csv', async (req, res) => {
                 fs.mkdirSync(dir);
             }
 
-            await createBarcode(identificationNumber, kundenNummer, dir, countOrder);
 
             // Create File
             fs.writeFile(filePath, convertedJson, async function callbackCreatedFile(err) {
@@ -239,7 +238,10 @@ app.post('/csv', async (req, res) => {
                     throw new Error(date + ": " + err);
                 }
                 if (isLoggedIn) {
+                    await createBarcode(identificationNumber, kundenNummer, dir, countOrder);
                     order = await order.save();
+                }else {
+                    await createBarcode(identificationNumber, req.body.auftragbestEmail, dir);
                 }
                 console.log(date + ": Auftrag " + identificationNumber + ".csv" + " wurde erstellt: ");
                 res.status(200).send(true);
@@ -276,6 +278,7 @@ app.get('/orders', authenticate, (req, res) => {
  * @param identificationNumber - number that will be a barcode
  * @param kundenNummer - currentKundennummer
  * @param dir - tmp dir
+ * @param countOrder
  */
 async function createBarcode(identificationNumber, kundenNummer, dir, countOrder) {
     let kndDir = `${dir}/${kundenNummer}`;
@@ -292,8 +295,8 @@ async function createBarcode(identificationNumber, kundenNummer, dir, countOrder
         fs.mkdirSync(kndDateDir)
     }
 
-    // Creates ./tmp/kundenNummer/date/count
-    if (!fs.existsSync(kndDateCountDir)) {
+    // Creates ./tmp/kundenNummer/date/count when countOder is available
+    if (!fs.existsSync(kndDateCountDir) && countOrder != null) {
         fs.mkdirSync(kndDateCountDir)
     }
 
@@ -309,10 +312,18 @@ async function createBarcode(identificationNumber, kundenNummer, dir, countOrder
             // Decide how to handle the error
             // `err` may be a string or Error object
         } else {
-            fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', function(err){
-                if (err) throw err;
-                console.log("Verzeichnis:" + kndDateCountDir + "/" + identificationNumber + ".png wurde erstellt")
-            });
+            if (countOrder) {
+                fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', function (err) {
+                    if (err) throw err;
+                    console.log("Verzeichnis:" + kndDateCountDir + "/" + identificationNumber + ".png wurde erstellt")
+                });
+            } else {
+                fs.writeFile(`${kndDateDir}/${identificationNumber}.png`, png, 'binary', function (err) {
+                    if (err) throw err;
+                    console.log("Verzeichnis:" + kndDateDir + "/" + identificationNumber + ".png wurde erstellt")
+                });
+            }
+
         }
     });
 }
