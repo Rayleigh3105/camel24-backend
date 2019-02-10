@@ -212,9 +212,8 @@ app.post('/csv', async (req, res) => {
                 countOrder = +1;
             }
             if (user) {
-
-                order = mapOrderWithUser(jsonObject, user, formattedDateForFrontend);
                 identificationNumber = kundenNummer + "_" + dateForFile + "_" + countOrder;
+                order = mapOrderWithUser(jsonObject, user, formattedDateForFrontend, identificationNumber);
             }
         } else {
             identificationNumber = req.body.auftragbestEmail + "_" + dateForFile;
@@ -347,14 +346,17 @@ function convertToCSV(jsonObject) {
  * Maps JsonObject to Schema
  *
  * @param jsonObject object that is going to be mapped
- * @param userId
+ * @param userId - id of the user
+ * @param createdAt - timestamp of creation
+ * @param identificationNumber of order
  * @returns {@link Order}
  */
-function mapOrderWithUser(jsonObject, userId, createdAt) {
+function mapOrderWithUser(jsonObject, userId, createdAt, identificationNumber) {
 
     return new Order({
         _creator: userId,
         createdAt,
+        identificationNumber,
         absender: {
             firma: jsonObject.absFirma,
             zusatz: jsonObject.absZusatz,

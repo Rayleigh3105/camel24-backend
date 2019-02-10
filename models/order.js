@@ -207,6 +207,10 @@ let OrderSchema = new mongoose.Schema({
     createdAt:{
         type: String,
         default: null
+    },
+    identificationNumber: {
+        type: String,
+        required: true
     }
 
 });
