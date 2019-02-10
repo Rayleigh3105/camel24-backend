@@ -220,6 +220,7 @@ app.post('/csv', async (req, res) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let dateForFile = moment().format("DD-MM-YYYY-HH-mm-SS");
     let formattedDateForFrontend = moment().format("DD.MM.YYYY HH:mm:SS");
+    let dataBaseSearchDate = moment().format("DD.MM.YYYY");
     let isLoggedIn = req.header("x-auth");
     let kundenNummer = req.header('x-kundenNummer');
     let identificationNumber;
@@ -275,10 +276,10 @@ app.post('/csv', async (req, res) => {
                     throw new Error(date + ": " + err);
                 }
                 if (isLoggedIn) {
-                    await createBarcode(identificationNumber, kundenNummer, dir, countOrder);
+                    await createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir, countOrder);
 
                 } else {
-                    await createBarcode(identificationNumber, req.body.auftragbestEmail, dir);
+                    await createBarcodePdfSentEmail(identificationNumber, req.body.auftragbestEmail, dir);
                 }
                 order = await order.save();
 
@@ -314,12 +315,15 @@ app.get('/orders', authenticate, (req, res) => {
 
 /**
  * Makes directory on server when its not available for the Kundennummer and given day and creates Barcode
+ *  - Generates PDF
+ *  - Sents custom Mail with PDF as Attachment
+ *
  * @param identificationNumber - number that will be a barcode
  * @param kundenNummer - currentKundennummer
  * @param dir - tmp dir
  * @param countOrder
  */
-async function createBarcode(identificationNumber, kundenNummer, dir, countOrder) {
+async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir, countOrder) {
     let kndDir = `${dir}/${kundenNummer}`;
     let dateDir = moment().format("DD.MM.YYYY");
     let kndDateDir = `${kndDir}/${dateDir}`;
@@ -388,8 +392,6 @@ async function createBarcode(identificationNumber, kundenNummer, dir, countOrder
                         .moveTo(5, 95)
                         .lineTo(600, 95)
                         .stroke();
-
-
                     doc.end();
                 });
             }
