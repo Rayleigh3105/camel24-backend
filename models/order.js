@@ -202,7 +202,7 @@ let OrderSchema = new mongoose.Schema({
     rechnungsDaten: RechnungsDatenSchema,
     _creator: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true
+        required: false
     },
     createdAt:{
         type: String,

@@ -10,6 +10,7 @@ let bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 const methodOverride = require('method-override');
 const bwipjs = require('bwip-js');
+const nodemailer = require("nodemailer");
 
 
 // +++ LOCAL +++
@@ -21,15 +22,6 @@ let {Order} = require('./../models/order');
 let {authenticate} = require('./../middleware/authenticate');
 const crypto = require('crypto');
 const fs = require('fs');
-let options = {
-    year: '2-digit',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-};
-
 let app = express();
 
 // Declare Port for deployment or local
@@ -47,16 +39,60 @@ app.use(bodyParser.json(), cors({origin: '*'}));
  */
 app.post('/user', async (req, res) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let startGenerationNumber = 13000;
+    let countUser;
     try {
         res.header("access-control-expose-headers",
             ",x-auth"
             + ",Content-Length"
         );
+
+        // Get´s count of Users stored in database
+        await User.find()
+            .count()
+            .then(count => countUser = count);
         let body = req.body;
+        body.kundenNummer = startGenerationNumber + countUser;
         let user = new User(body);
 
+        await User.find({
+            email: body.email
+        }).count().then(countUserSameEmail => {
+            if (countUserSameEmail > 0) {
+                res.status(400).send("E-Mail Adresse ist schon vorhanden")
+            }
+        });
         user = await user.save();
         const token = await user.generateAuthToken();
+
+        // create reusable transporter object using the default SMTP transport
+        let transporter = nodemailer.createTransport({
+            host: "smtp.ionos.de",
+            port: 465,
+            secure: true, // true for 465, false for other ports
+            auth: {
+                user: 'moritz.vogt@vogges.de', // generated ethereal user
+                pass: 'mori00001' // generated ethereal password
+            }
+        });
+
+        // setup email data with unicode symbols
+        let mailOptions = {
+            from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
+            to: user.email, // list of receivers
+            subject: `Herzlich Willkommen beim Camel-24 Online Auftragsservice - ${body.kundenNummer}`, // Subject line
+            html: `Guten Tag,<br>Vielen Dank für Ihr Vertrauen!<br><br><strong>Kundennummer:</strong> ${body.kundenNummer}<br><br>Wir freuen uns auf eine gute Zusammenarbeit.<br>Bei Fragen oder Anregungen rufen Sie uns doch biite an.<br>Sie erreichen uns Montag bis Freitag von 8 bis 18 Uhr unter <strong>0911/400727</strong><br><br> Mit freundlichen Grüßen Ihr Camel-24 Team <br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
+<br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a>`, // html body
+            attachments: [{
+                filename: 'camel_logo.png',
+                path: './assets/img/camel_logo.png',
+                cid: 'camellogo' //same cid value as in the html img src
+            }]
+        };
+
+        // send mail with defined transport object
+        await transporter.sendMail(mailOptions);
+
         res.status(200).header('x-auth', token).send(user._doc);
         let date = new Date();
         console.log(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
@@ -84,7 +120,7 @@ app.post('/user/login', async (req, res) => {
         const user = await User.findByCredentials(body.kundenNummer, body.password);
         const token = await user.generateAuthToken();
         res.header('x-auth', token).send(user._doc);
-        console.log(`User ${user} logged in`);
+        console.log(`User ${user.kundenNummer} logged in`);
 
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
@@ -120,7 +156,6 @@ app.patch('/user/:userId', authenticate, (req, res) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let userId = req.params.userId;
     let body = req.body;
-
 
     if (!ObjectID.isValid(userId)) {
         return res.status(404).send();
@@ -203,6 +238,7 @@ app.post('/csv', async (req, res) => {
         let jsonObject = req.body;
 
         // Map json Object to order so it can be saved
+        // Resolves identificationnumber
         if (isLoggedIn) {
             const user = await User.findByKundenNummer(kundenNummer);
             await Order.find({
@@ -217,6 +253,7 @@ app.post('/csv', async (req, res) => {
             }
         } else {
             identificationNumber = req.body.auftragbestEmail + "_" + dateForFile;
+            order = mapOrderToSchema(jsonObject, formattedDateForFrontend, identificationNumber);
         }
 
         // Convert JSON to CSV
@@ -230,7 +267,6 @@ app.post('/csv', async (req, res) => {
                 fs.mkdirSync(dir);
             }
 
-
             // Create File
             fs.writeFile(filePath, convertedJson, async function callbackCreatedFile(err) {
                 if (err) {
@@ -238,10 +274,11 @@ app.post('/csv', async (req, res) => {
                 }
                 if (isLoggedIn) {
                     await createBarcode(identificationNumber, kundenNummer, dir, countOrder);
-                    order = await order.save();
-                }else {
+                } else {
                     await createBarcode(identificationNumber, req.body.auftragbestEmail, dir);
                 }
+                order = await order.save();
+
                 console.log(date + ": Auftrag " + identificationNumber + ".csv" + " wurde erstellt: ");
                 res.status(200).send(true);
             });
@@ -355,6 +392,66 @@ function mapOrderWithUser(jsonObject, userId, createdAt, identificationNumber) {
 
     return new Order({
         _creator: userId,
+        createdAt,
+        identificationNumber,
+        absender: {
+            firma: jsonObject.absFirma,
+            zusatz: jsonObject.absZusatz,
+            ansprechartner: jsonObject.absAnsprechartner,
+            adresse: jsonObject.absAdresse,
+            land: jsonObject.absLand,
+            plz: jsonObject.absPlz,
+            ort: jsonObject.absOrt,
+            telefon: jsonObject.absTel,
+        },
+        empfaenger: {
+            firma: jsonObject.empfFirma,
+            zusatz: jsonObject.empfZusatz,
+            ansprechartner: jsonObject.empfAnsprechartner,
+            adresse: jsonObject.empfAdresse,
+            land: jsonObject.empfLand,
+            plz: jsonObject.empfPlz,
+            ort: jsonObject.empfOrt,
+            telefon: jsonObject.empfTel,
+        },
+        abholTermin: {
+            datum: moment(jsonObject.abholDatum).format("DD.MM.YYYY")
+        },
+        zustellTermin: {
+            termin: jsonObject.zustellTermin,
+            zeit: jsonObject.fixtermin,
+            art: jsonObject.sonderdienst
+        },
+        sendungsdaten: {
+            gewicht: jsonObject.sendungsdatenGewicht,
+            wert: jsonObject.sendungsdatenWert,
+            art: jsonObject.sendungsdatenArt,
+            transportVers: jsonObject.sendungsdatenVers,
+        },
+        rechnungsDaten: {
+            email: jsonObject.auftragbestEmail,
+            telefon: jsonObject.auftragbestTelefon,
+            rechnungsAdresse: jsonObject.auftragsbestRechnungsadresse,
+            adresse: jsonObject.rechnungAdresse,
+            name: jsonObject.rechnungName,
+            ort: jsonObject.rechnungOrt,
+            plz: jsonObject.rechnungPlz,
+        }
+    })
+}
+
+/**
+ * Maps JsonObject to Schema
+ *
+ * @param jsonObject object that is going to be mapped
+ * @param userId - id of the user
+ * @param createdAt - timestamp of creation
+ * @param identificationNumber of order
+ * @returns {@link Order}
+ */
+function mapOrderToSchema(jsonObject, createdAt, identificationNumber) {
+
+    return new Order({
         createdAt,
         identificationNumber,
         absender: {
