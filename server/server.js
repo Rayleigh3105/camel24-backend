@@ -11,7 +11,8 @@ const {ObjectID} = require('mongodb');
 const methodOverride = require('method-override');
 const bwipjs = require('bwip-js');
 const nodemailer = require("nodemailer");
-
+const PDFDocument = require('pdfkit');
+const doc = new PDFDocument;
 
 // +++ LOCAL +++
 let mongoose = require('./../db/mongoose').mongoose;
@@ -22,6 +23,8 @@ let {Order} = require('./../models/order');
 let {authenticate} = require('./../middleware/authenticate');
 const crypto = require('crypto');
 const fs = require('fs');
+// +++ VARIABLES +++
+let dir = './tmp';
 let app = express();
 
 // Declare Port for deployment or local
@@ -262,7 +265,6 @@ app.post('/csv', async (req, res) => {
 
         if (convertedJson !== '') {
 
-            let dir = './tmp';
             if (!fs.existsSync(dir)) {
                 fs.mkdirSync(dir);
             }
@@ -274,6 +276,7 @@ app.post('/csv', async (req, res) => {
                 }
                 if (isLoggedIn) {
                     await createBarcode(identificationNumber, kundenNummer, dir, countOrder);
+
                 } else {
                     await createBarcode(identificationNumber, req.body.auftragbestEmail, dir);
                 }
@@ -321,6 +324,8 @@ async function createBarcode(identificationNumber, kundenNummer, dir, countOrder
     let dateDir = moment().format("DD.MM.YYYY");
     let kndDateDir = `${kndDir}/${dateDir}`;
     let kndDateCountDir = `${kndDateDir}/${countOrder}`;
+    let pdfFileName = `Paketlabel - ${identificationNumber}.pdf`;
+
     // Creates ./tmp/kundenNummer
     if (!fs.existsSync(kndDir)) {
         fs.mkdirSync(kndDir)
@@ -341,9 +346,9 @@ async function createBarcode(identificationNumber, kundenNummer, dir, countOrder
         text: identificationNumber,    // Text to encode
         scale: 2,               // 3x scaling factor
         height: 30,              // Bar height, in millimeters
-        includetext: true,            // Show human-readable text
+        includetext: false,            // Show human-readable text
         textxalign: 'center',        // Always good to set this
-    }, function (err, png) {
+    }, async function (err, png) {
         if (err) {
             // Decide how to handle the error
             // `err` may be a string or Error object
@@ -351,19 +356,46 @@ async function createBarcode(identificationNumber, kundenNummer, dir, countOrder
             if (countOrder) {
                 fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', function (err) {
                     if (err) throw err;
+                    // Creates PDF File
                     console.log("Verzeichnis:" + kndDateCountDir + "/" + identificationNumber + ".png wurde erstellt")
                 });
+
+
             } else {
-                fs.writeFile(`${kndDateDir}/${identificationNumber}.png`, png, 'binary', function (err) {
+                await fs.writeFile(`${kndDateDir}/${identificationNumber}.png`, png, 'binary', function (err) {
                     if (err) throw err;
-                    console.log("Verzeichnis:" + kndDateDir + "/" + identificationNumber + ".png wurde erstellt")
+                    console.log("Verzeichnis:" + kndDateDir + "/" + identificationNumber + ".png wurde erstellt");
+
+                    // CREATE PDF
+                    doc.pipe(fs.createWriteStream(`${kndDateDir}/${pdfFileName}`));
+                    // LOGO
+                    doc.image('./assets/img/camel_logo.png', 5, 5, {
+                        height: 50,
+                        width: 200,
+                        align: 'left'
+                    });
+
+                    // BARCODE
+                    doc.image(`${kndDateDir}/${identificationNumber}.png`, 400, 5, {
+                        height: 50,
+                        width: 200,
+                        align: 'right'
+                    });
+
+                    doc.text(`Versand-Nr: ${identificationNumber}`, 160, 70);
+
+                    doc.lineCap('round')
+                        .moveTo(5, 95)
+                        .lineTo(600, 95)
+                        .stroke();
+
+
+                    doc.end();
                 });
             }
-
         }
     });
 }
-
 
 /**
  * Converts Arrays of objects into a CSV string
@@ -509,11 +541,9 @@ function getFilePath(identificationNumber) {
     return `ftp/kep/` + identificationNumber + ".csv"
 }
 
-
 /**
  * END ROUTES
  */
-
 
 // Start of for NodeJs
 app.listen(port, () => {
