@@ -141,7 +141,7 @@ app.get('/user/me', authenticate, async (req, res) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     try {
         let user = await User.findByToken(req.header('x-auth'));
-        res.send(user);
+        res.send(user._doc);
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
         console.log(date);
