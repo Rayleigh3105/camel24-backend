@@ -11,6 +11,19 @@ const {ObjectID} = require('mongodb');
 const methodOverride = require('method-override');
 const bwipjs = require('bwip-js');
 const nodemailer = require("nodemailer");
+const SMTPConnection = require("nodemailer/lib/smtp-connection");
+let connection = new SMTPConnection();
+let smtpOptions = {
+    host: "smtp.ionos.de",
+    port: 465,
+    secure: true, // true for 465, false for other ports
+    auth: {
+        user: 'moritz.vogt@vogges.de', // generated ethereal user
+        pass: 'mori00001' // generated ethereal password
+    }
+};
+let dataBaseError = "Bei der Datenbankoperation ist etwas schiefgelaufen.";
+
 const PDFDocument = require('pdfkit');
 const doc = new PDFDocument;
 
@@ -19,6 +32,7 @@ let mongoose = require('./../db/mongoose').mongoose;
 let conn = require('./../db/mongoose').conn;
 let {User} = require('./../models/user');
 let {Order} = require('./../models/order');
+const ApplicationError = require('./../models/error');
 
 let {authenticate} = require('./../middleware/authenticate');
 const crypto = require('crypto');
@@ -45,6 +59,12 @@ app.post('/user', async (req, res) => {
     let startGenerationNumber = 13000;
     let countUser;
     try {
+        let checkTransport = nodemailer.createTransport(smtpOptions);
+        await checkTransport.verify()
+            .catch(() => {
+                throw new ApplicationError(400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+            });
+
         res.header("access-control-expose-headers",
             ",x-auth"
             + ",Content-Length"
@@ -53,31 +73,36 @@ app.post('/user', async (req, res) => {
         // Get´s count of Users stored in database
         await User.find()
             .count()
-            .then(count => countUser = count);
+            .then(count => countUser = count)
+            .catch(() => {
+                throw new ApplicationError(400, dataBaseError)
+            });
         let body = req.body;
         body.kundenNummer = startGenerationNumber + countUser;
         let user = new User(body);
 
-        await User.find({
+        // Checks if Email is taken
+        let existingEmail = await User.findOne({
             email: body.email
-        }).count().then(countUserSameEmail => {
-            if (countUserSameEmail > 0) {
-                res.status(400).send("E-Mail Adresse ist schon vorhanden")
-            }
+        }).catch(() => {
+            throw new ApplicationError(400, dataBaseError)
         });
-        user = await user.save();
-        const token = await user.generateAuthToken();
+
+        if (existingEmail) {
+            throw new ApplicationError(400, "E-Mail ist schon regestriert.")
+        }
+
+        user = await user.save()
+            .catch(() => {
+                throw new ApplicationError(400, dataBaseError)
+            });
+        const token = await user.generateAuthToken()
+            .catch(() => {
+                throw new ApplicationError(400, dataBaseError)
+            });
 
         // create reusable transporter object using the default SMTP transport
-        let transporter = nodemailer.createTransport({
-            host: "smtp.ionos.de",
-            port: 465,
-            secure: true, // true for 465, false for other ports
-            auth: {
-                user: 'moritz.vogt@vogges.de', // generated ethereal user
-                pass: 'mori00001' // generated ethereal password
-            }
-        });
+        let transporter = nodemailer.createTransport(smtpOptions);
 
         // setup email data with unicode symbols
         let mailOptions = {
@@ -94,17 +119,17 @@ app.post('/user', async (req, res) => {
         };
 
         // send mail with defined transport object
-        await transporter.sendMail(mailOptions);
-
-        res.status(200).header('x-auth', token).send(user._doc);
-        let date = new Date();
-        console.log(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
+        await transporter.sendMail(mailOptions).then(() => {
+            res.status(200).header('x-auth', token).send(user._doc);
+            console.log(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
+        }).catch(() => {
+            throw new ApplicationError(400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
+        })
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
-        console.log(date);
-        console.log(e);
+        console.log(date + ": " + e);
         console.log("--------------- ERROR END ------------------");
-        res.status(400).send(e);
+        res.status(e.status).send(e);
     }
 });
 
@@ -127,8 +152,7 @@ app.post('/user/login', async (req, res) => {
 
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
-        console.log(date);
-        console.log(e);
+        console.log(date + ": " + e);
         console.log("--------------- ERROR END ------------------");
         res.status(400).send("Something went wrong during LogIn (Invalid Username/Password), try again");
     }
@@ -144,8 +168,7 @@ app.get('/user/me', authenticate, async (req, res) => {
         res.send(user._doc);
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
-        console.log(date);
-        console.log(e);
+        console.log(date + ": " + e);
         console.log("--------------- ERROR END ------------------");
         res.status(400).send(e)
     }
@@ -206,8 +229,7 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
         console.log(date + "User mit Tokeen: " + req.token + " hat sich ausgeloggt.")
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
-        console.log(date);
-        console.log(e);
+        console.log(date + ": " + e);
         console.log("--------------- ERROR END ------------------");
         res.status(400).send(false)
     }
@@ -216,7 +238,7 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
 /**
  * CREATES Csv based on the given values in the request Body, also handles errors
  */
-app.post('/csv', async (req, res) => {
+app.post('/csv', async (req, res, next) => {
     // VARIABLES
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let dateForFile = moment().format("DD-MM-YYYY-HH-mm-SS");
@@ -235,8 +257,8 @@ app.post('/csv', async (req, res) => {
         );
 
         // Dont create Order when Kndnumber or email is missing
-        if (kundenNummer === null || kundenNummer === '' || kundenNummer === undefined && req.body.auftragbestEmail === null || req.body.auftragbestEmail === '' || req.body.auftragbestEmail === undefined) {
-            throw new Error('Kundennummer/Email konnte nicht gelesen werden.')
+        if (!!kundenNummer || !!req.body.auftragbestEmail) {
+            throw new ApplicationError(400, "Kundennummer oder E-Mail konnte nicht gelesen werden.");
         }
 
         // Convert Object to JSON
@@ -290,10 +312,9 @@ app.post('/csv', async (req, res) => {
         }
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
-        console.log(date);
-        console.log(e);
+        console.log(date + ": " + e);
         console.log("--------------- ERROR END ------------------");
-        res.status(400).send(false);
+        res.status(400).send(e);
     }
 });
 
