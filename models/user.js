@@ -22,14 +22,14 @@ let UserSchema = new mongoose.Schema({
     },
     firstName: {
         type: String,
-        required: false,
+        required: true,
         trim: true,
         min: 1,
         unique: false
     },
     lastName: {
         type: String,
-        required: false,
+        required: true,
         trim: true,
         min: 1,
         unique: false
@@ -51,31 +51,43 @@ let UserSchema = new mongoose.Schema({
     },
     adresse: {
         type: String,
-        require: true,
+        require: false,
         maxlength: 255,
         unique: false
     },
     land: {
         type: String,
-        require: true,
+        require: false,
         maxlength: 255,
         unique: false
     },
     plz: {
         type: String,
-        require: true,
+        require: false,
         maxlength: 255,
         unique: false
     },
     ort: {
         type: String,
-        require: true,
+        require: false,
         maxlength: 255,
         unique: false
     },
     telefon: {
         type: String,
-        require: true,
+        require: false,
+        maxlength: 255,
+        unique: false
+    },
+    zusatz: {
+        type: String,
+        require: false,
+        maxlength: 255,
+        unique: false
+    },
+    ansprechpartner: {
+        type: String,
+        require: false,
         maxlength: 255,
         unique: false
     },

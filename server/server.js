@@ -168,7 +168,6 @@ app.patch('/user/:userId', authenticate, (req, res) => {
         _id: userId,
     }, {
         $set: {
-            email: body.email,
             adresse: body.adresse,
             ort: body.ort,
             plz: body.plz,
@@ -177,6 +176,8 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             firstName: body.firstName,
             lastName: body.lastName,
             firmenName: body.firmenName,
+            ansprechpartner: body.ansprechpartner,
+            zusatz: body.zusatz
         }
     }, {
         new: true
@@ -184,7 +185,7 @@ app.patch('/user/:userId', authenticate, (req, res) => {
         if (!user) {
             return res.status(404).send();
         }
-
+        console.log("User updated:" + user._doc.kundenNummer);
         res.status(200).send(user._doc);
     }).catch((e) => {
         res.status(400).send(e)
