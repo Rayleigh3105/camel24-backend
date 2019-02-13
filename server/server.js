@@ -12,7 +12,6 @@ const methodOverride = require('method-override');
 const bwipjs = require('bwip-js');
 const nodemailer = require("nodemailer");
 const SMTPConnection = require("nodemailer/lib/smtp-connection");
-const log = require('simple-node-logger').createSimpleLogger();
 let smtpOptions = {
     host: "smtp.ionos.de",
     port: 465,
@@ -130,7 +129,6 @@ app.post('/user', async (req, res) => {
             throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
         })
     } catch (e) {
-        log.error(e);
         res.status(e.status).send(e);
     }
 });
@@ -159,7 +157,6 @@ app.post('/user/login', async (req, res) => {
         });
 
     } catch (e) {
-        log.error(e);
         res.status(e.status).send(e);
     }
 });
@@ -177,7 +174,6 @@ app.get('/user/me', authenticate, async (req, res) => {
             throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
         });
     } catch (e) {
-        log.error(e);
         res.status(e.status).send(e);
     }
 
@@ -224,7 +220,6 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             throw new ApplicationError("Camel-18", 400, dataBaseError, body)
         })
     } catch (e) {
-        log.error(e);
         res.status(e.status).send(e);
     }
 });
@@ -244,7 +239,6 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
             throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
         });
     } catch (e) {
-        log.error(e);
         res.status(e.status).send(e);
     }
 });
@@ -339,7 +333,6 @@ app.post('/csv', async (req, res, next) => {
             });
         }
     } catch (e) {
-        log.error(e);
         res.status(e.status).send(e);
     }
 });
@@ -361,7 +354,6 @@ app.get('/orders', authenticate, (req, res) => {
             throw new ApplicationError("Camel-21", 400, dataBaseError)
         })
     } catch (e) {
-        log.error(e);
         res.status(e.status).send(e);
     }
 });
@@ -602,7 +594,7 @@ function getFilePath(identificationNumber) {
 
 // Start of for NodeJs
 app.listen(port, () => {
-    console.log(`Started up on port ${port}`);
+    console.log(`Server ist hochgefahren - Port: ${port}`);
 });
 
 module.exports = {
