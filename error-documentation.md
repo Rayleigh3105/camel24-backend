@@ -5,8 +5,13 @@
 - **Camel-02** -> Es konnte keine Verbindung zum E-Mail Client hergestellt werden wenn Email versendet werden soll.
 
 #### Camel-1 = User Operationen
+#### 400
 - **Camel-11** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn nach User gesucht wird ohne filter)
 - **Camel-12** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn nach User gesucht wird mit filter)
 - **Camel-13** -> E-Mail ist schon regestriert. (When fetching for user und Anzahl wird berechnet)
 - **Camel-14** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn beim Speichern des Benutzers in der Datenbank was falsch läuft)
-- **Camel-15** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird)
+- **Camel-151** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird) -> Register
+- **Camel-152** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird) -> Login
+- **Camel-16** -> Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, , oder nicht gültiges Passwort.
+#### 404
+- **Camel-17** -> Authentifizierungs Token konnte nicht gefunden werden.

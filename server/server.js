@@ -62,7 +62,7 @@ app.post('/user', async (req, res) => {
         let checkTransport = nodemailer.createTransport(smtpOptions);
         await checkTransport.verify()
             .catch(() => {
-                throw new ApplicationError("Camel-01",400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
             });
 
         res.header("access-control-expose-headers",
@@ -98,7 +98,7 @@ app.post('/user', async (req, res) => {
             });
         const token = await user.generateAuthToken()
             .catch(() => {
-                throw new ApplicationError("Camel-24", 400, dataBaseError)
+                throw new ApplicationError("Camel-151", 400, dataBaseError)
             });
 
         // create reusable transporter object using the default SMTP transport
@@ -145,16 +145,22 @@ app.post('/user/login', async (req, res) => {
         );
         const body = _.pick(req.body, ['kundenNummer', 'password']);
 
-        const user = await User.findByCredentials(body.kundenNummer, body.password);
-        const token = await user.generateAuthToken();
-        res.header('x-auth', token).send(user._doc);
-        console.log(`User ${user.kundenNummer} logged in`);
+        const user = await User.findByCredentials(body.kundenNummer, body.password)
+            .catch(() => {
+                throw new ApplicationError("Camel-16", 400, `Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder nicht gültiges Passwort`);
+            });
+        await user.generateAuthToken().then((token) => {
+            res.header('x-auth', token).send(user._doc);
+            console.log(`${date}: Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
+        }).catch(() => {
+                throw new ApplicationError("Camel-152", 400, dataBaseError);
+            });
 
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
         console.log(date + ": " + e);
         console.log("--------------- ERROR END ------------------");
-        res.status(400).send("Something went wrong during LogIn (Invalid Username/Password), try again");
+        res.status(400).send(e);
     }
 });
 
@@ -164,13 +170,16 @@ app.post('/user/login', async (req, res) => {
 app.get('/user/me', authenticate, async (req, res) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     try {
-        let user = await User.findByToken(req.header('x-auth'));
-        res.send(user._doc);
+        await User.findByToken(req.header('x-auth')).then(user => {
+            res.send(user._doc);
+        }).catch(() => {
+            throw new ApplicationError("Camel-17",404, "Authentifizierungs Token konnte nicht gefunden werden.")
+        });
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
         console.log(date + ": " + e);
         console.log("--------------- ERROR END ------------------");
-        res.status(400).send(e)
+        res.status(e.status).send(e)
     }
 
 });
@@ -183,36 +192,45 @@ app.patch('/user/:userId', authenticate, (req, res) => {
     let userId = req.params.userId;
     let body = req.body;
 
-    if (!ObjectID.isValid(userId)) {
-        return res.status(404).send();
+    try {
+        if (!ObjectID.isValid(userId)) {
+            throw new ApplicationError("Camel-00", 404, "Datenbank Identifikations Nummer ist nicht gültig.")
+        }
+
+        User.findOneAndUpdate({
+            _id: userId,
+        }, {
+            $set: {
+                adresse: body.adresse,
+                ort: body.ort,
+                plz: body.plz,
+                land: body.land,
+                telefon: body.telefon,
+                firstName: body.firstName,
+                lastName: body.lastName,
+                firmenName: body.firmenName,
+                ansprechpartner: body.ansprechpartner,
+                zusatz: body.zusatz
+            }
+        }, {
+            new: true
+        }).then((user) => {
+            if (!user) {
+                return res.status(404).send();
+            }
+            console.log("User updated:" + user._doc.kundenNummer);
+            res.status(200).send(user._doc);
+        }).catch((e) => {
+            res.status(400).send(e)
+        })
+    } catch (e) {
+        console.log("--------------- ERROR START ----------------");
+        console.log(date + ": " + `PATCH /users/${userId} - ${e}`);
+        console.log("--------------- ERROR END ------------------");
+        res.status(e.status).send(e)
     }
 
-    User.findOneAndUpdate({
-        _id: userId,
-    }, {
-        $set: {
-            adresse: body.adresse,
-            ort: body.ort,
-            plz: body.plz,
-            land: body.land,
-            telefon: body.telefon,
-            firstName: body.firstName,
-            lastName: body.lastName,
-            firmenName: body.firmenName,
-            ansprechpartner: body.ansprechpartner,
-            zusatz: body.zusatz
-        }
-    }, {
-        new: true
-    }).then((user) => {
-        if (!user) {
-            return res.status(404).send();
-        }
-        console.log("User updated:" + user._doc.kundenNummer);
-        res.status(200).send(user._doc);
-    }).catch((e) => {
-        res.status(400).send(e)
-    })
+
 
 
 });
