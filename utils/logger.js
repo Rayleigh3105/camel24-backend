@@ -18,7 +18,7 @@ module.exports = winston.createLogger({
     format: format.combine(
         format.simple(),
         format.timestamp(),
-        format.printf(info => `[${info.timestamp}] ${info.level.toUpperCase()} ${info.message}`)
+        format.printf(error => `[${error.timestamp}] ${error.level.toUpperCase()} ${error.message}`)
     ),
     transports: [
         transport

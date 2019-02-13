@@ -18,13 +18,12 @@ let smtpOptions = {
     secure: true, // true for 465, false for other ports
     auth: {
         user: 'moritz.vogt@vogges.de', // generated ethereal user
-        pass: 'mori0001' // generated ethereal password
+        pass: 'mori00001' // generated ethereal password
     }
 };
 let dataBaseError = "Bei der Datenbankoperation ist etwas schiefgelaufen.";
-
 let orderError = "Beim Erstellen Ihres Auftrags ist etwas schiefgelaufen.";
-const doc = new PDFDocument;
+let doc = new PDFDocument;
 
 // +++ LOCAL +++
 let mongoose = require('./../db/mongoose').mongoose;
@@ -47,6 +46,7 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.json(), cors({origin: '*'}));
 
 createNeededDirectorys();
+
 /**
  * BEGIN ROUTES
  */
@@ -130,6 +130,8 @@ app.post('/user', async (req, res) => {
             throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
         })
     } catch (e) {
+        console.log(`[${date}]: ${e.stack}`);
+        log.error(e.stack);
         res.status(e.status).send(e);
     }
 });
@@ -159,8 +161,9 @@ app.post('/user/login', async (req, res) => {
         });
 
     } catch (e) {
-        res.status(e.status).send(e);
-    }
+        console.log(`[${date}]: ${e.stack}`);
+        log.error(e.stack);
+        res.status(e.status).send(e);    }
 });
 
 /**
@@ -176,8 +179,9 @@ app.get('/user/me', authenticate, async (req, res) => {
             throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
         });
     } catch (e) {
-        res.status(e.status).send(e);
-    }
+        console.log(`[${date}]: ${e.stack}`);
+        log.error(e.stack);
+        res.status(e.status).send(e);    }
 
 });
 
@@ -223,8 +227,9 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             throw new ApplicationError("Camel-18", 400, dataBaseError, body)
         })
     } catch (e) {
-        res.status(e.status).send(e);
-    }
+        console.log(`[${date}]: ${e.stack}`);
+        log.error(e.stack);
+        res.status(e.status).send(e);    }
 });
 
 
@@ -243,8 +248,9 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
             throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
         });
     } catch (e) {
-        res.status(e.status).send(e);
-    }
+        console.log(`[${date}]: ${e.stack}`);
+        log.error(e.stack);
+        res.status(e.status).send(e);    }
 });
 
 /**
@@ -337,8 +343,9 @@ app.post('/csv', async (req, res, next) => {
             });
         }
     } catch (e) {
-        res.status(e.status).send(e);
-    }
+        console.log(`[${date}]: ${e.stack}`);
+        log.error(e.stack);
+        res.status(e.status).send(e);    }
 });
 
 /**
@@ -358,8 +365,9 @@ app.get('/orders', authenticate, (req, res) => {
             throw new ApplicationError("Camel-21", 400, dataBaseError)
         })
     } catch (e) {
-        res.status(e.status).send(e);
-    }
+        console.log(`[${date}]: ${e.stack}`);
+        log.error(e.stack);
+        res.status(e.status).send(e);    }
 });
 
 /**
@@ -595,27 +603,42 @@ function getFilePath(identificationNumber) {
  * END ROUTES
  */
 
+/**
+ * Creates Needed Directorys on the Server
+ */
 function createNeededDirectorys() {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+
     if (!fs.existsSync("./ftp")) {
         fs.mkdirSync('./ftp');
+        log.info(`Ordner /ftp wurde erstellt`);
+        console.log(`[${date}]: Ordner /ftp wurde erstellt`);
     }
     if (!fs.existsSync("./ftp/kep")) {
         fs.mkdirSync('./ftp/kep');
+        log.info(`Ordner /ftp/kep wurde erstellt`);
+        console.log(`[${date}]: Ordner /ftp/kep wurde erstellt`);
     }
 
     if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir)
+        fs.mkdirSync(dir);
+        log.info(`Ordner /tmp wurde erstellt`);
+        console.log(`[${date}]: Ordner /tmp wurde erstellt`);
     }
 
     if (!fs.existsSync("./logs")) {
         fs.mkdirSync("./logs");
+        log.info(`Ordner /logs wurde erstellt`);
+        console.log(`[${date}]: Ordner /logs wurde erstellt`);
     }
 }
 
 // Start of for NodeJs
 app.listen(port, () => {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+
     log.info(`Server ist hochgefahren - Port: ${port}`);
-    console.log(`Server ist hochgefahren - Port: ${port}`);
+    console.log(`[${date}]: Server ist hochgefahren - Port: ${port}`);
 });
 
 module.exports = {
