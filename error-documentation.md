@@ -12,6 +12,16 @@
 - **Camel-14** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn beim Speichern des Benutzers in der Datenbank was falsch läuft)
 - **Camel-151** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird) -> Register
 - **Camel-152** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird) -> Login
-- **Camel-16** -> Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, , oder nicht gültiges Passwort.
+- **Camel-16**
+    - Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, , oder nicht gültiges Passwort.
+    - Zu Bearbeitender Benutzer konnte nicht gefunden werden,
+- **Camel-18** -> Authentifzierunstoken konnte nicht gelöscht werden.
+- **Camel-19** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird)
+
+
 #### 404
 - **Camel-17** -> Authentifizierungs Token konnte nicht gefunden werden.
+
+#### Camel-2 = Auftrag Operationen
+#### 400
+- **Camel-21** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Beim laden der Aufträge)

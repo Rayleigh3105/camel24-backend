@@ -85,17 +85,20 @@ app.post('/user', async (req, res) => {
         let existingEmail = await User.findOne({
             email: body.email
         }).catch(() => {
-            throw new ApplicationError("Camel-12", 400, dataBaseError)
+            throw new ApplicationError("Camel-12", 400, dataBaseError, body)
         });
 
         if (existingEmail) {
             throw new ApplicationError("Camel-13", 400, "E-Mail ist schon regestriert.")
         }
 
+        // Save User to Database
         user = await user.save()
             .catch(() => {
-                throw new ApplicationError("Camel-14", 400, dataBaseError)
+                throw new ApplicationError("Camel-14", 400, dataBaseError, user)
             });
+
+        // Generate Auth Token for created User
         const token = await user.generateAuthToken()
             .catch(() => {
                 throw new ApplicationError("Camel-151", 400, dataBaseError)
@@ -127,7 +130,7 @@ app.post('/user', async (req, res) => {
         })
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
-        console.log(date + ": " + e);
+        console.log(`${date}: POST /user - ${e}`);
         console.log("--------------- ERROR END ------------------");
         res.status(e.status).send(e);
     }
@@ -147,20 +150,20 @@ app.post('/user/login', async (req, res) => {
 
         const user = await User.findByCredentials(body.kundenNummer, body.password)
             .catch(() => {
-                throw new ApplicationError("Camel-16", 400, `Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder nicht gültiges Passwort`);
+                throw new ApplicationError("Camel-16", 400, `Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder nicht gültiges Passwort`, body);
             });
         await user.generateAuthToken().then((token) => {
             res.header('x-auth', token).send(user._doc);
             console.log(`${date}: Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
         }).catch(() => {
-                throw new ApplicationError("Camel-152", 400, dataBaseError);
-            });
+            throw new ApplicationError("Camel-152", 400, dataBaseError, user);
+        });
 
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
-        console.log(date + ": " + e);
+        console.log(`${date}: POST /user/login - ${e}`);
         console.log("--------------- ERROR END ------------------");
-        res.status(400).send(e);
+        res.status(e.status).send(e);
     }
 });
 
@@ -170,14 +173,15 @@ app.post('/user/login', async (req, res) => {
 app.get('/user/me', authenticate, async (req, res) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     try {
+        // Finds User by Token
         await User.findByToken(req.header('x-auth')).then(user => {
             res.send(user._doc);
         }).catch(() => {
-            throw new ApplicationError("Camel-17",404, "Authentifizierungs Token konnte nicht gefunden werden.")
+            throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
         });
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
-        console.log(date + ": " + e);
+        console.log(`${date}: GET /user/me - ${e}`);
         console.log("--------------- ERROR END ------------------");
         res.status(e.status).send(e)
     }
@@ -194,9 +198,10 @@ app.patch('/user/:userId', authenticate, (req, res) => {
 
     try {
         if (!ObjectID.isValid(userId)) {
-            throw new ApplicationError("Camel-00", 404, "Datenbank Identifikations Nummer ist nicht gültig.")
+            throw new ApplicationError("Camel-00", 404, "Datenbank Identifikations Nummer ist nicht gültig.", userId)
         }
 
+        // Find User with ID and updates it with payload from request
         User.findOneAndUpdate({
             _id: userId,
         }, {
@@ -216,23 +221,19 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             new: true
         }).then((user) => {
             if (!user) {
-                return res.status(404).send();
+                throw new ApplicationError("Camel-16", 404, "Zu Bearbeitender Benutzer konnte nicht gefunden werden,", body)
             }
-            console.log("User updated:" + user._doc.kundenNummer);
+            console.log(`Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
             res.status(200).send(user._doc);
-        }).catch((e) => {
-            res.status(400).send(e)
+        }).catch(() => {
+            throw new ApplicationError("Camel-18", 400, dataBaseError, body)
         })
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
-        console.log(date + ": " + `PATCH /users/${userId} - ${e}`);
+        console.log(`${date}: PATCH /users/${userId} - ${e}`);
         console.log("--------------- ERROR END ------------------");
         res.status(e.status).send(e)
     }
-
-
-
-
 });
 
 
@@ -242,14 +243,18 @@ app.patch('/user/:userId', authenticate, (req, res) => {
 app.delete('/user/me/token', authenticate, async (req, res) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     try {
-        await req.user.removeToken(req.token);
-        res.status(200).send(true);
-        console.log(date + "User mit Tokeen: " + req.token + " hat sich ausgeloggt.")
+        // Deletes token for specifc user in database
+        await req.user.removeToken(req.token).then(() => {
+            console.log(date + "User mit Tokeen: " + req.token + " hat sich ausgeloggt.");
+            res.status(200).send(true);
+        }).catch(() => {
+            throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
+        });
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
-        console.log(date + ": " + e);
+        console.log(`${date}: DELETE /user/me - ${e}`);
         console.log("--------------- ERROR END ------------------");
-        res.status(400).send(false)
+        res.status(e.status).send(e)
     }
 });
 
@@ -330,9 +335,9 @@ app.post('/csv', async (req, res, next) => {
         }
     } catch (e) {
         console.log("--------------- ERROR START ----------------");
-        console.log(date + ": " + e);
+        console.log(`${date}: POST /csv - ${e}`);
         console.log("--------------- ERROR END ------------------");
-        res.status(400).send(e);
+        res.status(e.status).send(e);
     }
 });
 
@@ -340,17 +345,24 @@ app.post('/csv', async (req, res, next) => {
  * Get´s Orders for customer
  */
 app.get('/orders', authenticate, (req, res) => {
-    Order.find({
-        _creator: req.user._id,
-    }).then((order) => {
-        if (order) {
-            res.send(order);
-        } else {
-            res.status(404).send();
-        }
-    }).catch((e) => {
-        res.status(400).send();
-    })
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+
+    try {
+        Order.find({
+            _creator: req.user._id,
+        }).then((order) => {
+            if (order) {
+                res.status(200).send(order);
+            }
+        }).catch((e) => {
+            throw new ApplicationError("Camel-21", 400, dataBaseError)
+        })
+    } catch (e) {
+        console.log("--------------- ERROR START ----------------");
+        console.log(`${date}: GET /orders - ${e}`);
+        console.log("--------------- ERROR END ------------------");
+        res.status(e.status).send(e);
+    }
 });
 
 /**
