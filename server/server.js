@@ -8,10 +8,13 @@ const _ = require('lodash');
 let moment = require('moment');
 let bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
-const methodOverride = require('method-override');
 const bwipjs = require('bwip-js');
 const nodemailer = require("nodemailer");
-const SMTPConnection = require("nodemailer/lib/smtp-connection");
+const PDFDocument = require('pdfkit');
+let winston = require('winston');
+let logger = winston.createLogger({
+
+});
 let smtpOptions = {
     host: "smtp.ionos.de",
     port: 465,
@@ -22,9 +25,8 @@ let smtpOptions = {
     }
 };
 let dataBaseError = "Bei der Datenbankoperation ist etwas schiefgelaufen.";
-let orderError = "Beim Erstellen Ihres Auftrags ist etwas schiefgelaufen.";
 
-const PDFDocument = require('pdfkit');
+let orderError = "Beim Erstellen Ihres Auftrags ist etwas schiefgelaufen.";
 const doc = new PDFDocument;
 
 // +++ LOCAL +++
@@ -251,7 +253,6 @@ app.post('/csv', async (req, res, next) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let dateForFile = moment().format("DD-MM-YYYY-HH-mm-SS");
     let formattedDateForFrontend = moment().format("DD.MM.YYYY HH:mm:SS");
-    let dataBaseSearchDate = moment().format("DD.MM.YYYY");
     let isLoggedIn = req.header("x-auth");
     let kundenNummer = req.header('x-kundenNummer');
     let identificationNumber;
