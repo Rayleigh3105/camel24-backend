@@ -11,10 +11,7 @@ const {ObjectID} = require('mongodb');
 const bwipjs = require('bwip-js');
 const nodemailer = require("nodemailer");
 const PDFDocument = require('pdfkit');
-let winston = require('winston');
-let logger = winston.createLogger({
-
-});
+let log = require("./../utils/logger");
 let smtpOptions = {
     host: "smtp.ionos.de",
     port: 465,
@@ -49,6 +46,7 @@ const port = process.env.PORT || 3000;
 // Setup Middleware
 app.use(bodyParser.json(), cors({origin: '*'}));
 
+createNeededDirectorys();
 /**
  * BEGIN ROUTES
  */
@@ -126,6 +124,7 @@ app.post('/user', async (req, res) => {
         // send mail with defined transport object
         await transporter.sendMail(mailOptions).then(() => {
             res.status(200).header('x-auth', token).send(user._doc);
+            log.info(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
             console.log(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
         }).catch(() => {
             throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
@@ -153,6 +152,7 @@ app.post('/user/login', async (req, res) => {
             });
         await user.generateAuthToken().then((token) => {
             res.header('x-auth', token).send(user._doc);
+            log.info(`Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
             console.log(`${date}: Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
         }).catch(() => {
             throw new ApplicationError("Camel-152", 400, dataBaseError, user);
@@ -216,6 +216,7 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             if (!user) {
                 throw new ApplicationError("Camel-16", 404, "Zu Bearbeitender Benutzer konnte nicht gefunden werden,", body)
             }
+            log.info(`Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
             console.log(`Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
             res.status(200).send(user._doc);
         }).catch(() => {
@@ -235,6 +236,7 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
     try {
         // Deletes token for specifc user in database
         await req.user.removeToken(req.token).then(() => {
+            log.info("User mit Tokeen: " + req.token + " hat sich ausgeloggt.");
             console.log(date + "User mit Tokeen: " + req.token + " hat sich ausgeloggt.");
             res.status(200).send(true);
         }).catch(() => {
@@ -327,10 +329,11 @@ app.post('/csv', async (req, res, next) => {
                 } else {
                     await createBarcodePdfSentEmail(identificationNumber, req.body.auftragbestEmail, dir);
                 }
-                order = await order.save();
-
-                console.log(date + ": Auftrag " + identificationNumber + ".csv" + " wurde erstellt: ");
-                res.status(200).send(true);
+                order = await order.save().then(() => {
+                    log.info(": Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
+                    console.log(date + ": Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
+                    res.status(200).send(true);
+                });
             });
         }
     } catch (e) {
@@ -407,14 +410,14 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
                 fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', function (err) {
                     if (err) throw err;
                     // Creates PDF File
-                    console.log("Verzeichnis:" + kndDateCountDir + "/" + identificationNumber + ".png wurde erstellt")
+                    log.info("Verzeichnis und PNG:" + kndDateCountDir + "/" + identificationNumber + "wurde erstellt");
+                    console.log("Verzeichnis und PNG:" + kndDateCountDir + "/" + identificationNumber + "wurde erstellt")
                 });
-
-
             } else {
                 await fs.writeFile(`${kndDateDir}/${identificationNumber}.png`, png, 'binary', function (err) {
                     if (err) throw err;
-                    console.log("Verzeichnis:" + kndDateDir + "/" + identificationNumber + ".png wurde erstellt");
+                    log.info("Verzeichnis und PNG:" + kndDateDir + "/" + identificationNumber + "wurde erstellt");
+                    console.log("Verzeichnis und PNG:" + kndDateDir + "/" + identificationNumber + "wurde erstellt")
 
                     // CREATE PDF
                     doc.pipe(fs.createWriteStream(`${kndDateDir}/${pdfFileName}`));
@@ -524,7 +527,6 @@ function mapOrderWithUser(jsonObject, userId, createdAt, identificationNumber) {
  * Maps JsonObject to Schema
  *
  * @param jsonObject object that is going to be mapped
- * @param userId - id of the user
  * @param createdAt - timestamp of creation
  * @param identificationNumber of order
  * @returns {@link Order}
@@ -593,8 +595,7 @@ function getFilePath(identificationNumber) {
  * END ROUTES
  */
 
-// Start of for NodeJs
-app.listen(port, () => {
+function createNeededDirectorys() {
     if (!fs.existsSync("./ftp")) {
         fs.mkdirSync('./ftp');
     }
@@ -602,6 +603,18 @@ app.listen(port, () => {
         fs.mkdirSync('./ftp/kep');
     }
 
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir)
+    }
+
+    if (!fs.existsSync("./logs")) {
+        fs.mkdirSync("./logs");
+    }
+}
+
+// Start of for NodeJs
+app.listen(port, () => {
+    log.info(`Server ist hochgefahren - Port: ${port}`);
     console.log(`Server ist hochgefahren - Port: ${port}`);
 });
 
