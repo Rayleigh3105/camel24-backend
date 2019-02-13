@@ -12,17 +12,18 @@ const methodOverride = require('method-override');
 const bwipjs = require('bwip-js');
 const nodemailer = require("nodemailer");
 const SMTPConnection = require("nodemailer/lib/smtp-connection");
-let connection = new SMTPConnection();
+const log = require('simple-node-logger').createSimpleLogger();
 let smtpOptions = {
     host: "smtp.ionos.de",
     port: 465,
     secure: true, // true for 465, false for other ports
     auth: {
         user: 'moritz.vogt@vogges.de', // generated ethereal user
-        pass: 'mori00001' // generated ethereal password
+        pass: 'mori0001' // generated ethereal password
     }
 };
 let dataBaseError = "Bei der Datenbankoperation ist etwas schiefgelaufen.";
+let orderError = "Beim Erstellen Ihres Auftrags ist etwas schiefgelaufen.";
 
 const PDFDocument = require('pdfkit');
 const doc = new PDFDocument;
@@ -129,9 +130,7 @@ app.post('/user', async (req, res) => {
             throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
         })
     } catch (e) {
-        console.log("--------------- ERROR START ----------------");
-        console.log(`${date}: POST /user - ${e}`);
-        console.log("--------------- ERROR END ------------------");
+        log.error(e);
         res.status(e.status).send(e);
     }
 });
@@ -160,9 +159,7 @@ app.post('/user/login', async (req, res) => {
         });
 
     } catch (e) {
-        console.log("--------------- ERROR START ----------------");
-        console.log(`${date}: POST /user/login - ${e}`);
-        console.log("--------------- ERROR END ------------------");
+        log.error(e);
         res.status(e.status).send(e);
     }
 });
@@ -180,10 +177,8 @@ app.get('/user/me', authenticate, async (req, res) => {
             throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
         });
     } catch (e) {
-        console.log("--------------- ERROR START ----------------");
-        console.log(`${date}: GET /user/me - ${e}`);
-        console.log("--------------- ERROR END ------------------");
-        res.status(e.status).send(e)
+        log.error(e);
+        res.status(e.status).send(e);
     }
 
 });
@@ -229,10 +224,8 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             throw new ApplicationError("Camel-18", 400, dataBaseError, body)
         })
     } catch (e) {
-        console.log("--------------- ERROR START ----------------");
-        console.log(`${date}: PATCH /users/${userId} - ${e}`);
-        console.log("--------------- ERROR END ------------------");
-        res.status(e.status).send(e)
+        log.error(e);
+        res.status(e.status).send(e);
     }
 });
 
@@ -251,10 +244,8 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
             throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
         });
     } catch (e) {
-        console.log("--------------- ERROR START ----------------");
-        console.log(`${date}: DELETE /user/me - ${e}`);
-        console.log("--------------- ERROR END ------------------");
-        res.status(e.status).send(e)
+        log.error(e);
+        res.status(e.status).send(e);
     }
 });
 
@@ -278,10 +269,9 @@ app.post('/csv', async (req, res, next) => {
             ",x-auth"
             + ",Content-Length"
         );
-
-        // Dont create Order when Kndnumber or email is missing
-        if (!!kundenNummer || !!req.body.auftragbestEmail) {
-            throw new ApplicationError(400, "Kundennummer oder E-Mail konnte nicht gelesen werden.");
+        // Dont create Order when Kundennummer or email is missing
+        if (kundenNummer === null || kundenNummer === '' || kundenNummer === undefined && req.body.auftragbestEmail === null || req.body.auftragbestEmail === '' || req.body.auftragbestEmail === undefined) {
+            throw new ApplicationError("Camel-00",400, "Kundennummer oder E-Mail konnte nicht gelesen werden.");
         }
 
         // Convert Object to JSON
@@ -290,16 +280,29 @@ app.post('/csv', async (req, res, next) => {
         // Map json Object to order so it can be saved
         // Resolves identificationnumber
         if (isLoggedIn) {
-            const user = await User.findByKundenNummer(kundenNummer);
+            const user = await User.findByKundenNummer(kundenNummer)
+                .catch(() => {
+                    throw new ApplicationError("Camel-12", 400, dataBaseError, kundenNummer)
+
+                });
+
+            // Check if User was found
+            if (!user) {
+                throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
+            }
+
             await Order.find({
                 _creator: user,
-            }).count().then(count => countOrder = count);
+            }).count()
+                .then(count => countOrder = count);
             if (countOrder === 0) {
                 countOrder = +1;
             }
             if (user) {
                 identificationNumber = kundenNummer + "_" + dateForFile + "_" + countOrder;
-                order = mapOrderWithUser(jsonObject, user, formattedDateForFrontend, identificationNumber);
+                order = mapOrderWithUser(jsonObject, user, formattedDateForFrontend, identificationNumber)
+            } else {
+                throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
             }
         } else {
             identificationNumber = req.body.auftragbestEmail + "_" + dateForFile;
@@ -313,7 +316,9 @@ app.post('/csv', async (req, res, next) => {
         if (convertedJson !== '') {
 
             if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir);
+                await fs.mkdirSync(dir).catch(() => {
+                    throw new ApplicationError("Camel-22", 400, orderError)
+                });
             }
 
             // Create File
@@ -334,9 +339,7 @@ app.post('/csv', async (req, res, next) => {
             });
         }
     } catch (e) {
-        console.log("--------------- ERROR START ----------------");
-        console.log(`${date}: POST /csv - ${e}`);
-        console.log("--------------- ERROR END ------------------");
+        log.error(e);
         res.status(e.status).send(e);
     }
 });
@@ -358,9 +361,7 @@ app.get('/orders', authenticate, (req, res) => {
             throw new ApplicationError("Camel-21", 400, dataBaseError)
         })
     } catch (e) {
-        console.log("--------------- ERROR START ----------------");
-        console.log(`${date}: GET /orders - ${e}`);
-        console.log("--------------- ERROR END ------------------");
+        log.error(e);
         res.status(e.status).send(e);
     }
 });

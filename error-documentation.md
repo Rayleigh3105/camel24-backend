@@ -17,6 +17,7 @@
     - Zu Bearbeitender Benutzer konnte nicht gefunden werden,
 - **Camel-18** -> Authentifzierunstoken konnte nicht gelöscht werden.
 - **Camel-19** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird)
+- **Camel-111** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird)
 
 
 #### 404
@@ -25,3 +26,6 @@
 #### Camel-2 = Auftrag Operationen
 #### 400
 - **Camel-21** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Beim laden der Aufträge)
+- **Camel-22** -> Ordner struktur konnte nicht erstellt werden
+- **Camel-23** -> Beim Speicher des Auftrags ist etwas schiefgelaufen
+
