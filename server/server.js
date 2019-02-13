@@ -62,7 +62,7 @@ app.post('/user', async (req, res) => {
         let checkTransport = nodemailer.createTransport(smtpOptions);
         await checkTransport.verify()
             .catch(() => {
-                throw new ApplicationError(400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+                throw new ApplicationError("Camel-01",400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
             });
 
         res.header("access-control-expose-headers",
@@ -75,7 +75,7 @@ app.post('/user', async (req, res) => {
             .count()
             .then(count => countUser = count)
             .catch(() => {
-                throw new ApplicationError(400, dataBaseError)
+                throw new ApplicationError("Camel-11", 400, dataBaseError)
             });
         let body = req.body;
         body.kundenNummer = startGenerationNumber + countUser;
@@ -85,20 +85,20 @@ app.post('/user', async (req, res) => {
         let existingEmail = await User.findOne({
             email: body.email
         }).catch(() => {
-            throw new ApplicationError(400, dataBaseError)
+            throw new ApplicationError("Camel-12", 400, dataBaseError)
         });
 
         if (existingEmail) {
-            throw new ApplicationError(400, "E-Mail ist schon regestriert.")
+            throw new ApplicationError("Camel-13", 400, "E-Mail ist schon regestriert.")
         }
 
         user = await user.save()
             .catch(() => {
-                throw new ApplicationError(400, dataBaseError)
+                throw new ApplicationError("Camel-14", 400, dataBaseError)
             });
         const token = await user.generateAuthToken()
             .catch(() => {
-                throw new ApplicationError(400, dataBaseError)
+                throw new ApplicationError("Camel-24", 400, dataBaseError)
             });
 
         // create reusable transporter object using the default SMTP transport
@@ -123,7 +123,7 @@ app.post('/user', async (req, res) => {
             res.status(200).header('x-auth', token).send(user._doc);
             console.log(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
         }).catch(() => {
-            throw new ApplicationError(400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
+            throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
         })
     } catch (e) {
         console.log("--------------- ERROR START ----------------");

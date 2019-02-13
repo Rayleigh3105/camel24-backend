@@ -1,5 +1,5 @@
 class ApplicationError extends Error {
-    constructor(status, message) {
+    constructor(errorCode, status, message) {
         super();
 
         Error.captureStackTrace(this, this.constructor);
@@ -8,6 +8,7 @@ class ApplicationError extends Error {
             'Bei deiner Anfrage ist etwas fehlgeschlagen';
 
         this.status = status || 500;
+        this.errorCode = errorCode || "Camel-00"
     }
 }
 
