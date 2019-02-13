@@ -265,7 +265,7 @@ app.post('/csv', async (req, res, next) => {
         );
         // Dont create Order when Kundennummer or email is missing
         if (kundenNummer === null || kundenNummer === '' || kundenNummer === undefined && req.body.auftragbestEmail === null || req.body.auftragbestEmail === '' || req.body.auftragbestEmail === undefined) {
-            throw new ApplicationError("Camel-00",400, "Kundennummer oder E-Mail konnte nicht gelesen werden.");
+            throw new ApplicationError("Camel-00", 400, "Kundennummer oder E-Mail konnte nicht gelesen werden.");
         }
 
         // Convert Object to JSON
@@ -594,6 +594,13 @@ function getFilePath(identificationNumber) {
 
 // Start of for NodeJs
 app.listen(port, () => {
+    if (!fs.existsSync("./ftp")) {
+        fs.mkdirSync('./ftp');
+    }
+    if (!fs.existsSync("./ftp/kep")) {
+        fs.mkdirSync('./ftp/kep');
+    }
+
     console.log(`Server ist hochgefahren - Port: ${port}`);
 });
 
