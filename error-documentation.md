@@ -28,4 +28,10 @@
 - **Camel-21** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Beim laden der Aufträge)
 - **Camel-22** -> Ordner struktur konnte nicht erstellt werden
 - **Camel-23** -> Beim Speicher des Auftrags ist etwas schiefgelaufen
+- **Camel-25** -> Beim Mappen der Daten ist etwas schiefgelaufen
+- **Camel-26** -> Beim erstellen des Barcodes ist etwas schiefgelaufen
+- **Camel-27** -> Beim Speicher der Datei ist ein Fehler aufgetreten
+- **Camel-28** -> Beim generieren der PDF ist etwas schief gelaufen
+
+
 

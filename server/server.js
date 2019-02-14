@@ -163,7 +163,8 @@ app.post('/user/login', async (req, res) => {
     } catch (e) {
         console.log(`[${date}]: ${e.stack}`);
         log.error(e.stack);
-        res.status(e.status).send(e);    }
+        res.status(e.status).send(e);
+    }
 });
 
 /**
@@ -181,7 +182,8 @@ app.get('/user/me', authenticate, async (req, res) => {
     } catch (e) {
         console.log(`[${date}]: ${e.stack}`);
         log.error(e.stack);
-        res.status(e.status).send(e);    }
+        res.status(e.status).send(e);
+    }
 
 });
 
@@ -229,7 +231,8 @@ app.patch('/user/:userId', authenticate, (req, res) => {
     } catch (e) {
         console.log(`[${date}]: ${e.stack}`);
         log.error(e.stack);
-        res.status(e.status).send(e);    }
+        res.status(e.status).send(e);
+    }
 });
 
 
@@ -250,7 +253,8 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
     } catch (e) {
         console.log(`[${date}]: ${e.stack}`);
         log.error(e.stack);
-        res.status(e.status).send(e);    }
+        res.status(e.status).send(e);
+    }
 });
 
 /**
@@ -286,7 +290,6 @@ app.post('/csv', async (req, res, next) => {
             const user = await User.findByKundenNummer(kundenNummer)
                 .catch(() => {
                     throw new ApplicationError("Camel-12", 400, dataBaseError, kundenNummer)
-
                 });
 
             // Check if User was found
@@ -298,9 +301,11 @@ app.post('/csv', async (req, res, next) => {
                 _creator: user,
             }).count()
                 .then(count => countOrder = count);
+
             if (countOrder === 0) {
                 countOrder = +1;
             }
+
             if (user) {
                 identificationNumber = kundenNummer + "_" + dateForFile + "_" + countOrder;
                 order = mapOrderWithUser(jsonObject, user, formattedDateForFrontend, identificationNumber)
@@ -317,23 +322,23 @@ app.post('/csv', async (req, res, next) => {
         let convertedJson = convertToCSV(jsonObject);
 
         if (convertedJson !== '') {
-
-            if (!fs.existsSync(dir)) {
-                await fs.mkdirSync(dir).catch(() => {
-                    throw new ApplicationError("Camel-22", 400, orderError)
-                });
-            }
-
             // Create File
             fs.writeFile(filePath, convertedJson, async function callbackCreatedFile(err) {
                 if (err) {
                     throw new Error(date + ": " + err);
                 }
                 if (isLoggedIn) {
-                    await createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir, countOrder);
-
+                    await createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir, countOrder, order)
+                        .catch(error => {
+                            // Contains Custom Error Object ApplicationError
+                            throw error;
+                        });
                 } else {
-                    await createBarcodePdfSentEmail(identificationNumber, req.body.auftragbestEmail, dir);
+                    await createBarcodePdfSentEmail(identificationNumber, req.body.auftragbestEmail, dir, countOrder, order)
+                        .catch(error => {
+                            // Contains Custom Error Object ApplicationError
+                            throw error;
+                        });
                 }
                 order = await order.save().then(() => {
                     log.info(": Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
@@ -341,11 +346,14 @@ app.post('/csv', async (req, res, next) => {
                     res.status(200).send(true);
                 });
             });
+        } else {
+            throw new ApplicationError("Camel-25", 400, "Keine Daten für die Umwandlung zum CSV Format.", convertedJson)
         }
     } catch (e) {
         console.log(`[${date}]: ${e.stack}`);
         log.error(e.stack);
-        res.status(e.status).send(e);    }
+        res.status(e.status).send(e);
+    }
 });
 
 /**
@@ -367,7 +375,8 @@ app.get('/orders', authenticate, (req, res) => {
     } catch (e) {
         console.log(`[${date}]: ${e.stack}`);
         log.error(e.stack);
-        res.status(e.status).send(e);    }
+        res.status(e.status).send(e);
+    }
 });
 
 /**
@@ -380,80 +389,81 @@ app.get('/orders', authenticate, (req, res) => {
  * @param dir - tmp dir
  * @param countOrder
  */
-async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir, countOrder) {
+async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir, countOrder, order) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let kndDir = `${dir}/${kundenNummer}`;
     let dateDir = moment().format("DD.MM.YYYY");
     let kndDateDir = `${kndDir}/${dateDir}`;
     let kndDateCountDir = `${kndDateDir}/${countOrder}`;
     let pdfFileName = `Paketlabel - ${identificationNumber}.pdf`;
-
-    // Creates ./tmp/kundenNummer
-    if (!fs.existsSync(kndDir)) {
-        fs.mkdirSync(kndDir)
-    }
-
-    // Creates ./tmp/kundenNummer/date
-    if (!fs.existsSync(kndDateDir)) {
-        fs.mkdirSync(kndDateDir)
-    }
-
-    // Creates ./tmp/kundenNummer/date/count when countOder is available
-    if (!fs.existsSync(kndDateCountDir) && countOrder != null) {
-        fs.mkdirSync(kndDateCountDir)
-    }
-
-    await bwipjs.toBuffer({
-        bcid: 'code128',       // Barcode type
-        text: identificationNumber,    // Text to encode
-        scale: 2,               // 3x scaling factor
-        height: 30,              // Bar height, in millimeters
-        includetext: false,            // Show human-readable text
-        textxalign: 'center',        // Always good to set this
-    }, async function (err, png) {
-        if (err) {
-            // Decide how to handle the error
-            // `err` may be a string or Error object
-        } else {
-            if (countOrder) {
-                fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', function (err) {
-                    if (err) throw err;
-                    // Creates PDF File
-                    log.info("Verzeichnis und PNG:" + kndDateCountDir + "/" + identificationNumber + "wurde erstellt");
-                    console.log("Verzeichnis und PNG:" + kndDateCountDir + "/" + identificationNumber + "wurde erstellt")
-                });
-            } else {
-                await fs.writeFile(`${kndDateDir}/${identificationNumber}.png`, png, 'binary', function (err) {
-                    if (err) throw err;
-                    log.info("Verzeichnis und PNG:" + kndDateDir + "/" + identificationNumber + "wurde erstellt");
-                    console.log("Verzeichnis und PNG:" + kndDateDir + "/" + identificationNumber + "wurde erstellt")
-
-                    // CREATE PDF
-                    doc.pipe(fs.createWriteStream(`${kndDateDir}/${pdfFileName}`));
-                    // LOGO
-                    doc.image('./assets/img/camel_logo.png', 5, 5, {
-                        height: 50,
-                        width: 200,
-                        align: 'left'
-                    });
-
-                    // BARCODE
-                    doc.image(`${kndDateDir}/${identificationNumber}.png`, 400, 5, {
-                        height: 50,
-                        width: 200,
-                        align: 'right'
-                    });
-
-                    doc.text(`Versand-Nr: ${identificationNumber}`, 160, 70);
-
-                    doc.lineCap('round')
-                        .moveTo(5, 95)
-                        .lineTo(600, 95)
-                        .stroke();
-                    doc.end();
-                });
-            }
+    new Promise(async (resolve, reject) => {
+        createNeededDirectorys();
+        // Creates ./tmp/kundenNummer
+        if (!fs.existsSync(kndDir)) {
+            fs.mkdirSync(kndDir);
+            log.info(`Ordner ${kndDir} wurde erstellt`);
+            console.log(`[${date}]: Ordner ${kndDir} wurde erstellt`);
         }
-    });
+
+        // Creates ./tmp/kundenNummer/date
+        if (!fs.existsSync(kndDateDir)) {
+            fs.mkdirSync(kndDateDir);
+            log.info(`Ordner ${kndDateDir} wurde erstellt`);
+            console.log(`[${date}]: Ordner ${kndDateDir} wurde erstellt`);
+        }
+
+        // Creates ./tmp/kundenNummer/date/count when countOder is available
+        if (!fs.existsSync(kndDateCountDir) && countOrder != null) {
+            fs.mkdirSync(kndDateCountDir);
+            log.info(`Ordner ${kndDateCountDir} wurde erstellt`);
+            console.log(`[${date}]: Ordner ${kndDateCountDir} wurde erstellt`);
+        }
+
+        // Generates Barcode
+        await bwipjs.toBuffer({
+            bcid: 'code128',       // Barcode type
+            text: identificationNumber,    // Text to encode
+            scale: 2,               // 3x scaling factor
+            height: 30,              // Bar height, in millimeters
+            includetext: false,            // Show human-readable text
+            textxalign: 'center',        // Always good to set this
+        }, async function (err, png) {
+            if (err) {
+                reject(new ApplicationError("Camel-26", 400, "Beim erstellen des Barcodes ist etwas schiefgelaufen.", err));
+            } else {
+                if (countOrder) {
+                    // WHEN USER IS LOGGED ON
+                    fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', function (err) {
+                        if (err) {
+                            reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
+                        }
+                        // Creates PDF File
+                        log.info("PNG:" + identificationNumber + "wurde erstellt");
+                        console.log(`[${date}]:PNG ${identificationNumber} wurde erstellt.`);
+                    });
+                } else {
+                    // WHEN USER IS NOT LOGGED IN
+                    await fs.writeFile(`${kndDateDir}/${identificationNumber}.png`, png, 'binary', async function (err) {
+                        if (err) {
+                            reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
+                        }
+                        log.info("PNG:" + identificationNumber + "wurde erstellt");
+                        console.log(`[${date}]:PNG ${identificationNumber} wurde erstellt.`);
+
+                        // Generate PDF
+                        await generatePDF(`${kndDateDir}/${identificationNumber}.png`, kndDateDir, identificationNumber, order).catch(() => {
+                            reject(new ApplicationError("Camel-28", 400, "Beim Erstellen Ihres Auftrags ist ein Fehler aufgetreten"));
+                            }
+                        );
+                    });
+
+
+                }
+            }
+        });
+    })
+
+
 }
 
 /**
@@ -528,6 +538,49 @@ function mapOrderWithUser(jsonObject, userId, createdAt, identificationNumber) {
             ort: jsonObject.rechnungOrt,
             plz: jsonObject.rechnungPlz,
         }
+    })
+}
+
+/**
+ *
+ * Generates PDF in given Path
+ *
+ * @param pathToBarcode
+ * @param pathToSave
+ * @param identificationNumber
+ * @param order
+ * @returns {Promise<any>}
+ */
+function generatePDF(pathToBarcode, pathToSave, identificationNumber, order) {
+    let pdfFileName = `Paketlabel - ${identificationNumber}.pdf`;
+
+    return new Promise((resolve, reject) => {
+        // TODO make function for pdf creation
+        // CREATE PDF
+        doc.pipe(fs.createWriteStream(`${pathToSave}/${pdfFileName}`));
+        // LOGO
+        doc.image('./assets/img/camel_logo.png', 5, 5, {
+            height: 50,
+            width: 200,
+            align: 'left'
+        });
+
+        // BARCODE
+        doc.image(pathToBarcode, 400, 5, {
+            height: 50,
+            width: 200,
+            align: 'right'
+        });
+
+        doc.text(`Versand-Nr: ${identificationNumber}`, 160, 70);
+
+        doc.lineCap('round')
+            .moveTo(5, 95)
+            .lineTo(600, 95)
+            .stroke();
+        doc.end();
+
+        resolve();
     })
 }
 
