@@ -12,15 +12,8 @@ const bwipjs = require('bwip-js');
 const nodemailer = require("nodemailer");
 const PDFDocument = require('pdfkit');
 let log = require("./../utils/logger");
-let smtpOptions = {
-    host: "smtp.ionos.de",
-    port: 465,
-    secure: true, // true for 465, false for other ports
-    auth: {
-        user: 'moritz.vogt@vogges.de', // generated ethereal user
-        pass: 'mori00001' // generated ethereal password
-    }
-};
+let setup = require('./../utils/setup');
+
 let dataBaseError = "Bei der Datenbankoperation ist etwas schiefgelaufen.";
 let orderError = "Beim Erstellen Ihres Auftrags ist etwas schiefgelaufen.";
 let doc = new PDFDocument;
@@ -59,7 +52,7 @@ app.post('/user', async (req, res) => {
     let startGenerationNumber = 13000;
     let countUser;
     try {
-        let checkTransport = nodemailer.createTransport(smtpOptions);
+        let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
         await checkTransport.verify()
             .catch(() => {
                 throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
@@ -75,7 +68,7 @@ app.post('/user', async (req, res) => {
             .count()
             .then(count => countUser = count)
             .catch(() => {
-                throw new ApplicationError("Camel-11", 400, dataBaseError)
+                throw new ApplicationError("Camel-11", 400, setup.getDatabaseErrorString())
             });
         let body = req.body;
         body.kundenNummer = startGenerationNumber + countUser;
@@ -85,7 +78,7 @@ app.post('/user', async (req, res) => {
         let existingEmail = await User.findOne({
             email: body.email
         }).catch(() => {
-            throw new ApplicationError("Camel-12", 400, dataBaseError, body)
+            throw new ApplicationError("Camel-12", 400, setup.getDatabaseErrorString(), body)
         });
 
         if (existingEmail) {
@@ -95,17 +88,17 @@ app.post('/user', async (req, res) => {
         // Save User to Database
         user = await user.save()
             .catch(() => {
-                throw new ApplicationError("Camel-14", 400, dataBaseError, user)
+                throw new ApplicationError("Camel-14", 400, setup.getDatabaseErrorString(), user)
             });
 
         // Generate Auth Token for created User
         const token = await user.generateAuthToken()
             .catch(() => {
-                throw new ApplicationError("Camel-151", 400, dataBaseError)
+                throw new ApplicationError("Camel-151", 400, setup.getDatabaseErrorString())
             });
 
         // create reusable transporter object using the default SMTP transport
-        let transporter = nodemailer.createTransport(smtpOptions);
+        let transporter = nodemailer.createTransport(setup.getSmtpOptions());
 
         // setup email data with unicode symbols
         let mailOptions = {
@@ -157,7 +150,7 @@ app.post('/user/login', async (req, res) => {
             log.info(`Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
             console.log(`${date}: Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
         }).catch(() => {
-            throw new ApplicationError("Camel-152", 400, dataBaseError, user);
+            throw new ApplicationError("Camel-152", 400, setup.getDatabaseErrorString(), user);
         });
 
     } catch (e) {
@@ -224,7 +217,7 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             console.log(`Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
             res.status(200).send(user._doc);
         }).catch(() => {
-            throw new ApplicationError("Camel-18", 400, dataBaseError, body)
+            throw new ApplicationError("Camel-18", 400, setup.getDatabaseErrorString(), body)
         })
     } catch (e) {
         console.log(`[${date}]: ${e.stack}`);
@@ -285,7 +278,7 @@ app.post('/csv', async (req, res, next) => {
         if (isLoggedIn) {
             const user = await User.findByKundenNummer(kundenNummer)
                 .catch(() => {
-                    throw new ApplicationError("Camel-12", 400, dataBaseError, kundenNummer)
+                    throw new ApplicationError("Camel-12", 400, setup.getDatabaseErrorString(), kundenNummer)
 
                 });
 
@@ -320,7 +313,7 @@ app.post('/csv', async (req, res, next) => {
 
             if (!fs.existsSync(dir)) {
                 await fs.mkdirSync(dir).catch(() => {
-                    throw new ApplicationError("Camel-22", 400, orderError)
+                    throw new ApplicationError("Camel-22", 400, setup.getOrderErrorString())
                 });
             }
 
@@ -362,7 +355,7 @@ app.get('/orders', authenticate, (req, res) => {
                 res.status(200).send(order);
             }
         }).catch((e) => {
-            throw new ApplicationError("Camel-21", 400, dataBaseError)
+            throw new ApplicationError("Camel-21", 400, setup.getDatabaseErrorString())
         })
     } catch (e) {
         console.log(`[${date}]: ${e.stack}`);
