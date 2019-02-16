@@ -118,12 +118,12 @@ app.post('/user', async (req, res) => {
         await transporter.sendMail(mailOptions).then(() => {
             res.status(200).header('x-auth', token).send(user._doc);
             log.info(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
-            console.log(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
+            console.log(`[${date}] User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
         }).catch(() => {
             throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
         })
     } catch (e) {
-        console.log(`[${date}]: ${e.stack}`);
+        console.log(`[${date}] ${e.stack}`);
         log.error(e.stack);
         res.status(e.status).send(e);
     }
@@ -148,13 +148,13 @@ app.post('/user/login', async (req, res) => {
         await user.generateAuthToken().then((token) => {
             res.header('x-auth', token).send(user._doc);
             log.info(`Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
-            console.log(`${date}: Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
+            console.log(`[${date}] Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
         }).catch(() => {
             throw new ApplicationError("Camel-152", 400, setup.getDatabaseErrorString(), user);
         });
 
     } catch (e) {
-        console.log(`[${date}]: ${e.stack}`);
+        console.log(`[${date}] ${e.stack}`);
         log.error(e.stack);
         res.status(e.status).send(e);
     }
@@ -173,7 +173,7 @@ app.get('/user/me', authenticate, async (req, res) => {
             throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
         });
     } catch (e) {
-        console.log(`[${date}]: ${e.stack}`);
+        console.log(`[${date}] ${e.stack}`);
         log.error(e.stack);
         res.status(e.status).send(e);
     }
@@ -222,7 +222,7 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             throw new ApplicationError("Camel-18", 400, setup.getDatabaseErrorString(), body)
         })
     } catch (e) {
-        console.log(`[${date}]: ${e.stack}`);
+        console.log(`[${date}] ${e.stack}`);
         log.error(e.stack);
         res.status(e.status).send(e);
     }
@@ -237,14 +237,14 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
     try {
         // Deletes token for specifc user in database
         await req.user.removeToken(req.token).then(() => {
-            log.info("User mit Tokeen: " + req.token + " hat sich ausgeloggt.");
-            console.log(date + "User mit Tokeen: " + req.token + " hat sich ausgeloggt.");
+            log.info(" User mit Token: " + req.token + " hat sich ausgeloggt.");
+            console.log("[" + date + "]" + "User mit Token: " + req.token + " hat sich ausgeloggt.");
             res.status(200).send(true);
         }).catch(() => {
             throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
         });
     } catch (e) {
-        console.log(`[${date}]: ${e.stack}`);
+        console.log(`[${date}] ${e.stack}`);
         log.error(e.stack);
         res.status(e.status).send(e);
     }
@@ -334,8 +334,8 @@ app.post('/csv', async (req, res, next) => {
                         });
                 }
                 order = await order.save().then(() => {
-                    log.info(": Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
-                    console.log(date + ": Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
+                    log.info("CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
+                    console.log("[" + date + "]" + " CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
                     res.status(200).send(true);
                 });
             });
@@ -343,8 +343,8 @@ app.post('/csv', async (req, res, next) => {
             throw new ApplicationError("Camel-25", 400, "Keine Daten für die Umwandlung zum CSV Format.", convertedJson)
         }
     } catch (e) {
-        console.log(`[${date}]: ${e.stack}`);
-        log.error(e.stack);
+        console.log(`[${date}] ${e.stack}`);
+        log.error(e.errorCode + e.stack);
         res.status(e.status).send(e);
     }
 });
@@ -366,7 +366,7 @@ app.get('/orders', authenticate, (req, res) => {
             throw new ApplicationError("Camel-21", 400, setup.getDatabaseErrorString())
         })
     } catch (e) {
-        console.log(`[${date}]: ${e.stack}`);
+        console.log(`[${date}] ${e.stack}`);
         log.error(e.stack);
         res.status(e.status).send(e);
     }
@@ -388,6 +388,7 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
     let dateDir = moment().format("DD.MM.YYYY");
     let kndDateDir = `${kndDir}/${dateDir}`;
     let kndDateCountDir = `${kndDateDir}/${countOrder}`;
+    let kndDateIdentDir = `${kndDateDir}/${identificationNumber}`;
     let pdfFileName = `Paketlabel - ${identificationNumber}.pdf`;
     new Promise(async (resolve, reject) => {
         createNeededDirectorys();
@@ -395,21 +396,25 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
         if (!fs.existsSync(kndDir)) {
             fs.mkdirSync(kndDir);
             log.info(`Ordner ${kndDir} wurde erstellt`);
-            console.log(`[${date}]: Ordner ${kndDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${kndDir} wurde erstellt`);
         }
 
         // Creates ./tmp/kundenNummer/date
         if (!fs.existsSync(kndDateDir)) {
             fs.mkdirSync(kndDateDir);
             log.info(`Ordner ${kndDateDir} wurde erstellt`);
-            console.log(`[${date}]: Ordner ${kndDateDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${kndDateDir} wurde erstellt`);
         }
 
         // Creates ./tmp/kundenNummer/date/count when countOder is available
         if (!fs.existsSync(kndDateCountDir) && countOrder != null) {
             fs.mkdirSync(kndDateCountDir);
             log.info(`Ordner ${kndDateCountDir} wurde erstellt`);
-            console.log(`[${date}]: Ordner ${kndDateCountDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${kndDateCountDir} wurde erstellt`);
+        } else {
+            fs.mkdirSync(kndDateIdentDir);
+            log.info(`Ordner ${kndDateIdentDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${kndDateIdentDir} wurde erstellt`);
         }
 
         // Generates Barcode
@@ -426,28 +431,34 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
             } else {
                 if (countOrder) {
                     // WHEN USER IS LOGGED ON
-                    fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', function (err) {
+                    fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', async function (err) {
                         if (err) {
                             reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
                         }
-                        // Creates PDF File
                         log.info("PNG:" + identificationNumber + "wurde erstellt");
-                        console.log(`[${date}]:PNG ${identificationNumber} wurde erstellt.`);
+                        console.log(`[${date}] PNG: ${identificationNumber} wurde erstellt.`);
+
+                        // Generate PDF
+                        await generatePDF(`${kndDateCountDir}/${identificationNumber}.png`, kndDateCountDir, identificationNumber, order).catch(e => {
+                                reject(new ApplicationError("Camel-28", 400, "Beim Erstellen Ihres Auftrags ist ein Fehler aufgetreten"));
+                            }
+                        );
                     });
                 } else {
                     // WHEN USER IS NOT LOGGED IN
-                    await fs.writeFile(`${kndDateDir}/${identificationNumber}.png`, png, 'binary', async function (err) {
+                    await fs.writeFile(`${kndDateIdentDir}/${identificationNumber}.png`, png, 'binary', async function (err) {
                         if (err) {
                             reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
                         }
                         log.info("PNG:" + identificationNumber + "wurde erstellt");
-                        console.log(`[${date}]:PNG ${identificationNumber} wurde erstellt.`);
+                        console.log(`[${date}] PNG: ${identificationNumber} wurde erstellt.`);
 
                         // Generate PDF
-                        await generatePDF(`${kndDateDir}/${identificationNumber}.png`, kndDateDir, identificationNumber, order).catch(() => {
-                            reject(new ApplicationError("Camel-28", 400, "Beim Erstellen Ihres Auftrags ist ein Fehler aufgetreten"));
-                            }
-                        );
+                        await generatePDF(`${kndDateIdentDir}/${identificationNumber}.png`, kndDateIdentDir, identificationNumber, order)
+                            .catch(e => {
+                                    reject(e);
+                                }
+                            );
                     });
 
 
@@ -545,35 +556,39 @@ function mapOrderWithUser(jsonObject, userId, createdAt, identificationNumber) {
  * @returns {Promise<any>}
  */
 function generatePDF(pathToBarcode, pathToSave, identificationNumber, order) {
-    let pdfFileName = `Paketlabel - ${identificationNumber}.pdf`;
+    let pdfFileName = `Paketlabel.pdf`;
 
     return new Promise((resolve, reject) => {
-        // TODO make function for pdf creation
-        // CREATE PDF
-        doc.pipe(fs.createWriteStream(`${pathToSave}/${pdfFileName}`));
-        // LOGO
-        doc.image('./assets/img/camel_logo.png', 5, 5, {
-            height: 50,
-            width: 200,
-            align: 'left'
-        });
+        try {
+            // CREATE PDF
+            doc.pipe(fs.createWriteStream(`${pathToSave}/${pdfFileName}`));
+            // LOGO
+            doc.image('./assets/img/camel_logo.png', 5, 5, {
+                height: 50,
+                width: 200,
+                align: 'left'
+            });
 
-        // BARCODE
-        doc.image(pathToBarcode, 400, 5, {
-            height: 50,
-            width: 200,
-            align: 'right'
-        });
+            // BARCODE
+            doc.image(pathToBarcode, 400, 5, {
+                height: 50,
+                width: 200,
+                align: 'right'
+            });
 
-        doc.text(`Versand-Nr: ${identificationNumber}`, 160, 70);
+            doc.text(`Versand-Nr: ${identificationNumber}`, 160, 70);
 
-        doc.lineCap('round')
-            .moveTo(5, 95)
-            .lineTo(600, 95)
-            .stroke();
-        doc.end();
+            doc.lineCap('round')
+                .moveTo(5, 95)
+                .lineTo(600, 95)
+                .stroke();
+            doc.end();
 
-        resolve();
+        } catch (e) {
+            reject(e);
+        }
+
+
     })
 }
 
@@ -658,24 +673,24 @@ function createNeededDirectorys() {
     if (!fs.existsSync("./ftp")) {
         fs.mkdirSync('./ftp');
         log.info(`Ordner /ftp wurde erstellt`);
-        console.log(`[${date}]: Ordner /ftp wurde erstellt`);
+        console.log(`[${date}] Ordner /ftp wurde erstellt`);
     }
     if (!fs.existsSync("./ftp/kep")) {
         fs.mkdirSync('./ftp/kep');
         log.info(`Ordner /ftp/kep wurde erstellt`);
-        console.log(`[${date}]: Ordner /ftp/kep wurde erstellt`);
+        console.log(`[${date}] Ordner /ftp/kep wurde erstellt`);
     }
 
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
         log.info(`Ordner /tmp wurde erstellt`);
-        console.log(`[${date}]: Ordner /tmp wurde erstellt`);
+        console.log(`[${date}] Ordner /tmp wurde erstellt`);
     }
 
     if (!fs.existsSync("./logs")) {
         fs.mkdirSync("./logs");
         log.info(`Ordner /logs wurde erstellt`);
-        console.log(`[${date}]: Ordner /logs wurde erstellt`);
+        console.log(`[${date}] Ordner /logs wurde erstellt`);
     }
 }
 
@@ -684,7 +699,7 @@ app.listen(port, () => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
     log.info(`Server ist hochgefahren - Port: ${port}`);
-    console.log(`[${date}]: Server ist hochgefahren - Port: ${port}`);
+    console.log(`[${date}] Server ist hochgefahren - Port: ${port}`);
 });
 
 module.exports = {
