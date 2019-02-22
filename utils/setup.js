@@ -1,7 +1,6 @@
 /**
  * Thiis is the SETUP
  */
-
 module.exports = {
 
     /**
@@ -35,7 +34,7 @@ module.exports = {
      *
      * @return {string}
      */
-    getOrderErrorString() {
+    getOrderErrorString: function () {
         return "Beim Erstellen Ihres Auftrags ist etwas schiefgelaufen."
     }
 

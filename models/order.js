@@ -23,7 +23,7 @@ let AbsEmpfSchema = mongoose.Schema({
         min: 1,
         unique: false
     },
-    ansprechartner: {
+    ansprechpartner: {
         type: String,
         required: false,
         trim: true,

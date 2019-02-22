@@ -13,11 +13,6 @@ const nodemailer = require("nodemailer");
 const PDFDocument = require('pdfkit');
 let log = require("./../utils/logger");
 let setup = require('./../utils/setup');
-
-let dataBaseError = "Bei der Datenbankoperation ist etwas schiefgelaufen.";
-let orderError = "Beim Erstellen Ihres Auftrags ist etwas schiefgelaufen.";
-let doc = new PDFDocument;
-
 // +++ LOCAL +++
 let mongoose = require('./../db/mongoose').mongoose;
 let conn = require('./../db/mongoose').conn;
@@ -502,7 +497,7 @@ function mapOrderWithUser(jsonObject, userId, createdAt, identificationNumber) {
         absender: {
             firma: jsonObject.absFirma,
             zusatz: jsonObject.absZusatz,
-            ansprechartner: jsonObject.absAnsprechartner,
+            ansprechpartner: jsonObject.absAnsprechpartner,
             adresse: jsonObject.absAdresse,
             land: jsonObject.absLand,
             plz: jsonObject.absPlz,
@@ -512,7 +507,7 @@ function mapOrderWithUser(jsonObject, userId, createdAt, identificationNumber) {
         empfaenger: {
             firma: jsonObject.empfFirma,
             zusatz: jsonObject.empfZusatz,
-            ansprechartner: jsonObject.empfAnsprechartner,
+            ansprechpartner: jsonObject.empfAnsprechpartner,
             adresse: jsonObject.empfAdresse,
             land: jsonObject.empfLand,
             plz: jsonObject.empfPlz,
@@ -557,6 +552,7 @@ function mapOrderWithUser(jsonObject, userId, createdAt, identificationNumber) {
  */
 function generatePDF(pathToBarcode, pathToSave, identificationNumber, order) {
     let pdfFileName = `Paketlabel.pdf`;
+    let doc = new PDFDocument;
 
     return new Promise((resolve, reject) => {
         try {
@@ -572,7 +568,7 @@ function generatePDF(pathToBarcode, pathToSave, identificationNumber, order) {
             // BARCODE
             doc.image(pathToBarcode, 400, 5, {
                 height: 50,
-                width: 200,
+                width: 201,
                 align: 'right'
             });
 
@@ -582,6 +578,64 @@ function generatePDF(pathToBarcode, pathToSave, identificationNumber, order) {
                 .moveTo(5, 95)
                 .lineTo(600, 95)
                 .stroke();
+
+            // ABSENDER
+            doc.text('Absender:', 20, 110, {
+                underline: true
+            });
+            doc.text(`${order._doc.absender.firma}`, 20, 130);
+            if(order._doc.absender.ansprechpartner) {
+                doc.text(`${order._doc.absender.ansprechpartner}`, 20, 145);
+                doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, 20, 160);
+                doc.text(`${order._doc.absender.adresse}`, 20, 175);
+            } else {
+                doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, 20, 145);
+                doc.text(`${order._doc.absender.adresse}`, 20, 160);
+            }
+
+
+            //  EMPFÄNGER
+            doc.text('Empfänger:', 380, 110, {
+                underline: true
+            });
+            doc.text(`${order._doc.empfaenger.firma}`, 380, 130);
+            if(order._doc.empfaenger.ansprechpartner) {
+                doc.text(`${order._doc.empfaenger.ansprechpartner}`, 380, 145);
+                doc.text(`${order._doc.empfaenger.plz} - ${order._doc.absender.ort}`, 380, 160);
+                doc.text(`${order._doc.empfaenger.adresse}`, 380, 170);
+            } else {
+                doc.text(`${order._doc.empfaenger.plz} - ${order._doc.absender.ort}`, 380, 145);
+                doc.text(`${order._doc.empfaenger.adresse}`, 380, 160);
+            }
+
+            // PAKET & LIEFERDATEN
+            doc.text('Paketdaten & Sendungsinformationen:',20, 220, {
+                underline: true
+            });
+            doc.text(`Paketgewicht: ${order._doc.sendungsdaten.gewicht}`, 20, 235);
+            doc.text(`Vorrausichtliches Lieferdatum ${order._doc.zustellTermin.datum}`, 20, 250);
+
+            doc.lineCap('round')
+                .moveTo(5, 270)
+                .lineTo(600, 270)
+                .stroke();
+
+            // CAMEL ANSCHRIFT
+            doc.text('Camel-24 Transportvermittlung & Kurierdienst', 20, 290, {
+                align: 'center'
+            });
+            doc.text('Wehrweg 3', 20, 305, {
+                align: 'center'
+            });
+            doc.text('91230 Happurg', 20, 320, {
+                align: 'center'
+            });
+            doc.text('Tel.+49 911 400 87 27', 20, 335, {
+                align: 'center',
+                link: '+49 911 400 87 27'
+            });
+
+
             doc.end();
 
         } catch (e) {
@@ -608,7 +662,7 @@ function mapOrderToSchema(jsonObject, createdAt, identificationNumber) {
         absender: {
             firma: jsonObject.absFirma,
             zusatz: jsonObject.absZusatz,
-            ansprechartner: jsonObject.absAnsprechartner,
+            ansprechpartner: jsonObject.absAnsprechpartner,
             adresse: jsonObject.absAdresse,
             land: jsonObject.absLand,
             plz: jsonObject.absPlz,
@@ -618,7 +672,7 @@ function mapOrderToSchema(jsonObject, createdAt, identificationNumber) {
         empfaenger: {
             firma: jsonObject.empfFirma,
             zusatz: jsonObject.empfZusatz,
-            ansprechartner: jsonObject.empfAnsprechartner,
+            ansprechpartner: jsonObject.empfAnsprechpartner,
             adresse: jsonObject.empfAdresse,
             land: jsonObject.empfLand,
             plz: jsonObject.empfPlz,
