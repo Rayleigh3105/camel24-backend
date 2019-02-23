@@ -1,8 +1,13 @@
 let log = require("./../utils/logger");
 let {Order} = require('./../models/order');
+let dir = './tmp';
+let ApplicationError = require('./../models/error');
+
+
+// MODULES
+const nodemailer = require("nodemailer");
 let fs = require('fs');
 let moment = require('moment');
-let dir = './tmp';
 
 
 /**
@@ -220,6 +225,39 @@ module.exports = {
         return `ftp/kep/` + identificationNumber + ".csv"
     },
 
+    /**
+     * Sent´s final E-Mail to Customer with Barcode and PaketLabel
+     * @param pathAttachment
+     */
+    sentMail: function (pathAttachment, email) {
+        return new Promise((resolve, reject) => {
+            try {
+                // create reusable transporter object using the default SMTP transport
+                let transporter = nodemailer.createTransport(this.getSmtpOptions());
 
-}
-;
+                // setup email data with unicode symbols
+                let mailOptions = {
+                    from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
+                    to: email, // list of receivers
+                    subject: `PaketLabel`, // Subject line
+                    html: `hallo`, // html body
+                    attachments: [{
+                        filename: 'Paketlabel.pdf',
+                        path: pathAttachment +"/Paketlabel.pdf",
+                        contentType: 'application/pdf'
+                    }]
+                };
+
+                // send mail with defined transport object
+                transporter.sendMail(mailOptions).then(() => {
+                    log.info(`EMAIL: E-Mail wurde erfolgreich an ${email} gesendet.`);
+                })
+                   .catch(e => {
+                    reject(new ApplicationError("Camel-29", 400, "Beim generieren der E-Mail ist ein Fehler aufgetreten."))
+                })
+            } catch (e) {
+                reject(e)
+            }
+        })
+    },
+};

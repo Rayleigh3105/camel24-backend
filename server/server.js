@@ -23,6 +23,7 @@ const ApplicationError = require('./../models/error');
 let {authenticate} = require('./../middleware/authenticate');
 const crypto = require('crypto');
 const fs = require('fs');
+
 // +++ VARIABLES +++
 let dir = './tmp';
 let app = express();
@@ -36,10 +37,6 @@ app.use(bodyParser.json(), cors({origin: '*'}));
 setup.createNeededDirectorys();
 
 /**
- * BEGIN ROUTES
- */
-
-/**
  * Creates User and generates xauth token
  */
 app.post('/user', async (req, res) => {
@@ -49,7 +46,8 @@ app.post('/user', async (req, res) => {
     try {
         let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
         await checkTransport.verify()
-            .catch(() => {
+            .catch(e => {
+                log.info(e);
                 throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
             });
 
@@ -62,7 +60,8 @@ app.post('/user', async (req, res) => {
         await User.find()
             .count()
             .then(count => countUser = count)
-            .catch(() => {
+            .catch(e => {
+                log.info(e);
                 throw new ApplicationError("Camel-11", 400, setup.getDatabaseErrorString())
             });
         let body = req.body;
@@ -72,7 +71,8 @@ app.post('/user', async (req, res) => {
         // Checks if Email is taken
         let existingEmail = await User.findOne({
             email: body.email
-        }).catch(() => {
+        }).catch(e => {
+            log.info(e);
             throw new ApplicationError("Camel-12", 400, setup.getDatabaseErrorString(), body)
         });
 
@@ -84,7 +84,8 @@ app.post('/user', async (req, res) => {
         user = await user.save().then(() => async function () {
             // Generate Auth Token for created User
             const token = await user.generateAuthToken()
-                .catch(() => {
+                .catch(e => {
+                    log.info(e);
                     throw new ApplicationError("Camel-151", 400, setup.getDatabaseErrorString())
                 });
 
@@ -110,7 +111,8 @@ app.post('/user', async (req, res) => {
                 res.status(200).header('x-auth', token).send(user._doc);
                 log.info(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
                 console.log(`[${date}] User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
-            }).catch(() => {
+            }).catch(e => {
+                log.info(e);
                 throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
             })
         }).catch(() => {
@@ -137,14 +139,16 @@ app.post('/user/login', async (req, res) => {
         const body = _.pick(req.body, ['kundenNummer', 'password']);
 
         const user = await User.findByCredentials(body.kundenNummer, body.password)
-            .catch(() => {
+            .catch(e => {
+                log.info(e);
                 throw new ApplicationError("Camel-16", 400, `Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.`, body);
             });
         await user.generateAuthToken().then((token) => {
             res.status(200).header('x-auth', token).send(user._doc);
             log.info(`Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
             console.log(`[${date}] Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
-        }).catch(() => {
+        }).catch(e => {
+            log.info(e);
             throw new ApplicationError("Camel-152", 400, setup.getDatabaseErrorString(), user);
         });
 
@@ -164,7 +168,8 @@ app.get('/user/me', authenticate, async (req, res) => {
         // Finds User by Token
         await User.findByToken(req.header('x-auth')).then(user => {
             res.status(200).send(user._doc);
-        }).catch(() => {
+        }).catch(e => {
+            log.info(e);
             throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
         });
     } catch (e) {
@@ -213,7 +218,8 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             log.info(`Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
             console.log(`Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
             res.status(200).send(user._doc);
-        }).catch(() => {
+        }).catch(e => {
+            log.info(e);
             throw new ApplicationError("Camel-18", 400, setup.getDatabaseErrorString(), body)
         })
     } catch (e) {
@@ -234,7 +240,8 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
             log.info(" User mit Token: " + req.token + " hat sich ausgeloggt.");
             console.log("[" + date + "]" + "User mit Token: " + req.token + " hat sich ausgeloggt.");
             res.status(200).send(true);
-        }).catch(() => {
+        }).catch(e => {
+            log.info(e);
             throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
         });
     } catch (e) {
@@ -275,7 +282,8 @@ app.post('/csv', async (req, res, next) => {
         // Resolves identificationnumber
         if (isLoggedIn) {
             const user = await User.findByKundenNummer(kundenNummer)
-                .catch(() => {
+                .catch(e => {
+                    log.info(e);
                     throw new ApplicationError("Camel-12", 400, setup.getDatabaseErrorString(), kundenNummer)
                 });
 
@@ -357,6 +365,7 @@ app.get('/orders', authenticate, (req, res) => {
                 res.status(200).send(order);
             }
         }).catch((e) => {
+            log.info(e);
             throw new ApplicationError("Camel-21", 400, setup.getDatabaseErrorString())
         })
     } catch (e) {
@@ -383,7 +392,7 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
     let kndDateDir = `${kndDir}/${dateDir}`;
     let kndDateCountDir = `${kndDateDir}/${countOrder}`;
     let kndDateIdentDir = `${kndDateDir}/${identificationNumber}`;
-    let pdfFileName = `Paketlabel - ${identificationNumber}.pdf`;
+
     new Promise(async (resolve, reject) => {
         setup.createNeededDirectorys();
         // Creates ./tmp/kundenNummer
@@ -433,7 +442,9 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
                         console.log(`[${date}] PNG: ${identificationNumber} wurde erstellt.`);
 
                         // Generate PDF
-                        await generatePDF(`${kndDateCountDir}/${identificationNumber}.png`, kndDateCountDir, identificationNumber, order).catch(e => {
+                        await generatePDF(`${kndDateCountDir}/${identificationNumber}.png`, kndDateCountDir, identificationNumber, order)
+                            .catch(e => {
+                                log.info(e);
                                 reject(new ApplicationError("Camel-28", 400, "Beim Erstellen Ihres Auftrags ist ein Fehler aufgetreten"));
                             }
                         );
@@ -449,10 +460,18 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
 
                         // Generate PDF
                         await generatePDF(`${kndDateIdentDir}/${identificationNumber}.png`, kndDateIdentDir, identificationNumber, order)
+                            .then(() => {
+                                setup.sentMail(kndDateIdentDir, order._doc.rechnungsDaten.email)
+                                    .catch(e => {
+                                        reject(e);
+                                    })
+                            })
                             .catch(e => {
                                     reject(e);
                                 }
                             );
+
+
                     });
                 }
             }
@@ -554,6 +573,7 @@ function generatePDF(pathToBarcode, pathToSave, identificationNumber, order) {
                 link: '+49 911 400 87 27'
             });
             doc.end();
+            resolve()
         } catch (e) {
             reject(e);
         }
