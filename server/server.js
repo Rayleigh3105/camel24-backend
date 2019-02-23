@@ -81,43 +81,47 @@ app.post('/user', async (req, res) => {
         }
 
         // Save User to Database
-        user = await user.save().then(() => async function () {
-            // Generate Auth Token for created User
-            const token = await user.generateAuthToken()
-                .catch(e => {
-                    log.info(e);
-                    throw new ApplicationError("Camel-151", 400, setup.getDatabaseErrorString())
-                });
+        user = await user.save()
+            .catch(() => {
+                throw new ApplicationError("Camel-14", 400, setup.getDatabaseErrorString(), user)
+            });
 
-            // create reusable transporter object using the default SMTP transport
-            let transporter = nodemailer.createTransport(setup.getSmtpOptions());
-
-            // setup email data with unicode symbols
-            let mailOptions = {
-                from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
-                to: user.email, // list of receivers
-                subject: `Herzlich Willkommen beim Camel-24 Online Auftragsservice - ${body.kundenNummer}`, // Subject line
-                html: `Guten Tag,<br>Vielen Dank für Ihr Vertrauen!<br><br><strong>Kundennummer:</strong> ${body.kundenNummer}<br><br>Wir freuen uns auf eine gute Zusammenarbeit.<br>Bei Fragen oder Anregungen rufen Sie uns doch biite an.<br>Sie erreichen uns Montag bis Freitag von 8 bis 18 Uhr unter <strong>0911/400727</strong><br><br> Mit freundlichen Grüßen Ihr Camel-24 Team <br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
-<br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a>`, // html body
-                attachments: [{
-                    filename: 'camel_logo.png',
-                    path: './assets/img/camel_logo.png',
-                    cid: 'camellogo' //same cid value as in the html img src
-                }]
-            };
-
-            // send mail with defined transport object
-            await transporter.sendMail(mailOptions).then(() => {
-                res.status(200).header('x-auth', token).send(user._doc);
-                log.info(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
-                console.log(`[${date}] User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
-            }).catch(e => {
+        // Generate Auth Token for created User
+        const token = await user.generateAuthToken()
+            .catch(e => {
                 log.info(e);
-                throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
-            })
-        }).catch(() => {
-            throw new ApplicationError("Camel-14", 400, setup.getDatabaseErrorString(), user)
-        });
+                throw new ApplicationError("Camel-151", 400, setup.getDatabaseErrorString())
+            });
+
+        // create reusable transporter object using the default SMTP transport
+        let transporter = nodemailer.createTransport(setup.getSmtpOptions());
+
+        // setup email data with unicode symbols
+        let mailOptions = {
+            from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
+            to: user.email, // list of receivers
+            subject: `Herzlich Willkommen beim Camel-24 Online Auftragsservice - ${body.kundenNummer}`, // Subject line
+            html: `Guten Tag,<br>Vielen Dank für Ihr Vertrauen!<br><br><strong>Kundennummer:</strong> ${body.kundenNummer}<br><br>Wir freuen uns auf eine gute Zusammenarbeit.<br>Bei Fragen oder Anregungen rufen Sie uns doch biite an.<br>Sie erreichen uns Montag bis Freitag von 8 bis 18 Uhr unter <strong>0911/400727</strong><br><br> Mit freundlichen Grüßen Ihr Camel-24 Team <br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
+<br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a>`, // html body
+            attachments: [{
+                filename: 'camel_logo.png',
+                path: './assets/img/camel_logo.png',
+                cid: 'camellogo' //same cid value as in the html img src
+            }]
+        };
+
+        // send mail with defined transport object
+        await transporter.sendMail(mailOptions).then(() => {
+            res.status(200).send({
+                user: user._doc,
+                token
+            });
+            log.info(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
+            console.log(`[${date}] User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
+        }).catch(e => {
+            log.info(e);
+            throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
+        })
 
     } catch (e) {
         console.log(`[${date}] ${e.stack}`);
@@ -144,7 +148,11 @@ app.post('/user/login', async (req, res) => {
                 throw new ApplicationError("Camel-16", 400, `Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.`, body);
             });
         await user.generateAuthToken().then((token) => {
-            res.status(200).header('x-auth', token).send(user._doc);
+            res.setHeader('x-auth', token);
+            res.status(200).send({
+                user: user._doc,
+                token
+            });
             log.info(`Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
             console.log(`[${date}] Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
         }).catch(e => {
@@ -443,11 +451,17 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
 
                         // Generate PDF
                         await generatePDF(`${kndDateCountDir}/${identificationNumber}.png`, kndDateCountDir, identificationNumber, order)
+                            .then(() => {
+                                setup.sentMail(kndDateCountDir, order._doc.rechnungsDaten.email)
+                                    .catch(e => {
+                                        reject(e);
+                                    })
+                            })
                             .catch(e => {
-                                log.info(e);
-                                reject(new ApplicationError("Camel-28", 400, "Beim Erstellen Ihres Auftrags ist ein Fehler aufgetreten"));
-                            }
-                        );
+                                    log.info(e);
+                                    reject(new ApplicationError("Camel-28", 400, "Beim Erstellen Ihres Auftrags ist ein Fehler aufgetreten"));
+                                }
+                            );
                     });
                 } else {
                     // WHEN USER IS NOT LOGGED IN
