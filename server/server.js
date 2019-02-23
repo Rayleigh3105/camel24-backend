@@ -33,7 +33,7 @@ const port = process.env.PORT || 3000;
 // Setup Middleware
 app.use(bodyParser.json(), cors({origin: '*'}));
 
-createNeededDirectorys();
+setup.createNeededDirectorys();
 
 /**
  * BEGIN ROUTES
@@ -81,42 +81,42 @@ app.post('/user', async (req, res) => {
         }
 
         // Save User to Database
-        user = await user.save()
-            .catch(() => {
-                throw new ApplicationError("Camel-14", 400, setup.getDatabaseErrorString(), user)
-            });
+        user = await user.save().then(() => async function () {
+            // Generate Auth Token for created User
+            const token = await user.generateAuthToken()
+                .catch(() => {
+                    throw new ApplicationError("Camel-151", 400, setup.getDatabaseErrorString())
+                });
 
-        // Generate Auth Token for created User
-        const token = await user.generateAuthToken()
-            .catch(() => {
-                throw new ApplicationError("Camel-151", 400, setup.getDatabaseErrorString())
-            });
+            // create reusable transporter object using the default SMTP transport
+            let transporter = nodemailer.createTransport(setup.getSmtpOptions());
 
-        // create reusable transporter object using the default SMTP transport
-        let transporter = nodemailer.createTransport(setup.getSmtpOptions());
-
-        // setup email data with unicode symbols
-        let mailOptions = {
-            from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
-            to: user.email, // list of receivers
-            subject: `Herzlich Willkommen beim Camel-24 Online Auftragsservice - ${body.kundenNummer}`, // Subject line
-            html: `Guten Tag,<br>Vielen Dank für Ihr Vertrauen!<br><br><strong>Kundennummer:</strong> ${body.kundenNummer}<br><br>Wir freuen uns auf eine gute Zusammenarbeit.<br>Bei Fragen oder Anregungen rufen Sie uns doch biite an.<br>Sie erreichen uns Montag bis Freitag von 8 bis 18 Uhr unter <strong>0911/400727</strong><br><br> Mit freundlichen Grüßen Ihr Camel-24 Team <br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
+            // setup email data with unicode symbols
+            let mailOptions = {
+                from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
+                to: user.email, // list of receivers
+                subject: `Herzlich Willkommen beim Camel-24 Online Auftragsservice - ${body.kundenNummer}`, // Subject line
+                html: `Guten Tag,<br>Vielen Dank für Ihr Vertrauen!<br><br><strong>Kundennummer:</strong> ${body.kundenNummer}<br><br>Wir freuen uns auf eine gute Zusammenarbeit.<br>Bei Fragen oder Anregungen rufen Sie uns doch biite an.<br>Sie erreichen uns Montag bis Freitag von 8 bis 18 Uhr unter <strong>0911/400727</strong><br><br> Mit freundlichen Grüßen Ihr Camel-24 Team <br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
 <br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a>`, // html body
-            attachments: [{
-                filename: 'camel_logo.png',
-                path: './assets/img/camel_logo.png',
-                cid: 'camellogo' //same cid value as in the html img src
-            }]
-        };
+                attachments: [{
+                    filename: 'camel_logo.png',
+                    path: './assets/img/camel_logo.png',
+                    cid: 'camellogo' //same cid value as in the html img src
+                }]
+            };
 
-        // send mail with defined transport object
-        await transporter.sendMail(mailOptions).then(() => {
-            res.status(200).header('x-auth', token).send(user._doc);
-            log.info(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
-            console.log(`[${date}] User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
+            // send mail with defined transport object
+            await transporter.sendMail(mailOptions).then(() => {
+                res.status(200).header('x-auth', token).send(user._doc);
+                log.info(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
+                console.log(`[${date}] User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
+            }).catch(() => {
+                throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
+            })
         }).catch(() => {
-            throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
-        })
+            throw new ApplicationError("Camel-14", 400, setup.getDatabaseErrorString(), user)
+        });
+
     } catch (e) {
         console.log(`[${date}] ${e.stack}`);
         log.error(e.stack);
@@ -138,10 +138,10 @@ app.post('/user/login', async (req, res) => {
 
         const user = await User.findByCredentials(body.kundenNummer, body.password)
             .catch(() => {
-                throw new ApplicationError("Camel-16", 400, `Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder nicht gültiges Passwort`, body);
+                throw new ApplicationError("Camel-16", 400, `Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.`, body);
             });
         await user.generateAuthToken().then((token) => {
-            res.header('x-auth', token).send(user._doc);
+            res.status(200).header('x-auth', token).send(user._doc);
             log.info(`Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
             console.log(`[${date}] Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
         }).catch(() => {
@@ -163,7 +163,7 @@ app.get('/user/me', authenticate, async (req, res) => {
     try {
         // Finds User by Token
         await User.findByToken(req.header('x-auth')).then(user => {
-            res.send(user._doc);
+            res.status(200).send(user._doc);
         }).catch(() => {
             throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
         });
@@ -222,7 +222,6 @@ app.patch('/user/:userId', authenticate, (req, res) => {
         res.status(e.status).send(e);
     }
 });
-
 
 /**
  * Deletes token from user collection -> logout
@@ -296,18 +295,18 @@ app.post('/csv', async (req, res, next) => {
 
             if (user) {
                 identificationNumber = kundenNummer + "_" + dateForFile + "_" + countOrder;
-                order = mapOrderWithUser(jsonObject, user, formattedDateForFrontend, identificationNumber)
+                order = setup.mapOrderWithUser(jsonObject, user, formattedDateForFrontend, identificationNumber)
             } else {
                 throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
             }
         } else {
             identificationNumber = req.body.auftragbestEmail + "_" + dateForFile;
-            order = mapOrderToSchema(jsonObject, formattedDateForFrontend, identificationNumber);
+            order = setup.mapOrderToSchema(jsonObject, formattedDateForFrontend, identificationNumber);
         }
 
         // Convert JSON to CSV
-        let filePath = getFilePath(identificationNumber);
-        let convertedJson = convertToCSV(jsonObject);
+        let filePath = setup.getFilePath(identificationNumber);
+        let convertedJson = setup.convertToCSV(jsonObject);
 
         if (convertedJson !== '') {
             // Create File
@@ -386,7 +385,7 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
     let kndDateIdentDir = `${kndDateDir}/${identificationNumber}`;
     let pdfFileName = `Paketlabel - ${identificationNumber}.pdf`;
     new Promise(async (resolve, reject) => {
-        createNeededDirectorys();
+        setup.createNeededDirectorys();
         // Creates ./tmp/kundenNummer
         if (!fs.existsSync(kndDir)) {
             fs.mkdirSync(kndDir);
@@ -455,93 +454,13 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
                                 }
                             );
                     });
-
-
                 }
             }
         });
     })
-
-
 }
 
 /**
- * Converts Arrays of objects into a CSV string
- *
- * @return {string} - CSV confirm string from given data
- * @param jsonObject
- */
-function convertToCSV(jsonObject) {
-    let str = '';
-    Object.keys(jsonObject).forEach(function (lol) {
-        str += jsonObject[lol] + ";";
-    });
-    return str.slice(0, -1);
-}
-
-/**
- * Maps JsonObject to Schema
- *
- * @param jsonObject object that is going to be mapped
- * @param userId - id of the user
- * @param createdAt - timestamp of creation
- * @param identificationNumber of order
- * @returns {@link Order}
- */
-function mapOrderWithUser(jsonObject, userId, createdAt, identificationNumber) {
-
-    return new Order({
-        _creator: userId,
-        createdAt,
-        identificationNumber,
-        absender: {
-            firma: jsonObject.absFirma,
-            zusatz: jsonObject.absZusatz,
-            ansprechpartner: jsonObject.absAnsprechpartner,
-            adresse: jsonObject.absAdresse,
-            land: jsonObject.absLand,
-            plz: jsonObject.absPlz,
-            ort: jsonObject.absOrt,
-            telefon: jsonObject.absTel,
-        },
-        empfaenger: {
-            firma: jsonObject.empfFirma,
-            zusatz: jsonObject.empfZusatz,
-            ansprechpartner: jsonObject.empfAnsprechpartner,
-            adresse: jsonObject.empfAdresse,
-            land: jsonObject.empfLand,
-            plz: jsonObject.empfPlz,
-            ort: jsonObject.empfOrt,
-            telefon: jsonObject.empfTel,
-        },
-        abholTermin: {
-            datum: moment(jsonObject.abholDatum).format("DD.MM.YYYY")
-        },
-        zustellTermin: {
-            termin: jsonObject.zustellTermin,
-            zeit: jsonObject.fixtermin,
-            art: jsonObject.sonderdienst
-        },
-        sendungsdaten: {
-            gewicht: jsonObject.sendungsdatenGewicht,
-            wert: jsonObject.sendungsdatenWert,
-            art: jsonObject.sendungsdatenArt,
-            transportVers: jsonObject.sendungsdatenVers,
-        },
-        rechnungsDaten: {
-            email: jsonObject.auftragbestEmail,
-            telefon: jsonObject.auftragbestTelefon,
-            rechnungsAdresse: jsonObject.auftragsbestRechnungsadresse,
-            adresse: jsonObject.rechnungAdresse,
-            name: jsonObject.rechnungName,
-            ort: jsonObject.rechnungOrt,
-            plz: jsonObject.rechnungPlz,
-        }
-    })
-}
-
-/**
- *
  * Generates PDF in given Path
  *
  * @param pathToBarcode
@@ -584,7 +503,7 @@ function generatePDF(pathToBarcode, pathToSave, identificationNumber, order) {
                 underline: true
             });
             doc.text(`${order._doc.absender.firma}`, 20, 130);
-            if(order._doc.absender.ansprechpartner) {
+            if (order._doc.absender.ansprechpartner) {
                 doc.text(`${order._doc.absender.ansprechpartner}`, 20, 145);
                 doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, 20, 160);
                 doc.text(`${order._doc.absender.adresse}`, 20, 175);
@@ -599,7 +518,7 @@ function generatePDF(pathToBarcode, pathToSave, identificationNumber, order) {
                 underline: true
             });
             doc.text(`${order._doc.empfaenger.firma}`, 380, 130);
-            if(order._doc.empfaenger.ansprechpartner) {
+            if (order._doc.empfaenger.ansprechpartner) {
                 doc.text(`${order._doc.empfaenger.ansprechpartner}`, 380, 145);
                 doc.text(`${order._doc.empfaenger.plz} - ${order._doc.absender.ort}`, 380, 160);
                 doc.text(`${order._doc.empfaenger.adresse}`, 380, 170);
@@ -609,7 +528,7 @@ function generatePDF(pathToBarcode, pathToSave, identificationNumber, order) {
             }
 
             // PAKET & LIEFERDATEN
-            doc.text('Paketdaten & Sendungsinformationen:',20, 220, {
+            doc.text('Paketdaten & Sendungsinformationen:', 20, 220, {
                 underline: true
             });
             doc.text(`Paketgewicht: ${order._doc.sendungsdaten.gewicht}`, 20, 235);
@@ -634,119 +553,16 @@ function generatePDF(pathToBarcode, pathToSave, identificationNumber, order) {
                 align: 'center',
                 link: '+49 911 400 87 27'
             });
-
-
             doc.end();
-
         } catch (e) {
             reject(e);
         }
-
-
     })
-}
-
-/**
- * Maps JsonObject to Schema
- *
- * @param jsonObject object that is going to be mapped
- * @param createdAt - timestamp of creation
- * @param identificationNumber of order
- * @returns {@link Order}
- */
-function mapOrderToSchema(jsonObject, createdAt, identificationNumber) {
-
-    return new Order({
-        createdAt,
-        identificationNumber,
-        absender: {
-            firma: jsonObject.absFirma,
-            zusatz: jsonObject.absZusatz,
-            ansprechpartner: jsonObject.absAnsprechpartner,
-            adresse: jsonObject.absAdresse,
-            land: jsonObject.absLand,
-            plz: jsonObject.absPlz,
-            ort: jsonObject.absOrt,
-            telefon: jsonObject.absTel,
-        },
-        empfaenger: {
-            firma: jsonObject.empfFirma,
-            zusatz: jsonObject.empfZusatz,
-            ansprechpartner: jsonObject.empfAnsprechpartner,
-            adresse: jsonObject.empfAdresse,
-            land: jsonObject.empfLand,
-            plz: jsonObject.empfPlz,
-            ort: jsonObject.empfOrt,
-            telefon: jsonObject.empfTel,
-        },
-        abholTermin: {
-            datum: moment(jsonObject.abholDatum).format("DD.MM.YYYY")
-        },
-        zustellTermin: {
-            termin: jsonObject.zustellTermin,
-            zeit: jsonObject.fixtermin,
-            art: jsonObject.sonderdienst
-        },
-        sendungsdaten: {
-            gewicht: jsonObject.sendungsdatenGewicht,
-            wert: jsonObject.sendungsdatenWert,
-            art: jsonObject.sendungsdatenArt,
-            transportVers: jsonObject.sendungsdatenVers,
-        },
-        rechnungsDaten: {
-            email: jsonObject.auftragbestEmail,
-            telefon: jsonObject.auftragbestTelefon,
-            rechnungsAdresse: jsonObject.auftragsbestRechnungsadresse,
-            adresse: jsonObject.rechnungAdresse,
-            name: jsonObject.rechnungName,
-            ort: jsonObject.rechnungOrt,
-            plz: jsonObject.rechnungPlz,
-        }
-    })
-}
-
-/**
- * Get´s Path for laying down file in FTP directory
- * @param identificationNumber
- * @returns {string}
- */
-function getFilePath(identificationNumber) {
-    return `ftp/kep/` + identificationNumber + ".csv"
 }
 
 /**
  * END ROUTES
  */
-
-/**
- * Creates Needed Directorys on the Server
- */
-function createNeededDirectorys() {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-
-    if (!fs.existsSync("./ftp")) {
-        fs.mkdirSync('./ftp');
-        log.info(`Ordner /ftp wurde erstellt`);
-        console.log(`[${date}] Ordner /ftp wurde erstellt`);
-    }
-    if (!fs.existsSync("./ftp/kep")) {
-        fs.mkdirSync('./ftp/kep');
-        log.info(`Ordner /ftp/kep wurde erstellt`);
-        console.log(`[${date}] Ordner /ftp/kep wurde erstellt`);
-    }
-
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir);
-        log.info(`Ordner /tmp wurde erstellt`);
-        console.log(`[${date}] Ordner /tmp wurde erstellt`);
-    }
-
-    if (!fs.existsSync("./logs")) {
-        fs.mkdirSync("./logs");
-        log.info(`Ordner /logs wurde erstellt`);
-        console.log(`[${date}] Ordner /logs wurde erstellt`);
-    }
-}
 
 // Start of for NodeJs
 app.listen(port, () => {
