@@ -10,7 +10,6 @@ let bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 const bwipjs = require('bwip-js');
 const nodemailer = require("nodemailer");
-const PDFDocument = require('pdfkit');
 let log = require("./../utils/logger");
 let setup = require('./../utils/setup');
 // +++ LOCAL +++
@@ -274,6 +273,13 @@ app.post('/csv', async (req, res, next) => {
     let countOrder;
 
     try {
+        let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
+        await checkTransport.verify()
+            .catch(e => {
+                log.info(e);
+                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+            });
+
         res.header("access-control-expose-headers",
             ",x-auth"
             + ",Content-Length"
@@ -402,195 +408,116 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
     let kndDateIdentDir = `${kndDateDir}/${identificationNumber}`;
 
     new Promise(async (resolve, reject) => {
-        setup.createNeededDirectorys();
-        // Creates ./tmp/kundenNummer
-        if (!fs.existsSync(kndDir)) {
-            fs.mkdirSync(kndDir);
-            log.info(`Ordner ${kndDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${kndDir} wurde erstellt`);
-        }
-
-        // Creates ./tmp/kundenNummer/date
-        if (!fs.existsSync(kndDateDir)) {
-            fs.mkdirSync(kndDateDir);
-            log.info(`Ordner ${kndDateDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${kndDateDir} wurde erstellt`);
-        }
-
-        // Creates ./tmp/kundenNummer/date/count when countOder is available
-        if (!fs.existsSync(kndDateCountDir) && countOrder != null) {
-            fs.mkdirSync(kndDateCountDir);
-            log.info(`Ordner ${kndDateCountDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${kndDateCountDir} wurde erstellt`);
-        } else {
-            fs.mkdirSync(kndDateIdentDir);
-            log.info(`Ordner ${kndDateIdentDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${kndDateIdentDir} wurde erstellt`);
-        }
-
-        // Generates Barcode
-        await bwipjs.toBuffer({
-            bcid: 'code128',       // Barcode type
-            text: identificationNumber,    // Text to encode
-            scale: 2,               // 3x scaling factor
-            height: 30,              // Bar height, in millimeters
-            includetext: false,            // Show human-readable text
-            textxalign: 'center',        // Always good to set this
-        }, async function (err, png) {
-            if (err) {
-                reject(new ApplicationError("Camel-26", 400, "Beim erstellen des Barcodes ist etwas schiefgelaufen.", err));
-            } else {
-                if (countOrder) {
-                    // WHEN USER IS LOGGED ON
-                    fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', async function (err) {
-                        if (err) {
-                            reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
-                        }
-                        log.info("PNG:" + identificationNumber + "wurde erstellt");
-                        console.log(`[${date}] PNG: ${identificationNumber} wurde erstellt.`);
-
-                        // Generate PDF
-                        await generatePDF(`${kndDateCountDir}/${identificationNumber}.png`, kndDateCountDir, identificationNumber, order)
-                            .then(() => {
-                                setup.sentMail(kndDateCountDir, order._doc.rechnungsDaten.email)
-                                    .catch(e => {
-                                        reject(e);
-                                    })
-                            })
-                            .catch(e => {
-                                    log.info(e);
-                                    reject(new ApplicationError("Camel-28", 400, "Beim Erstellen Ihres Auftrags ist ein Fehler aufgetreten"));
-                                }
-                            );
-                    });
-                } else {
-                    // WHEN USER IS NOT LOGGED IN
-                    await fs.writeFile(`${kndDateIdentDir}/${identificationNumber}.png`, png, 'binary', async function (err) {
-                        if (err) {
-                            reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
-                        }
-                        log.info("PNG:" + identificationNumber + "wurde erstellt");
-                        console.log(`[${date}] PNG: ${identificationNumber} wurde erstellt.`);
-
-                        // Generate PDF
-                        await generatePDF(`${kndDateIdentDir}/${identificationNumber}.png`, kndDateIdentDir, identificationNumber, order)
-                            .then(() => {
-                                setup.sentMail(kndDateIdentDir, order._doc.rechnungsDaten.email)
-                                    .catch(e => {
-                                        reject(e);
-                                    })
-                            })
-                            .catch(e => {
-                                    reject(e);
-                                }
-                            );
-
-
-                    });
-                }
-            }
-        });
-    })
-}
-
-/**
- * Generates PDF in given Path
- *
- * @param pathToBarcode
- * @param pathToSave
- * @param identificationNumber
- * @param order
- * @returns {Promise<any>}
- */
-function generatePDF(pathToBarcode, pathToSave, identificationNumber, order) {
-    let pdfFileName = `Paketlabel.pdf`;
-    let doc = new PDFDocument;
-
-    return new Promise((resolve, reject) => {
         try {
-            // CREATE PDF
-            doc.pipe(fs.createWriteStream(`${pathToSave}/${pdfFileName}`));
-            // LOGO
-            doc.image('./assets/img/camel_logo.png', 5, 5, {
-                height: 50,
-                width: 200,
-                align: 'left'
-            });
-
-            // BARCODE
-            doc.image(pathToBarcode, 400, 5, {
-                height: 50,
-                width: 201,
-                align: 'right'
-            });
-
-            doc.text(`Versand-Nr: ${identificationNumber}`, 160, 70);
-
-            doc.lineCap('round')
-                .moveTo(5, 95)
-                .lineTo(600, 95)
-                .stroke();
-
-            // ABSENDER
-            doc.text('Absender:', 20, 110, {
-                underline: true
-            });
-            doc.text(`${order._doc.absender.firma}`, 20, 130);
-            if (order._doc.absender.ansprechpartner) {
-                doc.text(`${order._doc.absender.ansprechpartner}`, 20, 145);
-                doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, 20, 160);
-                doc.text(`${order._doc.absender.adresse}`, 20, 175);
-            } else {
-                doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, 20, 145);
-                doc.text(`${order._doc.absender.adresse}`, 20, 160);
+            setup.createNeededDirectorys();
+            // Creates ./tmp/kundenNummer
+            if (!fs.existsSync(kndDir)) {
+                fs.mkdirSync(kndDir);
+                log.info(`Ordner ${kndDir} wurde erstellt`);
+                console.log(`[${date}] Ordner ${kndDir} wurde erstellt`);
             }
 
-
-            //  EMPFÄNGER
-            doc.text('Empfänger:', 380, 110, {
-                underline: true
-            });
-            doc.text(`${order._doc.empfaenger.firma}`, 380, 130);
-            if (order._doc.empfaenger.ansprechpartner) {
-                doc.text(`${order._doc.empfaenger.ansprechpartner}`, 380, 145);
-                doc.text(`${order._doc.empfaenger.plz} - ${order._doc.absender.ort}`, 380, 160);
-                doc.text(`${order._doc.empfaenger.adresse}`, 380, 170);
-            } else {
-                doc.text(`${order._doc.empfaenger.plz} - ${order._doc.absender.ort}`, 380, 145);
-                doc.text(`${order._doc.empfaenger.adresse}`, 380, 160);
+            // Creates ./tmp/kundenNummer/date
+            if (!fs.existsSync(kndDateDir)) {
+                fs.mkdirSync(kndDateDir);
+                log.info(`Ordner ${kndDateDir} wurde erstellt`);
+                console.log(`[${date}] Ordner ${kndDateDir} wurde erstellt`);
             }
 
-            // PAKET & LIEFERDATEN
-            doc.text('Paketdaten & Sendungsinformationen:', 20, 220, {
-                underline: true
-            });
-            doc.text(`Paketgewicht: ${order._doc.sendungsdaten.gewicht}`, 20, 235);
-            doc.text(`Vorrausichtliches Lieferdatum ${order._doc.zustellTermin.datum}`, 20, 250);
+            // Creates ./tmp/kundenNummer/date/count when countOder is available
+            if (!fs.existsSync(kndDateCountDir) && countOrder != null) {
+                fs.mkdirSync(kndDateCountDir);
+                log.info(`Ordner ${kndDateCountDir} wurde erstellt`);
+                console.log(`[${date}] Ordner ${kndDateCountDir} wurde erstellt`);
+            } else {
+                fs.mkdirSync(kndDateIdentDir);
+                log.info(`Ordner ${kndDateIdentDir} wurde erstellt`);
+                console.log(`[${date}] Ordner ${kndDateIdentDir} wurde erstellt`);
+            }
 
-            doc.lineCap('round')
-                .moveTo(5, 270)
-                .lineTo(600, 270)
-                .stroke();
+            // Generates Barcode
+            await bwipjs.toBuffer({
+                bcid: 'code128',       // Barcode type
+                text: identificationNumber,    // Text to encode
+                scale: 2,               // 3x scaling factor
+                height: 30,              // Bar height, in millimeters
+                includetext: true,            // Show human-readable text
+                textxalign: 'center',        // Always good to set this
+            }, async function (err, png) {
+                if (err) {
+                    reject(new ApplicationError("Camel-26", 400, "Beim erstellen des Barcodes ist etwas schiefgelaufen.", err));
+                } else {
+                    if (countOrder) {
+                        // WHEN USER IS LOGGED ON
+                        fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', function (err) {
+                            if (err) {
+                                reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
+                            }
+                            log.info("PNG:" + identificationNumber + "wurde erstellt");
+                            console.log(`[${date}] PNG: ${identificationNumber} wurde erstellt.`);
 
-            // CAMEL ANSCHRIFT
-            doc.text('Camel-24 Transportvermittlung & Kurierdienst', 20, 290, {
-                align: 'center'
+                            // Generate PDF
+                            setup.generatePDF(`${kndDateCountDir}/${identificationNumber}.png`, kndDateCountDir, identificationNumber, order)
+                                .then(() => {
+                                    log.info(`PDF: Erfolgreich generiert für ${identificationNumber}`);
+                                    console.log(`[${date}] PDF: Erfolgreich generiert für ${identificationNumber}`);
+
+                                    // Sent Mail after PDF is successfully generated
+                                    setup.sentMail(kndDateCountDir, order._doc.rechnungsDaten.email
+                                    ).then(() => {
+                                        console.log(`[${date}] EMAIL:  E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
+                                        log.info(`EMAIL: E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
+                                    }).catch(e => {
+                                        reject(e);
+                                    })
+                                })
+                                .catch(e => {
+                                        log.info(e);
+                                        reject(new ApplicationError("Camel-28", 400, "Beim Erstellen Ihres Auftrags ist ein Fehler aufgetreten"));
+                                    }
+                                );
+                        });
+                    } else {
+                        // WHEN USER IS NOT LOGGED IN
+                        await fs.writeFile(`${kndDateIdentDir}/${identificationNumber}.png`, png, 'binary', function (err) {
+                            if (err) {
+                                setup.rollback(order, kndDateIdentDir);
+                                reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
+                            }
+                            log.info("PNG:" + identificationNumber + "wurde erstellt");
+                            console.log(`[${date}] PNG: ${identificationNumber} wurde erstellt.`);
+
+                            // Generate PDF
+                            setup.generatePDF(`${kndDateIdentDir}/${identificationNumber}.png`, kndDateIdentDir, identificationNumber, order)
+                                .then(() => {
+                                    log.info(`PDF: Erfolgreich generiert für ${identificationNumber}`);
+                                    console.log(`[${date}] PDF: Erfolgreich generiert für ${identificationNumber}`);
+
+                                    // Sent Mail after PDF is successfully generated
+                                    setup.sentMail(kndDateIdentDir, order, identificationNumber)
+                                        .then(() => {
+                                            console.log(`[${date}] EMAIL:  E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
+                                            log.info(`EMAIL: E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
+                                        })
+                                        .catch(e => {
+                                            setup.rollback(order, kndDateIdentDir);
+                                            reject(e);
+                                        })
+                                })
+                                .catch(e => {
+                                    setup.rollback(order, kndDateIdentDir);
+                                    reject(e);
+                                    }
+                                );
+                        });
+                    }
+                }
             });
-            doc.text('Wehrweg 3', 20, 305, {
-                align: 'center'
-            });
-            doc.text('91230 Happurg', 20, 320, {
-                align: 'center'
-            });
-            doc.text('Tel.+49 911 400 87 27', 20, 335, {
-                align: 'center',
-                link: '+49 911 400 87 27'
-            });
-            doc.end();
-            resolve()
         } catch (e) {
-            reject(e);
+            setup.rollback(order, kndDateIdentDir);
+            reject(e)
         }
+
     })
 }
 
