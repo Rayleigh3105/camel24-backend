@@ -21,7 +21,6 @@ const ApplicationError = require('./../models/error');
 
 let {authenticate} = require('./../middleware/authenticate');
 const crypto = require('crypto');
-const fsPromise = require('fs').promises;
 const fs = require('fs');
 
 // +++ VARIABLES +++
@@ -271,15 +270,17 @@ app.post('/csv', async (req, res, next) => {
     let kundenNummer = req.header('x-kundenNummer');
     let identificationNumber;
     let order;
-    let countOrder;
+    let user;
+    let resultCount;
+    let kndDateCountDir;
 
     try {
-        // let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
-        // await checkTransport.verify()
-        //     .catch(e => {
-        //         log.info(e);
-        //         throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
-        //     });
+        let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
+        await checkTransport.verify()
+            .catch(e => {
+                log.info(e);
+                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+            });
 
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -296,7 +297,7 @@ app.post('/csv', async (req, res, next) => {
         // Map json Object to order so it can be saved
         // Resolves identificationnumber
         if (isLoggedIn) {
-            const user = await User.findByKundenNummer(kundenNummer)
+            user = await User.findByKundenNummer(kundenNummer)
                 .catch(e => {
                     log.info(e);
                     throw new ApplicationError("Camel-12", 400, setup.getDatabaseErrorString(), kundenNummer)
@@ -306,24 +307,43 @@ app.post('/csv', async (req, res, next) => {
             if (!user) {
                 throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
             }
+        }
 
-            await Order.find({
-                _creator: user,
-            }).count()
-                .then(count => countOrder = count);
-
-            if (countOrder === 0) {
-                countOrder = +1;
-            }
-
-            if (user) {
-                identificationNumber = kundenNummer + "_" + dateForFile + "_" + countOrder;
-                order = setup.mapOrderWithUser(jsonObject, user, formattedDateForFrontend, identificationNumber)
-            } else {
-                throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
-            }
+        // Resolve Path
+        let kndDir;
+        if (kundenNummer) {
+            kndDir = `${dir}/${kundenNummer}`;
         } else {
-            identificationNumber = req.body.auftragbestEmail + "_" + dateForFile;
+            kndDir = `${dir}/${jsonObject.auftragbestEmail}`;
+        }
+
+        let dateDir = moment().format("DD.MM.YYYY");
+        let kndDateDir = `${kndDir}/${dateDir}`;
+
+        // Creates ./tmp/kundenNummer
+        if (!fs.existsSync(kndDir)) {
+            fs.mkdirSync(kndDir);
+            log.info(`Ordner ${kndDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${kndDir} wurde erstellt`);
+        }
+
+        // Creates ./tmp/kundenNummer/date
+        if (!fs.existsSync(kndDateDir)) {
+            fs.mkdirSync(kndDateDir);
+            log.info(`Ordner ${kndDateDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${kndDateDir} wurde erstellt`);
+        }
+
+        // Count directorys
+        resultCount = await setup.countFilesInDirectory(kndDateDir);
+
+        kndDateCountDir = `${kndDateDir}/${resultCount}`;
+
+        if (user) {
+            identificationNumber = kundenNummer + "_" + dateForFile + "_" + resultCount;
+            order = setup.mapOrderWithUser(jsonObject, user, formattedDateForFrontend, identificationNumber)
+        } else {
+            identificationNumber = req.body.auftragbestEmail + "_" + dateForFile + "_" + resultCount;
             order = setup.mapOrderToSchema(jsonObject, formattedDateForFrontend, identificationNumber);
         }
 
@@ -337,53 +357,33 @@ app.post('/csv', async (req, res, next) => {
                 if (err) {
                     throw new Error(date + ": " + err);
                 }
+                log.info("CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
+                console.log("[" + date + "]" + " CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
             });
 
-            let kndDir;
-            if (kundenNummer) {
-               kndDir = `${dir}/${kundenNummer}`;
-            } else {
-                kndDir = `${dir}/${order._doc.rechnungsDaten.email}`;
-            }
-
-            let dateDir = moment().format("DD.MM.YYYY");
-            let kndDateDir = `${kndDir}/${dateDir}`;
-            let kndDateCountDir = `${kndDateDir}/${countOrder}`;
-            let kndDateIdentDir = `${kndDateDir}/${identificationNumber}`;
-
-            if (isLoggedIn) {
-                await generateBarcode(identificationNumber, kundenNummer, dir, countOrder, order, kndDateCountDir)
-                    .catch(e => {
-                        throw e
-                    });
-                await generatePDF(identificationNumber, kundenNummer, dir, countOrder, order, kndDateCountDir)
-                    .catch(e => {
-                        throw e
-                    });
-                await generateMail(identificationNumber, kundenNummer, dir, countOrder, order, kndDateCountDir)
-                    .catch(e => {
-                        throw e
-                    });
-            } else {
-                await generateBarcode(identificationNumber, order._doc.rechnungsDaten.email, dir, countOrder, order, kndDateIdentDir)
-                    .catch(e => {
-                        throw e
-                    });
-                await generatePDF(identificationNumber, order._doc.rechnungsDaten.email, dir, countOrder, order, kndDateIdentDir)
-                    .catch(e => {
-                        throw e
-                    });
-                await generateMail(identificationNumber, order._doc.rechnungsDaten.email, dir, countOrder, order, kndDateIdentDir)
-                    .catch(e => {
-                        throw e
-                    });
-            }
-
+            // Save order in database
             order = await order.save()
+                .catch(e => {
+                    throw e
+                });
+
+            await generateBarcode(identificationNumber, kundenNummer, dir, resultCount, kndDateCountDir)
+                .catch(e => {
+                    setup.rollback(order, kndDateCountDir, identificationNumber);
+                    throw e
+                });
+            await generatePDF(identificationNumber, order, kndDateCountDir)
+                .catch(e => {
+                    setup.rollback(order, kndDateCountDir, identificationNumber);
+                    throw e
+                });
+            await setup.sentMail(identificationNumber, order, kndDateCountDir)
                 .then(() => {
-                    log.info("CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
-                    console.log("[" + date + "]" + " CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
                     res.status(200).send(true);
+                })
+                .catch(e => {
+                    setup.rollback(order, kndDateCountDir, identificationNumber);
+                    throw e
                 });
         } else {
             throw new ApplicationError("Camel-25", 400, "Keine Daten für die Umwandlung zum CSV Format.", convertedJson)
@@ -426,23 +426,6 @@ app.get('/orders', authenticate, (req, res) => {
     }
 });
 
-function generateMail(identificationNumber, kundenNummer, dir, countOrder, order, pathToSave) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-
-    return new Promise(function (resolve, reject) {
-        try {
-            setup.sentMail(pathToSave, order, identificationNumber);
-
-            console.log(`[${date}] EMAIL:  E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
-            log.info(`EMAIL: E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
-            resolve();
-        } catch (e) {
-            reject(e);
-        }
-    })
-}
-
-
 /**
  * Generates Barcode
  * @param identificationNumber
@@ -451,13 +434,11 @@ function generateMail(identificationNumber, kundenNummer, dir, countOrder, order
  * @param countOrder
  * @param order
  */
-function generateBarcode(identificationNumber, kundenNummer, dir, countOrder, order, pathToSave) {
+function generateBarcode(identificationNumber, kundenNummer, dir, countOrder, pathToSave) {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let kndDir = `${dir}/${kundenNummer}`;
     let dateDir = moment().format("DD.MM.YYYY");
     let kndDateDir = `${kndDir}/${dateDir}`;
-    let kndDateCountDir = `${kndDateDir}/${countOrder}`;
-    let kndDateIdentDir = `${kndDateDir}/${identificationNumber}`;
 
     return new Promise(function (resolve, reject) {
         setup.createNeededDirectorys();
@@ -476,15 +457,12 @@ function generateBarcode(identificationNumber, kundenNummer, dir, countOrder, or
         }
 
         // Creates ./tmp/kundenNummer/date/count when countOder is available
-        if (!fs.existsSync(kndDateCountDir) && countOrder != null) {
-            fs.mkdirSync(kndDateCountDir);
-            log.info(`Ordner ${kndDateCountDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${kndDateCountDir} wurde erstellt`);
-        } else {
-            fs.mkdirSync(kndDateIdentDir);
-            log.info(`Ordner ${kndDateIdentDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${kndDateIdentDir} wurde erstellt`);
+        if (!fs.existsSync(pathToSave)) {
+            fs.mkdirSync(pathToSave);
+            log.info(`Ordner ${pathToSave} wurde erstellt`);
+            console.log(`[${date}] Ordner ${pathToSave} wurde erstellt`);
         }
+
         let pngBuffer;
 
         // Generates Barcode
@@ -521,13 +499,8 @@ function generateBarcode(identificationNumber, kundenNummer, dir, countOrder, or
  * Makes directory on server when its not available for the Kundennummer and given day and creates Barcode
  *  - Generates PDF
  *  - Sents custom Mail with PDF as Attachment
- *
- * @param identificationNumber - number that will be a barcode
- * @param kundenNummer - currentKundennummer
- * @param dir - tmp dir
- * @param countOrder
  */
-async function generatePDF(identificationNumber, kundenNummer, dir, countOrder, order, pathToSave) {
+async function generatePDF(identificationNumber, order, pathToSave) {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
     return new Promise(function (resolve, reject) {

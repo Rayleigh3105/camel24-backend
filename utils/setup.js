@@ -336,28 +336,48 @@ module.exports = {
      * @param order
      * @param identificationNumber
      */
-    sentMail: function (pathAttachment, order, identificationNumber) {
-        let transporter = nodemailer.createTransport(this.getSmtpOptions());
+    sentMail: function (identificationNumber, order, pathAttachment) {
+        let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
-        let mailOptions = {
-            from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
-            to: order._doc.rechnungsDaten.email, // list of receivers
-            subject: `PaketLabel`, // Subject line
-            html: `Guten Tag,<br> Ihre Sendung kommt voraussichtlich am XXXXXXX zwischen XX-XX an.<br><br><strong>${identificationNumber}</strong><br><br>Um zu sehen wo sich Ihre Sendung befindet können Sie über diesen Link einen Sendungsverfolgung tätigen <a href="http://kep-ag.kep-it.de/xtras/track.php">http://kep-ag.kep-it.de/xtras/track.php</a><br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
+        return new Promise(function (resolve, reject) {
+            try {
+                let transporter = nodemailer.createTransport( {
+                    host: "smtp.ionos.de",
+                    port: 465,
+                    secure: true, // true for 465, false for other ports
+                    auth: {
+                        user: 'moritz.vogt@vogges.de', // generated ethereal user
+                        pass: 'mori00001' // generated ethereal password
+                    }
+                });
+
+                let mailOptions = {
+                    from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
+                    to: order._doc.rechnungsDaten.email, // list of receivers
+                    subject: `PaketLabel`, // Subject line
+                    html: `Guten Tag,<br> Ihre Sendung kommt voraussichtlich am XXXXXXX zwischen XX-XX an.<br><br><strong>${identificationNumber}</strong><br><br>Um zu sehen wo sich Ihre Sendung befindet können Sie über diesen Link einen Sendungsverfolgung tätigen <a href="http://kep-ag.kep-it.de/xtras/track.php">http://kep-ag.kep-it.de/xtras/track.php</a><br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
 <br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a> `, // html body
-            attachments: [{
-                filename: 'Paketlabel.pdf',
-                path: pathAttachment + "/Paketlabel.pdf",
-                contentType: 'application/pdf'
-            }, {
-                filename: 'camel_logo.png',
-                path: './assets/img/camel_logo.png',
-                cid: 'camellogo' //same cid value as in the html img src
-            }]
-        };
+                    attachments: [{
+                        filename: 'Paketlabel.pdf',
+                        path: pathAttachment + "/Paketlabel.pdf",
+                        contentType: 'application/pdf'
+                    }, {
+                        filename: 'camel_logo.png',
+                        path: './assets/img/camel_logo.png',
+                        cid: 'camellogo' //same cid value as in the html img src
+                    }]
+                };
 
-        // send mail with defined transport object
-        transporter.sendMail(mailOptions);
+                // send mail with defined transport object
+                transporter.sendMail(mailOptions);
+
+                console.log(`[${date}] EMAIL:  E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
+                log.info(`EMAIL: E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
+                resolve();
+            } catch (e) {
+                reject(new ApplicationError("Camel-29", 400, "Beim generieren der E-Mail ist ein Fehler aufgetreten.", e.message));
+            }
+        })
     },
 
     /**
@@ -385,11 +405,13 @@ module.exports = {
                                     if (err) throw err;
 
                                     // Remove PDF and PNG
-                                    for (const file of files) {
-                                        fs.unlink(path.join(directoryToDelete, file), err => {
-                                            if (err) throw err;
-                                            log.info(`${file} wurde gelöscht.`);
-                                        });
+                                    if (files) {
+                                        for (const file of files) {
+                                            fs.unlink(path.join(directoryToDelete, file), err => {
+                                                if (err) throw err;
+                                                log.info(`${file} wurde gelöscht.`);
+                                            });
+                                        }
                                     }
 
                                     // Remove directory where PDF and PNG was stored
@@ -402,6 +424,7 @@ module.exports = {
                                     fs.unlink("./ftp/kep/" + identificationNumber + ".csv", err => {
                                         if (err) throw err;
                                         log.info(`CSV: ${identificationNumber}.csv wurde gelöscht.`);
+                                        resolve();
                                     })
                                 });
                             }
@@ -412,5 +435,24 @@ module.exports = {
                 reject(e);
             }
         })
+    },
+
+    /**
+     * Counts Files in directory
+     *
+     * @param directoryToCount
+     */
+    countFilesInDirectory: function(directoryToCount) {
+        return new Promise((resolve, reject) => {
+            try {
+                fs.readdir(directoryToCount, function (err, files) {
+                    if (err) throw err;
+                    resolve(files.length + 1)
+                })
+            }catch (e) {
+                reject(e);
+            }
+        })
+
     }
 };
