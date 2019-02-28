@@ -21,6 +21,7 @@ const ApplicationError = require('./../models/error');
 
 let {authenticate} = require('./../middleware/authenticate');
 const crypto = require('crypto');
+const fsPromise = require('fs').promises;
 const fs = require('fs');
 
 // +++ VARIABLES +++
@@ -332,36 +333,72 @@ app.post('/csv', async (req, res, next) => {
 
         if (convertedJson !== '') {
             // Create File
-            fs.writeFile(filePath, convertedJson, async function callbackCreatedFile(err) {
+            fs.writeFile(filePath, convertedJson, function callbackCreatedFile(err) {
                 if (err) {
                     throw new Error(date + ": " + err);
                 }
-                if (isLoggedIn) {
-                    await createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir, countOrder, order)
-                        .catch(error => {
-                            // Contains Custom Error Object ApplicationError
-                            throw error;
-                        });
-                } else {
-                    await createBarcodePdfSentEmail(identificationNumber, req.body.auftragbestEmail, dir, countOrder, order)
-                        .catch(error => {
-                            // Contains Custom Error Object ApplicationError
-                            throw error;
-                        });
-                }
-                order = await order.save().then(() => {
+            });
+
+            let kndDir;
+            if (kundenNummer) {
+               kndDir = `${dir}/${kundenNummer}`;
+            } else {
+                kndDir = `${dir}/${order._doc.rechnungsDaten.email}`;
+            }
+
+            let dateDir = moment().format("DD.MM.YYYY");
+            let kndDateDir = `${kndDir}/${dateDir}`;
+            let kndDateCountDir = `${kndDateDir}/${countOrder}`;
+            let kndDateIdentDir = `${kndDateDir}/${identificationNumber}`;
+
+            if (isLoggedIn) {
+                await generateBarcode(identificationNumber, kundenNummer, dir, countOrder, order, kndDateCountDir)
+                    .catch(e => {
+                        throw e
+                    });
+                await generatePDF(identificationNumber, kundenNummer, dir, countOrder, order, kndDateCountDir)
+                    .catch(e => {
+                        throw e
+                    });
+                await generateMail(identificationNumber, kundenNummer, dir, countOrder, order, kndDateCountDir)
+                    .catch(e => {
+                        throw e
+                    });
+            } else {
+                await generateBarcode(identificationNumber, order._doc.rechnungsDaten.email, dir, countOrder, order, kndDateIdentDir)
+                    .catch(e => {
+                        throw e
+                    });
+                await generatePDF(identificationNumber, order._doc.rechnungsDaten.email, dir, countOrder, order, kndDateIdentDir)
+                    .catch(e => {
+                        throw e
+                    });
+                await generateMail(identificationNumber, order._doc.rechnungsDaten.email, dir, countOrder, order, kndDateIdentDir)
+                    .catch(e => {
+                        throw e
+                    });
+            }
+
+            order = await order.save()
+                .then(() => {
                     log.info("CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
                     console.log("[" + date + "]" + " CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
                     res.status(200).send(true);
                 });
-            });
         } else {
             throw new ApplicationError("Camel-25", 400, "Keine Daten für die Umwandlung zum CSV Format.", convertedJson)
         }
     } catch (e) {
-        console.log(`[${date}] ${e.stack}`);
-        log.error(e.errorCode + e.stack);
-        res.status(e.status).send(e);
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
+
     }
 });
 
@@ -389,6 +426,97 @@ app.get('/orders', authenticate, (req, res) => {
     }
 });
 
+function generateMail(identificationNumber, kundenNummer, dir, countOrder, order, pathToSave) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+
+    return new Promise(function (resolve, reject) {
+        try {
+            setup.sentMail(pathToSave, order, identificationNumber);
+
+            console.log(`[${date}] EMAIL:  E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
+            log.info(`EMAIL: E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
+            resolve();
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+
+/**
+ * Generates Barcode
+ * @param identificationNumber
+ * @param kundenNummer
+ * @param dir
+ * @param countOrder
+ * @param order
+ */
+function generateBarcode(identificationNumber, kundenNummer, dir, countOrder, order, pathToSave) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let kndDir = `${dir}/${kundenNummer}`;
+    let dateDir = moment().format("DD.MM.YYYY");
+    let kndDateDir = `${kndDir}/${dateDir}`;
+    let kndDateCountDir = `${kndDateDir}/${countOrder}`;
+    let kndDateIdentDir = `${kndDateDir}/${identificationNumber}`;
+
+    return new Promise(function (resolve, reject) {
+        setup.createNeededDirectorys();
+        // Creates ./tmp/kundenNummer
+        if (!fs.existsSync(kndDir)) {
+            fs.mkdirSync(kndDir);
+            log.info(`Ordner ${kndDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${kndDir} wurde erstellt`);
+        }
+
+        // Creates ./tmp/kundenNummer/date
+        if (!fs.existsSync(kndDateDir)) {
+            fs.mkdirSync(kndDateDir);
+            log.info(`Ordner ${kndDateDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${kndDateDir} wurde erstellt`);
+        }
+
+        // Creates ./tmp/kundenNummer/date/count when countOder is available
+        if (!fs.existsSync(kndDateCountDir) && countOrder != null) {
+            fs.mkdirSync(kndDateCountDir);
+            log.info(`Ordner ${kndDateCountDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${kndDateCountDir} wurde erstellt`);
+        } else {
+            fs.mkdirSync(kndDateIdentDir);
+            log.info(`Ordner ${kndDateIdentDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${kndDateIdentDir} wurde erstellt`);
+        }
+        let pngBuffer;
+
+        // Generates Barcode
+        bwipjs.toBuffer({
+            bcid: 'code128',       // Barcode type
+            text: identificationNumber,    // Text to encode
+            scale: 2,               // 3x scaling factor
+            height: 30,              // Bar height, in millimeters
+            includetext: true,            // Show human-readable text
+            textxalign: 'center',        // Always good to set this
+        }, function (err, png) {
+            if (err) {
+                reject(new ApplicationError("Camel-26", 400, "Beim erstellen des Barcodes ist etwas schiefgelaufen.", err));
+            }
+            pngBuffer = png;
+            // WHEN USER IS LOGGED ON
+            fs.writeFile(`${pathToSave}/${identificationNumber}.png`, pngBuffer, 'binary', function (err) {
+                if (err) {
+                    reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
+                } else {
+                    log.info("PNG:" + identificationNumber + "wurde erstellt");
+                    console.log(`[${date}] PNG: ${identificationNumber} wurde erstellt.`);
+                    resolve();
+                }
+            });
+
+        });
+    });
+
+
+}
+
 /**
  * Makes directory on server when its not available for the Kundennummer and given day and creates Barcode
  *  - Generates PDF
@@ -399,130 +527,21 @@ app.get('/orders', authenticate, (req, res) => {
  * @param dir - tmp dir
  * @param countOrder
  */
-async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir, countOrder, order) {
+async function generatePDF(identificationNumber, kundenNummer, dir, countOrder, order, pathToSave) {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let kndDir = `${dir}/${kundenNummer}`;
-    let dateDir = moment().format("DD.MM.YYYY");
-    let kndDateDir = `${kndDir}/${dateDir}`;
-    let kndDateCountDir = `${kndDateDir}/${countOrder}`;
-    let kndDateIdentDir = `${kndDateDir}/${identificationNumber}`;
 
-    new Promise(async (resolve, reject) => {
+    return new Promise(function (resolve, reject) {
         try {
-            setup.createNeededDirectorys();
-            // Creates ./tmp/kundenNummer
-            if (!fs.existsSync(kndDir)) {
-                fs.mkdirSync(kndDir);
-                log.info(`Ordner ${kndDir} wurde erstellt`);
-                console.log(`[${date}] Ordner ${kndDir} wurde erstellt`);
-            }
+            setup.generatePDF(`${pathToSave}/${identificationNumber}.png`, pathToSave, identificationNumber, order);
 
-            // Creates ./tmp/kundenNummer/date
-            if (!fs.existsSync(kndDateDir)) {
-                fs.mkdirSync(kndDateDir);
-                log.info(`Ordner ${kndDateDir} wurde erstellt`);
-                console.log(`[${date}] Ordner ${kndDateDir} wurde erstellt`);
-            }
-
-            // Creates ./tmp/kundenNummer/date/count when countOder is available
-            if (!fs.existsSync(kndDateCountDir) && countOrder != null) {
-                fs.mkdirSync(kndDateCountDir);
-                log.info(`Ordner ${kndDateCountDir} wurde erstellt`);
-                console.log(`[${date}] Ordner ${kndDateCountDir} wurde erstellt`);
-            } else {
-                fs.mkdirSync(kndDateIdentDir);
-                log.info(`Ordner ${kndDateIdentDir} wurde erstellt`);
-                console.log(`[${date}] Ordner ${kndDateIdentDir} wurde erstellt`);
-            }
-
-            // Generates Barcode
-            await bwipjs.toBuffer({
-                bcid: 'code128',       // Barcode type
-                text: identificationNumber,    // Text to encode
-                scale: 2,               // 3x scaling factor
-                height: 30,              // Bar height, in millimeters
-                includetext: true,            // Show human-readable text
-                textxalign: 'center',        // Always good to set this
-            }, async function (err, png) {
-                if (err) {
-                    reject(new ApplicationError("Camel-26", 400, "Beim erstellen des Barcodes ist etwas schiefgelaufen.", err));
-                } else {
-                    if (countOrder) {
-                        // WHEN USER IS LOGGED ON
-                        fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', function (err) {
-                            if (err) {
-                                setup.rollback(order, kndDateCountDir, identificationNumber);
-                                reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
-                            }
-                            log.info("PNG:" + identificationNumber + "wurde erstellt");
-                            console.log(`[${date}] PNG: ${identificationNumber} wurde erstellt.`);
-
-                            // Generate PDF
-                            setup.generatePDF(`${kndDateCountDir}/${identificationNumber}.png`, kndDateCountDir, identificationNumber, order)
-                                .then(() => {
-                                    log.info(`PDF: Erfolgreich generiert für ${identificationNumber}`);
-                                    console.log(`[${date}] PDF: Erfolgreich generiert für ${identificationNumber}`);
-
-                                    // Sent Mail after PDF is successfully generated
-                                    setup.sentMail(kndDateCountDir, order._doc.rechnungsDaten.email
-                                    ).then(() => {
-                                        console.log(`[${date}] EMAIL:  E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
-                                        log.info(`EMAIL: E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
-                                    }).catch(e => {
-                                        setup.rollback(order, kndDateCountDir, identificationNumber);
-                                        reject(e);
-                                    })
-                                })
-                                .catch(e => {
-                                        log.info(e);
-                                        setup.rollback(order, kndDateCountDir, identificationNumber);
-                                        throw new ApplicationError("Camel-28", 400, "Beim Erstellen Ihres Auftrags ist ein Fehler aufgetreten")
-                                    )
-                                        ;
-                                    }
-                                );
-                        });
-                    } else {
-                        // WHEN USER IS NOT LOGGED IN
-                        await fs.writeFile(`${kndDateIdentDir}/${identificationNumber}.png`, png, 'binary', function (err) {
-                            if (err) {
-                                setup.rollback(order, kndDateIdentDir);
-                                reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
-                            }
-                            log.info("PNG:" + identificationNumber + "wurde erstellt");
-                            console.log(`[${date}] PNG: ${identificationNumber} wurde erstellt.`);
-
-                            // Generate PDF
-                            setup.generatePDF(`${kndDateIdentDir}/${identificationNumber}.png`, kndDateIdentDir, identificationNumber, order)
-                                .then(() => {
-                                    log.info(`PDF: Erfolgreich generiert für ${identificationNumber}`);
-                                    console.log(`[${date}] PDF: Erfolgreich generiert für ${identificationNumber}`);
-
-                                    // Sent Mail after PDF is successfully generated
-                                    setup.sentMail(kndDateIdentDir, order, identificationNumber)
-                                        .then(() => {
-                                            console.log(`[${date}] EMAIL:  E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
-                                            log.info(`EMAIL: E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
-                                        })
-                                        .catch(e => {
-                                            setup.rollback(order, kndDateIdentDir);
-                                            reject(e);
-                                        })
-                                })
-                                .catch(e => {
-                                        setup.rollback(order, kndDateIdentDir);
-                                        reject(e);
-                                    }
-                                );
-                        });
-                    }
-                }
-            });
+            log.info(`PDF: Erfolgreich generiert für ${identificationNumber}`);
+            console.log(`[${date}] PDF: Erfolgreich generiert für ${identificationNumber}`);
+            resolve();
         } catch (e) {
             reject(e)
         }
-
     })
+
 }
 
 /**
