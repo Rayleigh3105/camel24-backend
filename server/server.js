@@ -273,12 +273,12 @@ app.post('/csv', async (req, res, next) => {
     let countOrder;
 
     try {
-        let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
-        await checkTransport.verify()
-            .catch(e => {
-                log.info(e);
-                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
-            });
+        // let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
+        // await checkTransport.verify()
+        //     .catch(e => {
+        //         log.info(e);
+        //         throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+        //     });
 
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -451,6 +451,7 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
                         // WHEN USER IS LOGGED ON
                         fs.writeFile(`${kndDateCountDir}/${identificationNumber}.png`, png, 'binary', function (err) {
                             if (err) {
+                                setup.rollback(order, kndDateCountDir, identificationNumber);
                                 reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
                             }
                             log.info("PNG:" + identificationNumber + "wurde erstellt");
@@ -468,12 +469,16 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
                                         console.log(`[${date}] EMAIL:  E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
                                         log.info(`EMAIL: E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
                                     }).catch(e => {
+                                        setup.rollback(order, kndDateCountDir, identificationNumber);
                                         reject(e);
                                     })
                                 })
                                 .catch(e => {
                                         log.info(e);
-                                        reject(new ApplicationError("Camel-28", 400, "Beim Erstellen Ihres Auftrags ist ein Fehler aufgetreten"));
+                                        setup.rollback(order, kndDateCountDir, identificationNumber);
+                                        throw new ApplicationError("Camel-28", 400, "Beim Erstellen Ihres Auftrags ist ein Fehler aufgetreten")
+                                    )
+                                        ;
                                     }
                                 );
                         });
@@ -505,8 +510,8 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
                                         })
                                 })
                                 .catch(e => {
-                                    setup.rollback(order, kndDateIdentDir);
-                                    reject(e);
+                                        setup.rollback(order, kndDateIdentDir);
+                                        reject(e);
                                     }
                                 );
                         });
@@ -514,7 +519,6 @@ async function createBarcodePdfSentEmail(identificationNumber, kundenNummer, dir
                 }
             });
         } catch (e) {
-            setup.rollback(order, kndDateIdentDir);
             reject(e)
         }
 

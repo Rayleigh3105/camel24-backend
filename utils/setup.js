@@ -10,7 +10,6 @@ let fs = require('fs');
 let moment = require('moment');
 let PDFDocument = require('pdfkit');
 let mongoose = require('mongoose');
-let rimraf = require("rimraf");
 const path = require('path');
 
 
@@ -227,7 +226,15 @@ module.exports = {
      * @returns {string}
      */
     getFilePath: function (identificationNumber) {
-        return `ftp/kep/` + identificationNumber + ".csv"
+        return this.getFtpFilePath() + identificationNumber + ".csv"
+    },
+
+    /**
+     * Return Ftp FilePath
+     * @returns {string}
+     */
+    getFtpFilePath: function() {
+        return"ftp/kep/";
     },
 
     /**
@@ -380,53 +387,48 @@ module.exports = {
      * @param order - order to delete in database
      * @param directoryToDelete - directory with files to delete
      */
-    rollback: function (order, directoryToDelete) {
+    rollback: function (order, directoryToDelete, identificationNumber) {
         return new Promise((resolve, reject) => {
             try {
                 if (order) {
+                    // Remove Order from database
                     Order.remove({
                         _id: order._id
                     },async function (err) {
                         if (err){
                             reject(err)
                         } else {
+                            log.info(`Auftrag : ${order._id} wurde gelöscht.`);
+
                             if (directoryToDelete) {
                                 // rimraf(directoryToDelete, function () { console.log('done'); });
                                 await fs.readdir(directoryToDelete+"/", (err, files) => {
                                     if (err) throw err;
 
+                                    // Remove PDF and PNG
                                     for (const file of files) {
-                                        fs.stat(path.join(directoryToDelete, file), function (err, stats) {
-                                            console.log(stats);//here we got all information of file in stats variable
-
-                                            if (err) {
-                                                return console.error(err);
-                                            }
-
-                                            fs.unlink(path.join(directoryToDelete, file),function(err){
-                                                if(err) return console.log(err);
-                                                console.log('file deleted successfully');
-                                            });
+                                        fs.unlink(path.join(directoryToDelete, file), err => {
+                                            if (err) throw err;
+                                            log.info(`${file} wurde gelöscht.`);
                                         });
-                                        // fs.unlink(path.join(directoryToDelete, file), err => {
-                                        //     if (err) throw err;
-                                        // });
                                     }
-                                });
 
-                                // fs.rmdir(directoryToDelete, function (err) {
-                                //     if (!err){
-                                //         console.log("done du schmock")
-                                //     }
-                                // })
+                                    // Remove directory where PDF and PNG was stored
+                                    fs.rmdir(directoryToDelete, function (err) {
+                                        if (err) throw err;
+                                        log.info(`DIRECTORY: ${dir} wurde gelöscht.`);
+                                    });
+
+                                    // Delete CSV
+                                    fs.unlink("./ftp/kep/" + identificationNumber + ".csv", err => {
+                                        if(err) throw err;
+                                        log.info(`CSV: ${identificationNumber}.csv wurde gelöscht.`);
+                                    })
+                                });
                             }
-                            resolve();
                         }
                     })
                 }
-
-
-
             } catch (e) {
                 reject(e);
             }
