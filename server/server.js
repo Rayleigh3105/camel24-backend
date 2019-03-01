@@ -275,12 +275,12 @@ app.post('/csv', async (req, res, next) => {
     let kndDateCountDir;
 
     try {
-        let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
-        await checkTransport.verify()
-            .catch(e => {
-                log.info(e);
-                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
-            });
+        // let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
+        // await checkTransport.verify()
+        //     .catch(e => {
+        //         log.info(e);
+        //         throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+        //     });
 
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -320,22 +320,13 @@ app.post('/csv', async (req, res, next) => {
         let dateDir = moment().format("DD.MM.YYYY");
         let kndDateDir = `${kndDir}/${dateDir}`;
 
-        // Creates ./tmp/kundenNummer
-        if (!fs.existsSync(kndDir)) {
-            fs.mkdirSync(kndDir);
-            log.info(`Ordner ${kndDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${kndDir} wurde erstellt`);
-        }
-
-        // Creates ./tmp/kundenNummer/date
-        if (!fs.existsSync(kndDateDir)) {
-            fs.mkdirSync(kndDateDir);
-            log.info(`Ordner ${kndDateDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${kndDateDir} wurde erstellt`);
-        }
+        await setup.createKndDirectorys(kndDir, kndDateDir)
+            .catch(e => {throw e});
 
         // Count directorys
-        resultCount = await setup.countFilesInDirectory(kndDateDir);
+        resultCount = await setup.countFilesInDirectory(kndDateDir)
+            .catch(e => {throw e});
+
 
         kndDateCountDir = `${kndDateDir}/${resultCount}`;
 
@@ -442,19 +433,6 @@ function generateBarcode(identificationNumber, kundenNummer, dir, countOrder, pa
 
     return new Promise(function (resolve, reject) {
         setup.createNeededDirectorys();
-        // Creates ./tmp/kundenNummer
-        if (!fs.existsSync(kndDir)) {
-            fs.mkdirSync(kndDir);
-            log.info(`Ordner ${kndDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${kndDir} wurde erstellt`);
-        }
-
-        // Creates ./tmp/kundenNummer/date
-        if (!fs.existsSync(kndDateDir)) {
-            fs.mkdirSync(kndDateDir);
-            log.info(`Ordner ${kndDateDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${kndDateDir} wurde erstellt`);
-        }
 
         // Creates ./tmp/kundenNummer/date/count when countOder is available
         if (!fs.existsSync(pathToSave)) {

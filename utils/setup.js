@@ -341,7 +341,7 @@ module.exports = {
 
         return new Promise(function (resolve, reject) {
             try {
-                let transporter = nodemailer.createTransport( {
+                let transporter = nodemailer.createTransport({
                     host: "smtp.ionos.de",
                     port: 465,
                     secure: true, // true for 465, false for other ports
@@ -369,7 +369,8 @@ module.exports = {
                 };
 
                 // send mail with defined transport object
-                transporter.sendMail(mailOptions);
+                transporter.sendMail(mailOptions)
+                    .catch(e => reject(e));
 
                 console.log(`[${date}] EMAIL:  E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
                 log.info(`EMAIL: E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
@@ -442,17 +443,54 @@ module.exports = {
      *
      * @param directoryToCount
      */
-    countFilesInDirectory: function(directoryToCount) {
+    countFilesInDirectory: function (directoryToCount) {
         return new Promise((resolve, reject) => {
             try {
                 fs.readdir(directoryToCount, function (err, files) {
                     if (err) throw err;
+
                     resolve(files.length + 1)
                 })
-            }catch (e) {
+            } catch (e) {
                 reject(e);
             }
         })
 
-    }
+    },
+
+    /**
+     * Creates Directorys for :
+     * - tmp/kundenIdent
+     * - tmo/kundenIdent/date
+     *
+     * @param kndDir
+     * @param kndDateDir
+     * @returns {Promise<any>}
+     */
+    createKndDirectorys: function (kndDir, kndDateDir) {
+        let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+
+        return new Promise((resolve, reject) => {
+            try {
+                this.createNeededDirectorys();
+                // Creates ./tmp/kundenNummer
+                if (!fs.existsSync(kndDir)) {
+                    fs.mkdirSync(kndDir);
+                    log.info(`Ordner ${kndDir} wurde erstellt`);
+                    console.log(`[${date}] Ordner ${kndDir} wurde erstellt`);
+                }
+
+                // Creates ./tmp/kundenNummer/date
+                if (!fs.existsSync(kndDateDir)) {
+                    fs.mkdirSync(kndDateDir);
+                    log.info(`Ordner ${kndDateDir} wurde erstellt`);
+                    console.log(`[${date}] Ordner ${kndDateDir} wurde erstellt`);
+                }
+                resolve();
+            } catch (e) {
+                reject(e);
+            }
+        })
+    },
 };
+
