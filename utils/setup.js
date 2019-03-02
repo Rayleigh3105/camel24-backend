@@ -90,12 +90,15 @@ module.exports = {
                     telefon: jsonObject.empfTel,
                 },
                 abholTermin: {
-                    datum: moment(jsonObject.abholDatum).format("DD.MM.YYYY")
+                    datum: jsonObject.abholDatum,
+                    von: jsonObject.abholZeitVon,
+                    bis: jsonObject.abholZeitBis,
                 },
                 zustellTermin: {
-                    termin: jsonObject.zustellTermin,
-                    zeit: jsonObject.fixtermin,
-                    art: jsonObject.sonderdienst
+                    datum: jsonObject.zustellDatum,
+                    von: jsonObject.zustellZeitVon,
+                    bis: jsonObject.zustellZeitBis,
+                    art: jsonObject.zustellArt,
                 },
                 sendungsdaten: {
                     gewicht: jsonObject.sendungsdatenGewicht,
@@ -138,12 +141,16 @@ module.exports = {
                     telefon: jsonObject.empfTel,
                 },
                 abholTermin: {
-                    datum: moment(jsonObject.abholDatum).format("DD.MM.YYYY")
+                    datum: jsonObject.abholDatum,
+                    von: jsonObject.abholZeitVon,
+                    bis: jsonObject.abholZeitBis,
                 },
                 zustellTermin: {
-                    termin: jsonObject.zustellTermin,
-                    zeit: jsonObject.fixtermin,
-                    art: jsonObject.sonderdienst
+                    datum: jsonObject.zustellDatum,
+                    von: jsonObject.zustellZeitVon,
+                    bis: jsonObject.zustellZeitBis,
+                    art: jsonObject.zustellArt,
+
                 },
                 sendungsdaten: {
                     gewicht: jsonObject.sendungsdatenGewicht,

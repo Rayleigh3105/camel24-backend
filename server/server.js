@@ -265,7 +265,6 @@ app.post('/csv', async (req, res, next) => {
     // VARIABLES
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let dateForFile = moment().format("DDMMYYYY");
-    let formattedDateForFrontend = moment().format("DD.MM.YYYY HH:mm:SS");
     let isLoggedIn = req.header("x-auth");
     let kundenNummer = req.header('x-kundenNummer');
     let identificationNumber;
@@ -300,7 +299,7 @@ app.post('/csv', async (req, res, next) => {
             user = await User.findByKundenNummer(kundenNummer)
                 .catch(e => {
                     log.info(e);
-                    throw new ApplicationError("Camel-12", 400, setup.getDatabaseErrorString(), kundenNummer)
+                    throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
                 });
 
             // Check if User was found
