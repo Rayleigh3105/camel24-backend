@@ -43,12 +43,12 @@ app.post('/user', async (req, res) => {
     let startGenerationNumber = 13000;
     let countUser;
     try {
-        let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
-        await checkTransport.verify()
-            .catch(e => {
-                log.info(e);
-                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
-            });
+        // let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
+        // await checkTransport.verify()
+        //     .catch(e => {
+        //         log.info(e);
+        //         throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+        //     });
 
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -264,7 +264,7 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
 app.post('/csv', async (req, res, next) => {
     // VARIABLES
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let dateForFile = moment().format("DD-MM-YYYY-HH-mm-SS");
+    let dateForFile = moment().format("DDMMYYYY");
     let formattedDateForFrontend = moment().format("DD.MM.YYYY HH:mm:SS");
     let isLoggedIn = req.header("x-auth");
     let kundenNummer = req.header('x-kundenNummer');
@@ -332,10 +332,11 @@ app.post('/csv', async (req, res, next) => {
 
         if (user) {
             identificationNumber = kundenNummer + "_" + dateForFile + "_" + resultCount;
-            order = setup.mapOrderWithUser(jsonObject, user, formattedDateForFrontend, identificationNumber)
+            order = setup.mapOrderWithUser(jsonObject, user, new Date, identificationNumber)
         } else {
-            identificationNumber = req.body.auftragbestEmail + "_" + dateForFile + "_" + resultCount;
-            order = setup.mapOrderToSchema(jsonObject, formattedDateForFrontend, identificationNumber);
+            let substringEmail = req.body.auftragbestEmail.substring(0, req.body.auftragbestEmail.indexOf('@'));
+            identificationNumber =  substringEmail + "_" + dateForFile + "_" + resultCount;
+            order = setup.mapOrderToSchema(jsonObject, new Date(), identificationNumber);
         }
 
         // Convert JSON to CSV
@@ -402,7 +403,8 @@ app.get('/orders', authenticate, (req, res) => {
     try {
         Order.find({
             _creator: req.user._id,
-        }).then((order) => {
+        }).sort({createdAt: -1})
+            .then((order) => {
             if (order) {
                 res.status(200).send(order);
             }
@@ -427,9 +429,6 @@ app.get('/orders', authenticate, (req, res) => {
  */
 function generateBarcode(identificationNumber, kundenNummer, dir, countOrder, pathToSave) {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let kndDir = `${dir}/${kundenNummer}`;
-    let dateDir = moment().format("DD.MM.YYYY");
-    let kndDateDir = `${kndDir}/${dateDir}`;
 
     return new Promise(function (resolve, reject) {
         setup.createNeededDirectorys();

@@ -266,62 +266,62 @@ module.exports = {
         });
 
         doc.lineCap('round')
-            .moveTo(5, 95)
-            .lineTo(600, 95)
+            .moveTo(5, 70)
+            .lineTo(600, 70)
             .stroke();
 
         // ABSENDER
-        doc.text('Absender:', 20, 110, {
+        doc.text('Absender:', 20, 85, {
             underline: true
         });
-        doc.text(`${order._doc.absender.firma}`, 20, 130);
+        doc.text(`${order._doc.absender.firma}`, 20, 100);
         if (order._doc.absender.ansprechpartner) {
-            doc.text(`${order._doc.absender.ansprechpartner}`, 20, 145);
-            doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, 20, 160);
-            doc.text(`${order._doc.absender.adresse}`, 20, 175);
+            doc.text(`${order._doc.absender.ansprechpartner}`, 20, 115);
+            doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, 20, 130);
+            doc.text(`${order._doc.absender.adresse}`, 20, 145);
         } else {
-            doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, 20, 145);
-            doc.text(`${order._doc.absender.adresse}`, 20, 160);
+            doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, 20, 115);
+            doc.text(`${order._doc.absender.adresse}`, 20, 130);
         }
 
 
         //  EMPFÄNGER
-        doc.text('Empfänger:', 380, 110, {
+        doc.text('Empfänger:', 380, 85, {
             underline: true
         });
-        doc.text(`${order._doc.empfaenger.firma}`, 380, 130);
+        doc.text(`${order._doc.empfaenger.firma}`, 380, 100);
         if (order._doc.empfaenger.ansprechpartner) {
-            doc.text(`${order._doc.empfaenger.ansprechpartner}`, 380, 145);
-            doc.text(`${order._doc.empfaenger.plz} - ${order._doc.absender.ort}`, 380, 160);
-            doc.text(`${order._doc.empfaenger.adresse}`, 380, 170);
+            doc.text(`${order._doc.empfaenger.ansprechpartner}`, 380, 115);
+            doc.text(`${order._doc.empfaenger.plz} - ${order._doc.absender.ort}`, 380, 130);
+            doc.text(`${order._doc.empfaenger.adresse}`, 380, 145);
         } else {
-            doc.text(`${order._doc.empfaenger.plz} - ${order._doc.absender.ort}`, 380, 145);
-            doc.text(`${order._doc.empfaenger.adresse}`, 380, 160);
+            doc.text(`${order._doc.empfaenger.plz} - ${order._doc.absender.ort}`, 380, 115);
+            doc.text(`${order._doc.empfaenger.adresse}`, 380, 130);
         }
 
         // PAKET & LIEFERDATEN
-        doc.text('Paketdaten & Sendungsinformationen:', 20, 220, {
+        doc.text('Paketdaten & Sendungsinformationen:', 20, 190, {
             underline: true
         });
-        doc.text(`Paketgewicht: ${order._doc.sendungsdaten.gewicht}`, 20, 235);
-        doc.text(`Vorrausichtliches Lieferdatum ${order._doc.zustellTermin.datum}`, 20, 250);
+        doc.text(`Paketgewicht: ${order._doc.sendungsdaten.gewicht}`, 20, 205);
+        doc.text(`Vorrausichtliches Lieferdatum ${order._doc.zustellTermin.datum}`, 20, 220);
 
         doc.lineCap('round')
-            .moveTo(5, 270)
-            .lineTo(600, 270)
+            .moveTo(5, 240)
+            .lineTo(600, 240)
             .stroke();
 
         // CAMEL ANSCHRIFT
-        doc.text('Camel-24 Transportvermittlung & Kurierdienst', 20, 290, {
+        doc.text('Camel-24 Transportvermittlung & Kurierdienst', 20, 255, {
             align: 'center'
         });
-        doc.text('Wehrweg 3', 20, 305, {
+        doc.text('Wehrweg 3', 20, 270, {
             align: 'center'
         });
-        doc.text('91230 Happurg', 20, 320, {
+        doc.text('91230 Happurg', 20, 285, {
             align: 'center'
         });
-        doc.text('Tel.+49 911 400 87 27', 20, 335, {
+        doc.text('Tel.+49 911 400 87 27', 20, 300, {
             align: 'center',
             link: '+49 911 400 87 27'
         });
