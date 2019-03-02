@@ -332,11 +332,11 @@ app.post('/csv', async (req, res, next) => {
 
         if (user) {
             identificationNumber = kundenNummer + "_" + dateForFile + "_" + resultCount;
-            order = setup.mapOrderWithUser(jsonObject, user, new Date, identificationNumber)
+            order = setup.mapOrder(jsonObject, user, new Date(), identificationNumber)
         } else {
             let substringEmail = req.body.auftragbestEmail.substring(0, req.body.auftragbestEmail.indexOf('@'));
             identificationNumber =  substringEmail + "_" + dateForFile + "_" + resultCount;
-            order = setup.mapOrderToSchema(jsonObject, new Date(), identificationNumber);
+            order = setup.mapOrder(jsonObject,null, new Date() , identificationNumber);
         }
 
         // Convert JSON to CSV
@@ -390,7 +390,6 @@ app.post('/csv', async (req, res, next) => {
             log.error(e.errorCode + e);
             res.status(400).send(e)
         }
-
     }
 });
 
@@ -465,11 +464,8 @@ function generateBarcode(identificationNumber, kundenNummer, dir, countOrder, pa
                     resolve();
                 }
             });
-
         });
     });
-
-
 }
 
 /**

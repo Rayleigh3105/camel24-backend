@@ -63,117 +63,108 @@ module.exports = {
      * @param identificationNumber of order
      * @returns {@link Order}
      */
-    mapOrderWithUser: function (jsonObject, userId, createdAt, identificationNumber) {
+    mapOrder: function (jsonObject, userId, createdAt, identificationNumber) {
+        if (userId) {
+            return new Order({
+                _creator: userId,
+                createdAt,
+                identificationNumber,
+                absender: {
+                    firma: jsonObject.absFirma,
+                    zusatz: jsonObject.absZusatz,
+                    ansprechpartner: jsonObject.absAnsprechpartner,
+                    adresse: jsonObject.absAdresse,
+                    land: jsonObject.absLand,
+                    plz: jsonObject.absPlz,
+                    ort: jsonObject.absOrt,
+                    telefon: jsonObject.absTel,
+                },
+                empfaenger: {
+                    firma: jsonObject.empfFirma,
+                    zusatz: jsonObject.empfZusatz,
+                    ansprechpartner: jsonObject.empfAnsprechpartner,
+                    adresse: jsonObject.empfAdresse,
+                    land: jsonObject.empfLand,
+                    plz: jsonObject.empfPlz,
+                    ort: jsonObject.empfOrt,
+                    telefon: jsonObject.empfTel,
+                },
+                abholTermin: {
+                    datum: moment(jsonObject.abholDatum).format("DD.MM.YYYY")
+                },
+                zustellTermin: {
+                    termin: jsonObject.zustellTermin,
+                    zeit: jsonObject.fixtermin,
+                    art: jsonObject.sonderdienst
+                },
+                sendungsdaten: {
+                    gewicht: jsonObject.sendungsdatenGewicht,
+                    wert: jsonObject.sendungsdatenWert,
+                    art: jsonObject.sendungsdatenArt,
+                    transportVers: jsonObject.sendungsdatenVers,
+                },
+                rechnungsDaten: {
+                    email: jsonObject.auftragbestEmail,
+                    telefon: jsonObject.auftragbestTelefon,
+                    rechnungsAdresse: jsonObject.auftragsbestRechnungsadresse,
+                    adresse: jsonObject.rechnungAdresse,
+                    name: jsonObject.rechnungName,
+                    ort: jsonObject.rechnungOrt,
+                    plz: jsonObject.rechnungPlz,
+                }
+            })
+        } else {
+            return new Order({
+                createdAt,
+                identificationNumber,
+                absender: {
+                    firma: jsonObject.absFirma,
+                    zusatz: jsonObject.absZusatz,
+                    ansprechpartner: jsonObject.absAnsprechpartner,
+                    adresse: jsonObject.absAdresse,
+                    land: jsonObject.absLand,
+                    plz: jsonObject.absPlz,
+                    ort: jsonObject.absOrt,
+                    telefon: jsonObject.absTel,
+                },
+                empfaenger: {
+                    firma: jsonObject.empfFirma,
+                    zusatz: jsonObject.empfZusatz,
+                    ansprechpartner: jsonObject.empfAnsprechpartner,
+                    adresse: jsonObject.empfAdresse,
+                    land: jsonObject.empfLand,
+                    plz: jsonObject.empfPlz,
+                    ort: jsonObject.empfOrt,
+                    telefon: jsonObject.empfTel,
+                },
+                abholTermin: {
+                    datum: moment(jsonObject.abholDatum).format("DD.MM.YYYY")
+                },
+                zustellTermin: {
+                    termin: jsonObject.zustellTermin,
+                    zeit: jsonObject.fixtermin,
+                    art: jsonObject.sonderdienst
+                },
+                sendungsdaten: {
+                    gewicht: jsonObject.sendungsdatenGewicht,
+                    wert: jsonObject.sendungsdatenWert,
+                    art: jsonObject.sendungsdatenArt,
+                    transportVers: jsonObject.sendungsdatenVers,
+                },
+                rechnungsDaten: {
+                    email: jsonObject.auftragbestEmail,
+                    telefon: jsonObject.auftragbestTelefon,
+                    rechnungsAdresse: jsonObject.auftragsbestRechnungsadresse,
+                    adresse: jsonObject.rechnungAdresse,
+                    name: jsonObject.rechnungName,
+                    ort: jsonObject.rechnungOrt,
+                    plz: jsonObject.rechnungPlz,
+                }
+            })
+        }
 
-        return new Order({
-            _creator: userId,
-            createdAt,
-            identificationNumber,
-            absender: {
-                firma: jsonObject.absFirma,
-                zusatz: jsonObject.absZusatz,
-                ansprechpartner: jsonObject.absAnsprechpartner,
-                adresse: jsonObject.absAdresse,
-                land: jsonObject.absLand,
-                plz: jsonObject.absPlz,
-                ort: jsonObject.absOrt,
-                telefon: jsonObject.absTel,
-            },
-            empfaenger: {
-                firma: jsonObject.empfFirma,
-                zusatz: jsonObject.empfZusatz,
-                ansprechpartner: jsonObject.empfAnsprechpartner,
-                adresse: jsonObject.empfAdresse,
-                land: jsonObject.empfLand,
-                plz: jsonObject.empfPlz,
-                ort: jsonObject.empfOrt,
-                telefon: jsonObject.empfTel,
-            },
-            abholTermin: {
-                datum: moment(jsonObject.abholDatum).format("DD.MM.YYYY")
-            },
-            zustellTermin: {
-                termin: jsonObject.zustellTermin,
-                zeit: jsonObject.fixtermin,
-                art: jsonObject.sonderdienst
-            },
-            sendungsdaten: {
-                gewicht: jsonObject.sendungsdatenGewicht,
-                wert: jsonObject.sendungsdatenWert,
-                art: jsonObject.sendungsdatenArt,
-                transportVers: jsonObject.sendungsdatenVers,
-            },
-            rechnungsDaten: {
-                email: jsonObject.auftragbestEmail,
-                telefon: jsonObject.auftragbestTelefon,
-                rechnungsAdresse: jsonObject.auftragsbestRechnungsadresse,
-                adresse: jsonObject.rechnungAdresse,
-                name: jsonObject.rechnungName,
-                ort: jsonObject.rechnungOrt,
-                plz: jsonObject.rechnungPlz,
-            }
-        })
+
     },
-
-    /**
-     * Maps JsonObject to Schema
-     *
-     * @param jsonObject object that is going to be mapped
-     * @param createdAt - timestamp of creation
-     * @param identificationNumber of order
-     * @returns {@link Order}
-     */
-    mapOrderToSchema: function (jsonObject, createdAt, identificationNumber) {
-
-        return new Order({
-            createdAt,
-            identificationNumber,
-            absender: {
-                firma: jsonObject.absFirma,
-                zusatz: jsonObject.absZusatz,
-                ansprechpartner: jsonObject.absAnsprechpartner,
-                adresse: jsonObject.absAdresse,
-                land: jsonObject.absLand,
-                plz: jsonObject.absPlz,
-                ort: jsonObject.absOrt,
-                telefon: jsonObject.absTel,
-            },
-            empfaenger: {
-                firma: jsonObject.empfFirma,
-                zusatz: jsonObject.empfZusatz,
-                ansprechpartner: jsonObject.empfAnsprechpartner,
-                adresse: jsonObject.empfAdresse,
-                land: jsonObject.empfLand,
-                plz: jsonObject.empfPlz,
-                ort: jsonObject.empfOrt,
-                telefon: jsonObject.empfTel,
-            },
-            abholTermin: {
-                datum: moment(jsonObject.abholDatum).format("DD.MM.YYYY")
-            },
-            zustellTermin: {
-                termin: jsonObject.zustellTermin,
-                zeit: jsonObject.fixtermin,
-                art: jsonObject.sonderdienst
-            },
-            sendungsdaten: {
-                gewicht: jsonObject.sendungsdatenGewicht,
-                wert: jsonObject.sendungsdatenWert,
-                art: jsonObject.sendungsdatenArt,
-                transportVers: jsonObject.sendungsdatenVers,
-            },
-            rechnungsDaten: {
-                email: jsonObject.auftragbestEmail,
-                telefon: jsonObject.auftragbestTelefon,
-                rechnungsAdresse: jsonObject.auftragsbestRechnungsadresse,
-                adresse: jsonObject.rechnungAdresse,
-                name: jsonObject.rechnungName,
-                ort: jsonObject.rechnungOrt,
-                plz: jsonObject.rechnungPlz,
-            }
-        })
-    },
-
 
     /**
      * Creates Needed Directorys on the Server
