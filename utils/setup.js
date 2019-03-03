@@ -109,7 +109,6 @@ module.exports = {
                 rechnungsDaten: {
                     email: jsonObject.auftragbestEmail,
                     telefon: jsonObject.auftragbestTelefon,
-                    rechnungsAdresse: jsonObject.auftragsbestRechnungsadresse,
                     adresse: jsonObject.rechnungAdresse,
                     name: jsonObject.rechnungName,
                     ort: jsonObject.rechnungOrt,
@@ -161,7 +160,6 @@ module.exports = {
                 rechnungsDaten: {
                     email: jsonObject.auftragbestEmail,
                     telefon: jsonObject.auftragbestTelefon,
-                    rechnungsAdresse: jsonObject.auftragsbestRechnungsadresse,
                     adresse: jsonObject.rechnungAdresse,
                     name: jsonObject.rechnungName,
                     ort: jsonObject.rechnungOrt,
@@ -235,6 +233,18 @@ module.exports = {
     },
 
     /**
+     * Get´s Path to the PDF file
+     */
+    getPdfFilePath: function (identificationNumber) {
+        let splittedArray = identificationNumber.split("_");
+        let dirname = path.join(__dirname, '..');
+        let kundenNummer = splittedArray[0];
+        let date = splittedArray[1];
+        let count = splittedArray[2];
+        return `${dirname}/tmp/${kundenNummer}/${date}/${count}/Paketlabel.pdf`;
+    },
+
+    /**
      * Generates PDF in given Path
      *
      * @param pathToBarcode
@@ -246,6 +256,7 @@ module.exports = {
     generatePDF: function (pathToBarcode, pathToSave, identificationNumber, order) {
         let pdfFileName = `Paketlabel.pdf`;
         let doc = new PDFDocument;
+        let formattedZustellDate = moment(order._doc.zustellTermin.datum).format("DD.MM.YYYY");
 
         // CREATE PDF
         doc.pipe(fs.createWriteStream(`${pathToSave}/${pdfFileName}`));
@@ -301,8 +312,8 @@ module.exports = {
         doc.text('Paketdaten & Sendungsinformationen:', 20, 190, {
             underline: true
         });
-        doc.text(`Paketgewicht: ${order._doc.sendungsdaten.gewicht}`, 20, 205);
-        doc.text(`Vorrausichtliches Lieferdatum ${order._doc.zustellTermin.datum}`, 20, 220);
+        doc.text(`Paketgewicht: ${order._doc.sendungsdaten.gewicht} kg`, 20, 205);
+        doc.text(`Vorrausichtliches Lieferdatum ${formattedZustellDate} zwischen ${order._doc.zustellTermin.von} - ${order._doc.zustellTermin.bis} Uhr`, 20, 220);
 
         doc.lineCap('round')
             .moveTo(5, 240)
@@ -353,7 +364,7 @@ module.exports = {
                     from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
                     to: order._doc.rechnungsDaten.email, // list of receivers
                     subject: `PaketLabel`, // Subject line
-                    html: `Guten Tag,<br> Ihre Sendung kommt voraussichtlich am XXXXXXX zwischen XX-XX an.<br><br><strong>${identificationNumber}</strong><br><br>Um zu sehen wo sich Ihre Sendung befindet können Sie über diesen Link einen Sendungsverfolgung tätigen <a href="http://kep-ag.kep-it.de/xtras/track.php">http://kep-ag.kep-it.de/xtras/track.php</a><br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
+                    html: `Guten Tag,<br> Ihre Sendung kommt voraussichtlich am ${order.zustellTermin.datum} zwischen ${order.zustellTermin.von}-${order.zustellTermin.bis} Uhr  an.<br><br><strong>${identificationNumber}</strong><br><br>Um zu sehen wo sich Ihre Sendung befindet können Sie über diesen Link einen Sendungsverfolgung tätigen <a href="http://kep-ag.kep-it.de/xtras/track.php">http://kep-ag.kep-it.de/xtras/track.php</a><br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
 <br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a> `, // html body
                     attachments: [{
                         filename: 'Paketlabel.pdf',
@@ -453,7 +464,6 @@ module.exports = {
                 reject(e);
             }
         })
-
     },
 
     /**

@@ -316,7 +316,7 @@ app.post('/csv', async (req, res, next) => {
             kndDir = `${dir}/${jsonObject.auftragbestEmail}`;
         }
 
-        let dateDir = moment().format("DD.MM.YYYY");
+        let dateDir = moment().format("DDMMYYYY");
         let kndDateDir = `${kndDir}/${dateDir}`;
 
         await setup.createKndDirectorys(kndDir, kndDateDir)
@@ -410,6 +410,21 @@ app.get('/orders', authenticate, (req, res) => {
             log.info(e);
             throw new ApplicationError("Camel-21", 400, setup.getDatabaseErrorString())
         })
+    } catch (e) {
+        console.log(`[${date}] ${e.stack}`);
+        log.error(e.stack);
+        res.status(e.status).send(e);
+    }
+});
+
+/**
+ * Get´s Orders for customer
+ */
+app.post('/download', (req, res) => {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    try {
+        let file = setup.getPdfFilePath(req.body.identificationNumber);
+        res.sendFile(file)
     } catch (e) {
         console.log(`[${date}] ${e.stack}`);
         log.error(e.stack);

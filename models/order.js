@@ -154,13 +154,6 @@ let RechnungsDatenSchema = mongoose.Schema({
         min: 1,
         unique: false
     },
-    rechnungsAdresse: {
-        type: String,
-        required: true,
-        trim: true,
-        min: 1,
-        unique: false
-    },
     name: {
         type: String,
         required: false,
