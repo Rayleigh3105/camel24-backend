@@ -33,6 +33,7 @@
 - **Camel-27** -> Beim Speicher der Datei ist ein Fehler aufgetreten
 - **Camel-28** -> Beim generieren der PDF ist etwas schief gelaufen
 - **Camel-29** -> Beim generieren der E-Mail ist ein Fehler aufgetreten.
+- **Camel-30** -> Beim downloaden der PDF Datei ist etwas schiefgelaufen.
 
 
 

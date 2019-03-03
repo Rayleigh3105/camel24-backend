@@ -43,12 +43,12 @@ app.post('/user', async (req, res) => {
     let startGenerationNumber = 13000;
     let countUser;
     try {
-        // let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
-        // await checkTransport.verify()
-        //     .catch(e => {
-        //         log.info(e);
-        //         throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
-        //     });
+        let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
+        await checkTransport.verify()
+            .catch(e => {
+                log.info(e);
+                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+            });
 
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -100,7 +100,7 @@ app.post('/user', async (req, res) => {
             from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
             to: user.email, // list of receivers
             subject: `Herzlich Willkommen beim Camel-24 Online Auftragsservice - ${body.kundenNummer}`, // Subject line
-            html: `Guten Tag,<br>Vielen Dank für Ihr Vertrauen!<br><br><strong>Kundennummer:</strong> ${body.kundenNummer}<br><br>Wir freuen uns auf eine gute Zusammenarbeit.<br>Bei Fragen oder Anregungen rufen Sie uns doch biite an.<br>Sie erreichen uns Montag bis Freitag von 8 bis 18 Uhr unter <strong>0911/400727</strong><br><br> Mit freundlichen Grüßen Ihr Camel-24 Team <br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
+            html: `Guten Tag,<br>Vielen Dank für Ihr Vertrauen!<br><br><strong>Kundennummer:</strong> ${body.kundenNummer}<br><br>Wir freuen uns auf eine gute Zusammenarbeit.<br>Bei Fragen oder Anregungen rufen Sie uns doch bitte an.<br>Sie erreichen uns Montag bis Freitag von 8 bis 18 Uhr unter <strong>0911/400727</strong><br><br> Mit freundlichen Grüßen Ihr Camel-24 Team <br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
 <br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a>`, // html body
             attachments: [{
                 filename: 'camel_logo.png',
@@ -123,9 +123,15 @@ app.post('/user', async (req, res) => {
         })
 
     } catch (e) {
-        console.log(`[${date}] ${e.stack}`);
-        log.error(e.stack);
-        res.status(e.status).send(e);
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
     }
 });
 
@@ -160,9 +166,15 @@ app.post('/user/login', async (req, res) => {
         });
 
     } catch (e) {
-        console.log(`[${date}] ${e.stack}`);
-        log.error(e.stack);
-        res.status(e.status).send(e);
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
     }
 });
 
@@ -180,9 +192,15 @@ app.get('/user/me', authenticate, async (req, res) => {
             throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
         });
     } catch (e) {
-        console.log(`[${date}] ${e.stack}`);
-        log.error(e.stack);
-        res.status(e.status).send(e);
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
     }
 
 });
@@ -230,9 +248,15 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             throw new ApplicationError("Camel-18", 400, setup.getDatabaseErrorString(), body)
         })
     } catch (e) {
-        console.log(`[${date}] ${e.stack}`);
-        log.error(e.stack);
-        res.status(e.status).send(e);
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
     }
 });
 
@@ -252,9 +276,15 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
             throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
         });
     } catch (e) {
-        console.log(`[${date}] ${e.stack}`);
-        log.error(e.stack);
-        res.status(e.status).send(e);
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
     }
 });
 
@@ -272,6 +302,7 @@ app.post('/csv', async (req, res, next) => {
     let user;
     let resultCount;
     let kndDateCountDir;
+    let successful = false;
 
     try {
         // let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
@@ -320,11 +351,15 @@ app.post('/csv', async (req, res, next) => {
         let kndDateDir = `${kndDir}/${dateDir}`;
 
         await setup.createKndDirectorys(kndDir, kndDateDir)
-            .catch(e => {throw e});
+            .catch(e => {
+                throw e
+            });
 
         // Count directorys
         resultCount = await setup.countFilesInDirectory(kndDateDir)
-            .catch(e => {throw e});
+            .catch(e => {
+                throw e
+            });
 
 
         kndDateCountDir = `${kndDateDir}/${resultCount}`;
@@ -334,8 +369,8 @@ app.post('/csv', async (req, res, next) => {
             order = setup.mapOrder(jsonObject, user, new Date(), identificationNumber)
         } else {
             let substringEmail = req.body.auftragbestEmail.substring(0, req.body.auftragbestEmail.indexOf('@'));
-            identificationNumber =  substringEmail + "_" + dateForFile + "_" + resultCount;
-            order = setup.mapOrder(jsonObject,null, new Date() , identificationNumber);
+            identificationNumber = substringEmail + "_" + dateForFile + "_" + resultCount;
+            order = setup.mapOrder(jsonObject, null, new Date(), identificationNumber);
         }
 
         // Convert JSON to CSV
@@ -368,11 +403,10 @@ app.post('/csv', async (req, res, next) => {
                     setup.rollback(order, kndDateCountDir, identificationNumber);
                     throw e
                 });
-            await setup.sentMail(identificationNumber, order, kndDateCountDir)
+            await setup.copyCsvInFinalDir(identificationNumber)
                 .then(() => {
-                    res.status(200).send(true);
-                })
-                .catch(e => {
+                    successful = true;
+                }).catch(e => {
                     setup.rollback(order, kndDateCountDir, identificationNumber);
                     throw e
                 });
@@ -389,6 +423,23 @@ app.post('/csv', async (req, res, next) => {
             log.error(e.errorCode + e);
             res.status(400).send(e)
         }
+    } finally {
+        if (successful) {
+            await setup.sentMail(identificationNumber, order, kndDateCountDir)
+                .then(() => {
+                    res.status(200).send(true);
+                }).catch(e => {
+                    if (e instanceof ApplicationError) {
+                        console.log(`[${date}] ${e.stack}`);
+                        log.error(e.errorCode + e.stack);
+                        res.status(e.status).send(e);
+                    } else {
+                        console.log(`[${date}] ${e}`);
+                        log.error(e.errorCode + e);
+                        res.status(400).send(e)
+                    }
+                })
+        }
     }
 });
 
@@ -403,32 +454,48 @@ app.get('/orders', authenticate, (req, res) => {
             _creator: req.user._id,
         }).sort({createdAt: -1})
             .then((order) => {
-            if (order) {
-                res.status(200).send(order);
-            }
-        }).catch((e) => {
+                if (order) {
+                    res.status(200).send(order);
+                }
+            }).catch((e) => {
             log.info(e);
             throw new ApplicationError("Camel-21", 400, setup.getDatabaseErrorString())
         })
     } catch (e) {
-        console.log(`[${date}] ${e.stack}`);
-        log.error(e.stack);
-        res.status(e.status).send(e);
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
     }
 });
 
 /**
  * Get´s Orders for customer
  */
-app.post('/download', (req, res) => {
+app.post('/download', async (req, res) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     try {
-        let file = setup.getPdfFilePath(req.body.identificationNumber);
-        res.sendFile(file)
+        await setup.getPdfFilePath(req.body.identificationNumber)
+            .then(file => {
+                res.sendFile(file)
+            }).catch((e) => {
+                throw e;
+            });
     } catch (e) {
-        console.log(`[${date}] ${e.stack}`);
-        log.error(e.stack);
-        res.status(e.status).send(e);
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
     }
 });
 
