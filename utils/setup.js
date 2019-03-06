@@ -4,7 +4,7 @@ let dir = './tmp';
 let ApplicationError = require('./../models/error');
 // MODULES
 let nodemailer = require("nodemailer");
-
+let helper = require('./helper');
 
 let fs = require('fs');
 let moment = require('moment');
@@ -252,9 +252,9 @@ module.exports = {
                 let date = splittedArray[1];
                 let count = splittedArray[2];
 
-                fs.readdir(`${dirname}/ftp/${kundenNummer}/${date}/${count}`, (err, files) => {
+                fs.readdir(`${dirname}/tmp/${kundenNummer}/${date}/${count}`, (err, files) => {
                     if (err) {
-                        reject( new ApplicationError("Camel-30", 400, "Beim downloaden der PDF Datei ist etwas schiefgelaufen."));
+                        reject(new ApplicationError("Camel-30", 400, "Beim downloaden der PDF Datei ist etwas schiefgelaufen."));
                     }
                     if (files) {
                         resolve(`${dirname}/tmp/${kundenNummer}/${date}/${count}/Paketlabel.pdf`);
@@ -280,9 +280,14 @@ module.exports = {
         let pdfFileName = `Paketlabel.pdf`;
         let doc = new PDFDocument;
         let formattedZustellDate = moment(order._doc.zustellTermin.datum).format("DD.MM.YYYY");
+        let formattedMuntionsDate = moment().format('DD.MM.YYYY');
+
 
         // CREATE PDF
         doc.pipe(fs.createWriteStream(`${pathToSave}/${pdfFileName}`));
+        doc.fontSize(12);
+        doc.font('Times-Roman');
+
         // LOGO
         doc.image('./assets/img/camel_logo.png', 5, 5, {
             height: 50,
@@ -303,60 +308,241 @@ module.exports = {
             .stroke();
 
         // ABSENDER
-        doc.text('Absender:', 20, 85, {
+        doc.text('Absender:', 20, 80, {
             underline: true
         });
-        doc.text(`${order._doc.absender.firma}`, 20, 100);
-        if (order._doc.absender.ansprechpartner) {
-            doc.text(`${order._doc.absender.ansprechpartner}`, 20, 115);
-            doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, 20, 130);
-            doc.text(`${order._doc.absender.adresse}`, 20, 145);
-        } else {
-            doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, 20, 115);
-            doc.text(`${order._doc.absender.adresse}`, 20, 130);
-        }
 
+        doc.moveDown(0.1);
+
+        doc.text(`${order._doc.absender.firma}`, {
+            width: 250
+        });
+        if (order._doc.absender.ansprechpartner) {
+            doc.moveDown(0.1);
+            doc.text(`${order._doc.absender.ansprechpartner}`, {
+                width: 250
+            });
+            doc.moveDown(0.1);
+            doc.text(`${order._doc.absender.adresse}`, {
+                width: 250
+            });
+            doc.moveDown(0.1);
+            doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, {
+                width: 250
+            });
+
+        } else {
+            doc.moveDown(0.1);
+            doc.text(`${order._doc.absender.adresse}`, {
+                width: 250
+            });
+            doc.moveDown(0.1);
+            doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, {
+                width: 250
+            });
+        }
 
         //  EMPFÄNGER
-        doc.text('Empfänger:', 380, 85, {
+        doc.text('Empfänger:', 330, 80, {
             underline: true
         });
-        doc.text(`${order._doc.empfaenger.firma}`, 380, 100);
+
+        doc.moveDown(0.1);
+
+        doc.text(`${order._doc.empfaenger.firma}`);
         if (order._doc.empfaenger.ansprechpartner) {
-            doc.text(`${order._doc.empfaenger.ansprechpartner}`, 380, 115);
-            doc.text(`${order._doc.empfaenger.plz} - ${order._doc.absender.ort}`, 380, 130);
-            doc.text(`${order._doc.empfaenger.adresse}`, 380, 145);
+            doc.moveDown(0.1);
+            doc.text(`${order._doc.empfaenger.ansprechpartner}`);
+            doc.moveDown(0.1);
+            doc.text(`${order._doc.empfaenger.adresse}`);
+            doc.moveDown(0.1);
+            doc.text(`${order._doc.empfaenger.plz} - ${order._doc.empfaenger.ort}`);
+
         } else {
-            doc.text(`${order._doc.empfaenger.plz} - ${order._doc.absender.ort}`, 380, 115);
-            doc.text(`${order._doc.empfaenger.adresse}`, 380, 130);
+            doc.moveDown(0.1);
+            doc.text(`${order._doc.empfaenger.adresse}`);
+            doc.moveDown(0.1);
+            doc.text(`${order._doc.empfaenger.plz} - ${order._doc.empfaenger.ort}`);
         }
 
+
         // PAKET & LIEFERDATEN
-        doc.text('Paketdaten & Sendungsinformationen:', 20, 190, {
+        doc.text('Paketdaten & Sendungsinformationen:', 20, 270, {
             underline: true
         });
-        doc.text(`Paketgewicht: ${order._doc.sendungsdaten.gewicht} kg`, 20, 205);
-        doc.text(`Vorrausichtliches Lieferdatum ${formattedZustellDate} zwischen ${order._doc.zustellTermin.von} - ${order._doc.zustellTermin.bis} Uhr`, 20, 220);
+
+        doc.moveDown(0.1);
+        doc.text(`Paketgewicht: ${order._doc.sendungsdaten.gewicht} kg`);
+
+        doc.moveDown(0.1);
+        doc.text(`Vorrausichtliches Lieferdatum ${formattedZustellDate} zwischen ${order._doc.zustellTermin.von} - ${order._doc.zustellTermin.bis} Uhr`);
 
         doc.lineCap('round')
-            .moveTo(5, 240)
-            .lineTo(600, 240)
+            .moveTo(5, 320)
+            .lineTo(600, 320)
             .stroke();
-
         // CAMEL ANSCHRIFT
-        doc.text('Camel-24 Transportvermittlung & Kurierdienst', 20, 255, {
+        doc.text('Camel-24 Transportvermittlung & Kurierdienst', 20, 330, {
             align: 'center'
         });
-        doc.text('Wehrweg 3', 20, 270, {
+
+        doc.moveDown(0.1);
+        doc.text('Wehrweg 3', {
             align: 'center'
         });
-        doc.text('91230 Happurg', 20, 285, {
+        doc.moveDown(0.1);
+        doc.text('91230 Happurg', {
             align: 'center'
         });
-        doc.text('Tel.+49 911 400 87 27', 20, 300, {
+        doc.moveDown(0.1);
+        doc.text('Tel.+49 911 400 87 27', {
             align: 'center',
             link: '+49 911 400 87 27'
         });
+        if (order._doc.sendungsdaten.art === 'Munition') {
+            doc.addPage();
+
+            doc.lineCap('round')
+                .moveTo(30, 0)
+                .lineTo(30, 800)
+                .fillAndStroke('red', 'red');
+
+
+            doc.fillAndStroke('black', 'black')
+                .font('Helvetica-Bold')
+                .text('Beförderungspapier nach 5.4.1 ADR', 40, 60, {
+                    size: 20,
+                    align: 'center'
+                });
+
+
+            // ABSENDER
+            doc.font('Times-Roman')
+                .text('Absender:', 50, 100, {
+                    underline: true
+                });
+
+            doc.moveDown(0.1);
+
+            doc.text(`${order._doc.absender.firma}`, {
+                width: 250
+            });
+            if (order._doc.absender.ansprechpartner) {
+                doc.moveDown(0.1);
+                doc.text(`${order._doc.absender.ansprechpartner}`, {
+                    width: 250
+                });
+                doc.moveDown(0.1);
+                doc.text(`${order._doc.absender.adresse}`, {
+                    width: 250
+                });
+                doc.moveDown(0.1);
+                doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, {
+                    width: 250
+                });
+
+            } else {
+                doc.moveDown(0.1);
+                doc.text(`${order._doc.absender.adresse}`, {
+                    width: 250
+                });
+                doc.moveDown(0.1);
+                doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, {
+                    width: 250
+                });
+            }
+
+            //  EMPFÄNGER
+            doc.text('Empfänger:', 330, 100, {
+                underline: true
+            });
+
+            doc.moveDown(0.1);
+
+            doc.text(`${order._doc.empfaenger.firma}`);
+            if (order._doc.empfaenger.ansprechpartner) {
+                doc.moveDown(0.1);
+                doc.text(`${order._doc.empfaenger.ansprechpartner}`);
+                doc.moveDown(0.1);
+                doc.text(`${order._doc.empfaenger.adresse}`);
+                doc.moveDown(0.1);
+                doc.text(`${order._doc.empfaenger.plz} - ${order._doc.empfaenger.ort}`);
+
+            } else {
+                doc.moveDown(0.1);
+                doc.text(`${order._doc.empfaenger.adresse}`);
+                doc.moveDown(0.1);
+                doc.text(`${order._doc.empfaenger.plz} - ${order._doc.empfaenger.ort}`);
+            }
+
+            doc.text(`Fürth den, ${formattedMuntionsDate}`, 50, 290);
+
+
+            doc.fontSize(8);
+            doc.font('Helvetica-Bold')
+                .text('UN-Nr.', 70, 325);
+
+            doc.text('Stoffname', 150, 325);
+            doc.text('Muster', 250, 325);
+            doc.text('VG', 300, 325);
+            doc.text('SV', 330, 325);
+            doc.text('Anzahl u. Beschreibung der Versandstücke', 360, 320, {
+                width: 100,
+                align: 'center'
+            });
+            doc.text('BK 4 kg/ltr.Unbegrenzt', 450, 320, {
+                width: 80,
+                align: 'center'
+            });
+
+            doc.lineCap('round')
+                .moveTo(70, 340)
+                .lineTo(520, 340)
+                .stroke();
+
+
+            doc.fontSize(12);
+
+
+
+            doc.fillColor('red').text('Nicht kennzeichungspflichtig!', 70, 500, {
+                align: 'center'
+            });
+
+            doc.moveDown(1.5);
+            doc.text('BEFÖRDERUNG OHNE ÜBERSCHREITUNG DER IN UNTERABSCHNITT 1.1.3.6 FESTGESETZTEN FREIGRENZEN ADR', {
+                align: 'center'
+            });
+
+            doc.moveDown(1.5);
+            doc.fillColor('black').text('Allgemeine schriftliche Weisung, gem. Abschnitt 8.1.5 ADR, ist im Fahrzeug vorhanden.', {
+                align: 'center'
+            });
+
+            doc.moveDown(1.5);
+            doc.text('BEFÖRDERUNG NACH UNTERABSCHNITT 1.1.4.2.1 ja / nein', {
+                align: 'center'
+            });
+
+
+            doc.lineCap('round')
+                .moveTo(90, 700)
+                .lineTo(210, 700)
+                .stroke();
+
+            doc.lineCap('round')
+                .moveTo(380, 700)
+                .lineTo(550, 700)
+                .stroke();
+
+            doc.fontSize(7);
+
+            doc.text('Datum:', 90, 705);
+
+            doc.text('Unterschrift Fahrzeugführer:', 380, 705);
+
+
+        }
         doc.end();
     },
 
