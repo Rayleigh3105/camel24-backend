@@ -18,13 +18,16 @@ let conn = require('./../db/mongoose').conn;
 let {User} = require('./../models/user');
 let {Order} = require('./../models/order');
 const ApplicationError = require('./../models/error');
+const path = require('path');
+
 
 let {authenticate} = require('./../middleware/authenticate');
 const crypto = require('crypto');
 const fs = require('fs');
 
 // +++ VARIABLES +++
-let dir = './tmp';
+let dir = path.join(__dirname, '../../../../camel');
+let orderDir = path.join(__dirname, '../../../../camel/auftraege');
 let app = express();
 
 // Declare Port for deployment or local
@@ -342,9 +345,9 @@ app.post('/csv', async (req, res, next) => {
         // Resolve Path
         let kndDir;
         if (kundenNummer) {
-            kndDir = `${dir}/${kundenNummer}`;
+            kndDir = `${orderDir}/${kundenNummer}`;
         } else {
-            kndDir = `${dir}/${jsonObject.auftragbestEmail}`;
+            kndDir = `${orderDir}/${jsonObject.auftragbestEmail}`;
         }
 
         let dateDir = moment().format("DDMMYYYY");
@@ -393,7 +396,7 @@ app.post('/csv', async (req, res, next) => {
                     throw e
                 });
 
-            await generateBarcode(identificationNumber, kundenNummer, dir, resultCount, kndDateCountDir)
+            await generateBarcode(identificationNumber, kundenNummer, resultCount, kndDateCountDir)
                 .catch(e => {
                     setup.rollback(order, kndDateCountDir, identificationNumber);
                     throw e
@@ -507,7 +510,7 @@ app.post('/download', async (req, res) => {
  * @param countOrder
  * @param order
  */
-function generateBarcode(identificationNumber, kundenNummer, dir, countOrder, pathToSave) {
+function generateBarcode(identificationNumber, kundenNummer,  countOrder, pathToSave) {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
     return new Promise(function (resolve, reject) {

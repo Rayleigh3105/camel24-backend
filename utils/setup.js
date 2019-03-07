@@ -1,6 +1,5 @@
 let log = require("./../utils/logger");
 let {Order} = require('./../models/order');
-let dir = './tmp';
 let ApplicationError = require('./../models/error');
 // MODULES
 let nodemailer = require("nodemailer");
@@ -11,8 +10,9 @@ let moment = require('moment');
 let PDFDocument = require('pdfkit');
 let mongoose = require('mongoose');
 const path = require('path');
-let ftpDir = path.join(__dirname, '../../../ftp');
-
+let ftpDir = path.join(__dirname, '../../../../camel/ftp');
+let baseDir = path.join(__dirname, '../../../../camel');
+let orderDir = path.join(__dirname, '../../../../camel/auftraege');
 
 /**
  * Thiis is the SETUP
@@ -178,27 +178,27 @@ module.exports = {
     createNeededDirectorys: function () {
         let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
-        if (!fs.existsSync("./ftp")) {
-            fs.mkdirSync('./ftp');
-            log.info(`Ordner /ftp wurde erstellt`);
-            console.log(`[${date}] Ordner /ftp wurde erstellt`);
-        }
-        if (!fs.existsSync("./ftp/kep")) {
-            fs.mkdirSync('./ftp/kep');
-            log.info(`Ordner /ftp/kep wurde erstellt`);
-            console.log(`[${date}] Ordner /ftp/kep wurde erstellt`);
-        }
-
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir);
+        if (!fs.existsSync("./tmp")) {
+            fs.mkdirSync('./tmp');
             log.info(`Ordner /tmp wurde erstellt`);
             console.log(`[${date}] Ordner /tmp wurde erstellt`);
         }
+        if (!fs.existsSync("./tmp/csv")) {
+            fs.mkdirSync('./tmp/csv');
+            log.info(`Ordner /tmp/csv wurde erstellt`);
+            console.log(`[${date}] Ordner /tmp/csv wurde erstellt`);
+        }
 
-        if (!fs.existsSync("./logs")) {
-            fs.mkdirSync("./logs");
-            log.info(`Ordner /logs wurde erstellt`);
-            console.log(`[${date}] Ordner /logs wurde erstellt`);
+        if (!fs.existsSync(baseDir)) {
+            fs.mkdirSync(baseDir);
+            log.info(`Ordner ${baseDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${baseDir} wurde erstellt`);
+        }
+
+        if (!fs.existsSync(`${baseDir}/logs`)) {
+            fs.mkdirSync("${baseDir}/log");
+            log.info(`Ordner ${baseDir}/log wurde erstellt`);
+            console.log(`[${date}] Ordner ${baseDir}/log wurde erstellt`);
         }
 
         if (!fs.existsSync(ftpDir)) {
@@ -206,7 +206,11 @@ module.exports = {
             log.info(`Ordner ${ftpDir} wurde erstellt`);
             console.log(`[${date}] Ordner ${ftpDir} wurde erstellt`);
         }
-
+        if (!fs.existsSync(orderDir)) {
+            fs.mkdirSync(orderDir);
+            log.info(`Ordner ${orderDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${orderDir} wurde erstellt`);
+        }
     },
 
     /**
@@ -229,16 +233,22 @@ module.exports = {
      * @returns {string}
      */
     getFilePath: function (identificationNumber) {
-        return this.getFtpFilePath() + identificationNumber + ".csv"
+        if (!fs.existsSync("./tmp")) {
+            fs.mkdirSync('./tmp');
+            log.info(`Ordner /tmp wurde erstellt`);
+            console.log(`[${date}] Ordner /tmp wurde erstellt`);
+        }
+        if (!fs.existsSync("./tmp/csv")) {
+            fs.mkdirSync('./tmp/csv');
+            log.info(`Ordner /tmp/csv wurde erstellt`);
+            console.log(`[${date}] Ordner /tmp/csv wurde erstellt`);
+        }
+
+
+        return "./tmp/csv/" + identificationNumber + ".csv"
     },
 
-    /**
-     * Return Ftp FilePath
-     * @returns {string}
-     */
-    getFtpFilePath: function () {
-        return "ftp/kep/";
-    },
+
 
     /**
      * Get´s Path to the PDF file and checks if it exists
@@ -252,12 +262,12 @@ module.exports = {
                 let date = splittedArray[1];
                 let count = splittedArray[2];
 
-                fs.readdir(`${dirname}/tmp/${kundenNummer}/${date}/${count}`, (err, files) => {
+                fs.readdir(`${orderDir}/${kundenNummer}/${date}/${count}`, (err, files) => {
                     if (err) {
                         reject(new ApplicationError("Camel-30", 400, "Beim downloaden der PDF Datei ist etwas schiefgelaufen."));
                     }
                     if (files) {
-                        resolve(`${dirname}/tmp/${kundenNummer}/${date}/${count}/Paketlabel.pdf`);
+                        resolve(`${orderDir}/${kundenNummer}/${date}/${count}/Paketlabel.pdf`);
                     }
                 });
             } catch (e) {
@@ -281,7 +291,6 @@ module.exports = {
         let doc = new PDFDocument;
         let formattedZustellDate = moment(order._doc.zustellTermin.datum).format("DD.MM.YYYY");
         let formattedMuntionsDate = moment().format('DD.MM.YYYY');
-
 
         // CREATE PDF
         doc.pipe(fs.createWriteStream(`${pathToSave}/${pdfFileName}`));
@@ -365,7 +374,6 @@ module.exports = {
             doc.text(`${order._doc.empfaenger.plz} - ${order._doc.empfaenger.ort}`);
         }
 
-
         // PAKET & LIEFERDATEN
         doc.text('Paketdaten & Sendungsinformationen:', 20, 270, {
             underline: true
@@ -414,7 +422,6 @@ module.exports = {
                     size: 20,
                     align: 'center'
                 });
-
 
             // ABSENDER
             doc.font('Times-Roman')
@@ -500,10 +507,7 @@ module.exports = {
                 .lineTo(520, 340)
                 .stroke();
 
-
             doc.fontSize(12);
-
-
 
             doc.fillColor('red').text('Nicht kennzeichungspflichtig!', 70, 500, {
                 align: 'center'
@@ -540,8 +544,6 @@ module.exports = {
             doc.text('Datum:', 90, 705);
 
             doc.text('Unterschrift Fahrzeugführer:', 380, 705);
-
-
         }
         doc.end();
     },
@@ -641,7 +643,7 @@ module.exports = {
                                     });
 
                                     // Delete CSV
-                                    fs.unlink("./ftp/kep/" + identificationNumber + ".csv", err => {
+                                    fs.unlink("./tmp/csv/" + identificationNumber + ".csv", err => {
                                         if (err) throw err;
                                         log.info(`CSV: ${identificationNumber}.csv wurde gelöscht.`);
                                         resolve();
@@ -728,11 +730,11 @@ module.exports = {
                 }
                 let dir = path.join(__dirname, "../");
 
-                fs.copyFile(`${dir}/ftp/kep/${identificationNumber}.csv`, `${ftpDir}/${identificationNumber}.csv`, (err) => {
+                fs.copyFile(`${dir}tmp/csv/${identificationNumber}.csv`, `${ftpDir}/${identificationNumber}.csv`, (err) => {
                     if (err) reject(err);
 
                     // Delete CSV
-                    fs.unlink("./ftp/kep/" + identificationNumber + ".csv", err => {
+                    fs.unlink("./tmp/csv/" + identificationNumber + ".csv", err => {
                         if (err) throw err;
                         log.info(`CSV: ${identificationNumber}.csv wurde verschoben.`);
                         console.log(`[${date}] CSV: ${identificationNumber}.csv wurde verschoben.`);

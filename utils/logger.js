@@ -1,9 +1,11 @@
 const winston = require('winston');
 let format = require('winston').format;
 require('winston-daily-rotate-file');
+const path = require('path');
+let baseDir = path.join(__dirname, '../../../../camel');
 
 let transport = new (winston.transports.DailyRotateFile)({
-    filename: './logs/camelapi-%DATE%.log',
+    filename: `${baseDir}/logs/camelapi-%DATE%.log`,
     datePattern: 'DD-MM-YYYY',
     zippedArchive: true,
     maxSize: '20m',
