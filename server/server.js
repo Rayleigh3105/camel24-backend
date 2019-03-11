@@ -44,7 +44,7 @@ setup.createNeededDirectorys();
  */
 app.post('/user', async (req, res) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let startGenerationNumber = 13000;
+    let startGenerationNumber = 14000;
     let countUser;
     let user;
     try {
@@ -442,7 +442,8 @@ app.post('/csv', async (req, res, next) => {
         }
     } finally {
         if (successful) {
-            await setup.sentMail(identificationNumber, order, kndDateCountDir)
+            // Sent mail to Absender
+            await setup.sentMailAbs(identificationNumber, order, kndDateCountDir)
                 .then(() => {
                     res.status(200).send(true);
                 }).catch(e => {
@@ -455,7 +456,23 @@ app.post('/csv', async (req, res, next) => {
                         log.error(e.errorCode + e);
                         res.status(400).send(e)
                     }
-                })
+                });
+
+            // Sent mail to Empfänger
+            await setup.sentMailEmpf(identificationNumber, order, kndDateCountDir)
+                .then(() => {
+                    res.status(200).send(true);
+                }).catch(e => {
+                    if (e instanceof ApplicationError) {
+                        console.log(`[${date}] ${e.stack}`);
+                        log.error(e.errorCode + e.stack);
+                        res.status(e.status).send(e);
+                    } else {
+                        console.log(`[${date}] ${e}`);
+                        log.error(e.errorCode + e);
+                        res.status(400).send(e)
+                    }
+                });
         }
     }
 });
