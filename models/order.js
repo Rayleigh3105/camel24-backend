@@ -13,56 +13,56 @@ let AbsEmpfSchema = mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        min: 1,
+        min: 1, max: 75,
         unique: false
     },
     zusatz: {
         type: String,
         required: false,
         trim: true,
-        min: 1,
+        min: 1, max: 75,
         unique: false
     },
     ansprechpartner: {
         type: String,
         required: false,
         trim: true,
-        min: 1,
+        min: 1, max: 75,
         unique: false
     },
     adresse: {
         type: String,
         required: true,
         trim: true,
-        min: 1,
+        min: 1, max: 75,
         unique: false
     },
     land: {
         type: String,
         required: true,
         trim: true,
-        min: 1,
+        min: 1, max: 20,
         unique: false
     },
     plz: {
         type: String,
         required: true,
         trim: true,
-        min: 1,
+        min: 1, max: 5,
         unique: false
     },
     ort: {
         type: String,
         required: true,
         trim: true,
-        min: 1,
+        min: 1, max: 75,
         unique: false
     },
     telefon: {
         type: String,
         required: true,
         trim: true,
-        min: 1,
+        min: 1, max: 20,
         unique: false
     },
 });
@@ -82,21 +82,22 @@ let TerminSchema = mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        min: 1,
+        min: 1, max: 12,
         unique: false
     },
     bis: {
         type: String,
         required: true,
         trim: true,
-        min: 1,
+        min: 1, max: 12,
         unique: false
     },
     art: {
         type: String,
         required: false,
         trim: true,
-        unique:false
+        max: 50,
+        unique: false
     }
 
 });
@@ -109,21 +110,21 @@ let SendungsDatenSchema = mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        min: 1,
+        min: 1, max: 5,
         unique: false
     },
     art: {
         type: String,
         required: true,
         trim: true,
-        min: 1,
+        min: 1, max: 75,
         unique: false
     },
     wert: {
         type: String,
         required: true,
         trim: true,
-        min: 1,
+        min: 1, max: 24,
         unique: false
     },
     transportVers: {
@@ -145,45 +146,48 @@ let RechnungsDatenSchema = mongoose.Schema({
             isAsync: true,
             validator: validator.isEmail,
             message: '{VALUE} is not a valid email'
-        }
+        },
+        max: 75
     },
     telefon: {
         type: String,
         required: true,
         trim: true,
         min: 1,
-        unique: false
+        unique: false,
+        max: 20
     },
     name: {
+
         type: String,
         required: false,
         trim: true,
         min: 1,
+        max: 75,
         unique: false
     },
     adresse: {
         type: String,
         required: false,
         trim: true,
-        min: 1,
+        min: 1, max: 75,
         unique: false
     },
     plz: {
         type: String,
         required: false,
         trim: true,
-        min: 1,
+        min: 1, max: 5,
         unique: false
     },
     ort: {
         type: String,
         required: false,
         trim: true,
-        min: 1,
+        min: 1, max: 75,
         unique: false
     },
 });
-
 
 
 let OrderSchema = new mongoose.Schema({
@@ -197,7 +201,7 @@ let OrderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: false
     },
-    createdAt:{
+    createdAt: {
         type: Date,
         default: null
     },

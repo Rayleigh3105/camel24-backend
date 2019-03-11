@@ -1,9 +1,11 @@
 let log = require("./../utils/logger");
 let {Order} = require('./../models/order');
+let {User} = require('./../models/user');
+
 let ApplicationError = require('./../models/error');
 // MODULES
 let nodemailer = require("nodemailer");
-let helper = require('./helper');
+let help = require('./helper');
 
 let fs = require('fs');
 let moment = require('moment');
@@ -18,41 +20,6 @@ let orderDir = path.join(__dirname, '../../../../camel/auftraege');
  * Thiis is the SETUP
  */
 module.exports = {
-
-    /**
-     * Returns SMTP Option object
-     *
-     * @return {{port: number, auth: {pass: string, user: string}, host: string, secure: boolean}}
-     */
-    getSmtpOptions: function () {
-        return {
-            host: "smtp.ionos.de",
-            port: 465,
-            secure: true, // true for 465, false for other ports
-            auth: {
-                user: 'moritz.vogt@vogges.de', // generated ethereal user
-                pass: 'mori00001' // generated ethereal password
-            }
-        };
-    },
-
-    /**
-     * Returns Database String Error
-     *
-     * @return {string}
-     */
-    getDatabaseErrorString: function () {
-        return "Bei der Datenbankoperation ist etwas schiefgelaufen."
-    },
-
-    /**
-     * Return Order error string
-     *
-     * @return {string}
-     */
-    getOrderErrorString: function () {
-        return "Beim Erstellen Ihres Auftrags ist etwas schiefgelaufen."
-    },
 
 
     /**
@@ -244,10 +211,8 @@ module.exports = {
             console.log(`[${date}] Ordner /tmp/csv wurde erstellt`);
         }
 
-
         return "./tmp/csv/" + identificationNumber + ".csv"
     },
-
 
 
     /**
@@ -562,21 +527,13 @@ module.exports = {
 
         return new Promise(function (resolve, reject) {
             try {
-                let transporter = nodemailer.createTransport({
-                    host: "smtp.ionos.de",
-                    port: 465,
-                    secure: true, // true for 465, false for other ports
-                    auth: {
-                        user: 'moritz.vogt@vogges.de', // generated ethereal user
-                        pass: 'mori00001' // generated ethereal password
-                    }
-                });
+                let transporter = nodemailer.createTransport(help.getSmtpOptions());
 
                 let mailOptions = {
                     from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
-                    to: order._doc.rechnungsDaten.email, // list of receivers
-                    subject: `PaketLabel`, // Subject line
-                    html: `Guten Tag,<br> Ihre Sendung kommt voraussichtlich am ${formattedDate} zwischen ${order.zustellTermin.von}-${order.zustellTermin.bis} Uhr  an.<br><br><strong>${identificationNumber}</strong><br><br>Um zu sehen wo sich Ihre Sendung befindet können Sie über diesen Link einen Sendungsverfolgung tätigen <a href="http://kep-ag.kep-it.de/xtras/track.php">http://kep-ag.kep-it.de/xtras/track.php</a><br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
+                    to:  order._doc.empfaenger.email , // list of receivers
+                    subject: `Ihr Paket von ${order._doc.absender.firma}`, // Subject line
+                    html: `Guten Tag,<br> Ihre Sendung kommt voraussichtlich am ${formattedDate} zwischen ${order.zustellTermin.von}-${order.zustellTermin.bis} Uhr  an.<br><br><strong>Versandnummer:</strong>${identificationNumber}<br><br>Um zu sehen wo sich Ihre Sendung befindet können Sie über diesen Link einen Sendungsverfolgung tätigen <a href="http://kep-ag.kep-it.de/xtras/track.php">http://kep-ag.kep-it.de/xtras/track.php</a><br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
 <br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a> `, // html body
                     attachments: [{
                         filename: 'Paketlabel.pdf',
@@ -607,6 +564,7 @@ module.exports = {
      *
      * @param order - order to delete in database
      * @param directoryToDelete - directory with files to delete
+     * @param identificationNumber - current identificationNumber
      */
     rollback: function (order, directoryToDelete, identificationNumber) {
         return new Promise((resolve, reject) => {
@@ -642,7 +600,7 @@ module.exports = {
                                         log.info(`DIRECTORY: ${dir} wurde gelöscht.`);
                                     });
 
-                                    // Delete CSV
+                                    // Delete CSV un tmp directory
                                     fs.unlink("./tmp/csv/" + identificationNumber + ".csv", err => {
                                         if (err) throw err;
                                         log.info(`CSV: ${identificationNumber}.csv wurde gelöscht.`);
@@ -659,6 +617,33 @@ module.exports = {
         })
     },
 
+
+    /**
+     * Rollsback changes made when something went wrong when creating a user
+     *
+     */
+    rollBackUserCreation: function (user) {
+        let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+
+        return new Promise((resolve, reject) => {
+            try {
+                if (user) {
+                    // Remove Order from database
+                    User.remove({
+                        _id: user._doc._id
+                    }, async function (err) {
+                        if (err) {
+                            reject(err)
+                        }
+                        log.info(`User : ${user._doc.email} wurde gelöscht.`);
+                        console.log(`[${date}] USER:  User wurde gelöscht. ${user._doc.email}`);
+                    })
+                }
+            } catch (e) {
+                reject(e);
+            }
+        })
+    },
     /**
      * Counts Files in directory
      *
@@ -670,7 +655,19 @@ module.exports = {
                 fs.readdir(directoryToCount, function (err, files) {
                     if (err) throw err;
 
-                    resolve(files.length + 1)
+                    let hasTmpFile = false;
+
+                    for (let file of files) {
+                        if (file === '.DS_Store') {
+                            hasTmpFile = true;
+                            resolve(files.length)
+                        }
+                    }
+
+                    if (!hasTmpFile) {
+                        resolve(files.length + 1)
+                    }
+
                 })
             } catch (e) {
                 reject(e);

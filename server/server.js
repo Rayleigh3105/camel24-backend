@@ -12,6 +12,7 @@ const bwipjs = require('bwip-js');
 const nodemailer = require("nodemailer");
 let log = require("./../utils/logger");
 let setup = require('./../utils/setup');
+let help = require('./../utils/helper');
 // +++ LOCAL +++
 let mongoose = require('./../db/mongoose').mongoose;
 let conn = require('./../db/mongoose').conn;
@@ -45,13 +46,14 @@ app.post('/user', async (req, res) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let startGenerationNumber = 13000;
     let countUser;
+    let user;
     try {
-        let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
-        await checkTransport.verify()
-            .catch(e => {
-                log.info(e);
-                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
-            });
+        // let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
+        // await checkTransport.verify()
+        //     .catch(e => {
+        //         log.info(e);
+        //         throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+        //     });
 
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -64,46 +66,47 @@ app.post('/user', async (req, res) => {
             .then(count => countUser = count)
             .catch(e => {
                 log.info(e);
-                throw new ApplicationError("Camel-11", 400, setup.getDatabaseErrorString())
+                throw new ApplicationError("Camel-11", 400, help.getDatabaseErrorString())
             });
         let body = req.body;
         body.kundenNummer = startGenerationNumber + countUser;
-        let user = new User(body);
+        user = new User(body);
 
         // Checks if Email is taken
         let existingEmail = await User.findOne({
             email: body.email
         }).catch(e => {
             log.info(e);
-            throw new ApplicationError("Camel-12", 400, setup.getDatabaseErrorString(), body)
+            throw new ApplicationError("Camel-12", 400, help.getDatabaseErrorString(), body)
         });
 
         if (existingEmail) {
-            throw new ApplicationError("Camel-13", 400, "E-Mail ist schon regestriert.")
+            throw new ApplicationError("Camel-13", 400, "Leider ist diese E-Mail Adresse in unserem System schon vergeben.")
         }
 
         // Save User to Database
         user = await user.save()
             .catch(() => {
-                throw new ApplicationError("Camel-14", 400, setup.getDatabaseErrorString(), user)
+                throw new ApplicationError("Camel-14", 400, help.getDatabaseErrorString(), user)
             });
 
         // Generate Auth Token for created User
         const token = await user.generateAuthToken()
             .catch(e => {
                 log.info(e);
-                throw new ApplicationError("Camel-151", 400, setup.getDatabaseErrorString())
+
+                throw new ApplicationError("Camel-151", 400, help.getDatabaseErrorString())
             });
 
         // create reusable transporter object using the default SMTP transport
-        let transporter = nodemailer.createTransport(setup.getSmtpOptions());
+        let transporter = nodemailer.createTransport(help.getSmtpOptions());
 
         // setup email data with unicode symbols
         let mailOptions = {
             from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
             to: user.email, // list of receivers
             subject: `Herzlich Willkommen beim Camel-24 Online Auftragsservice - ${body.kundenNummer}`, // Subject line
-            html: `Guten Tag,<br>Vielen Dank für Ihr Vertrauen!<br><br><strong>Kundennummer:</strong> ${body.kundenNummer}<br><br>Wir freuen uns auf eine gute Zusammenarbeit.<br>Bei Fragen oder Anregungen rufen Sie uns doch bitte an.<br>Sie erreichen uns Montag bis Freitag von 8 bis 18 Uhr unter <strong>0911/400727</strong><br><br> Mit freundlichen Grüßen Ihr Camel-24 Team <br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
+            html: `Guten Tag,<br>Vielen Dank für Ihr Vertrauen!<br><br><strong>Kundennummer:</strong> ${body.kundenNummer}<br><br>Wir freuen uns auf eine gute Zusammenarbeit.<br>Bei Fragen oder Anregungen rufen Sie uns doch bitte an.<br>Sie erreichen uns Montag bis Freitag von 08:00 - 18:00 Uhr unter <strong>0911/400727</strong><br><br> Mit freundlichen Grüßen Ihr Camel-24 Team <br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
 <br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a>`, // html body
             attachments: [{
                 filename: 'camel_logo.png',
@@ -113,19 +116,27 @@ app.post('/user', async (req, res) => {
         };
 
         // send mail with defined transport object
-        await transporter.sendMail(mailOptions).then(() => {
-            res.status(200).send({
-                user: user._doc,
-                token
-            });
-            log.info(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
-            console.log(`[${date}] User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
-        }).catch(e => {
-            log.info(e);
-            throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
-        })
+        // await transporter.sendMail(mailOptions).then(() => {
+        //     res.status(200).send({
+        //         user: user._doc,
+        //         token
+        //     });
+        //     log.info(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
+        //     console.log(`[${date}] User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
+        // }).catch(e => {
+        //     log.info(e);
+        //     throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
+        // })
 
+        res.status(200).send({
+            user: user._doc,
+            token
+        });
     } catch (e) {
+        if (user) {
+            setup.rollBackUserCreation(user);
+        }
+
         if (e instanceof ApplicationError) {
             console.log(`[${date}] ${e.stack}`);
             log.error(e.errorCode + e.stack);
@@ -165,7 +176,7 @@ app.post('/user/login', async (req, res) => {
             console.log(`[${date}] Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
         }).catch(e => {
             log.info(e);
-            throw new ApplicationError("Camel-152", 400, setup.getDatabaseErrorString(), user);
+            throw new ApplicationError("Camel-152", 400, help.getDatabaseErrorString(), user);
         });
 
     } catch (e) {
@@ -248,7 +259,7 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             res.status(200).send(user._doc);
         }).catch(e => {
             log.info(e);
-            throw new ApplicationError("Camel-18", 400, setup.getDatabaseErrorString(), body)
+            throw new ApplicationError("Camel-18", 400, help.getDatabaseErrorString(), body)
         })
     } catch (e) {
         if (e instanceof ApplicationError) {
@@ -308,19 +319,19 @@ app.post('/csv', async (req, res, next) => {
     let successful = false;
 
     try {
-        // let checkTransport = nodemailer.createTransport(setup.getSmtpOptions());
-        // await checkTransport.verify()
-        //     .catch(e => {
-        //         log.info(e);
-        //         throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
-        //     });
+        let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
+        await checkTransport.verify()
+            .catch(e => {
+                log.info(e);
+                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+            });
 
         res.header("access-control-expose-headers",
             ",x-auth"
             + ",Content-Length"
         );
         // Dont create Order when Kundennummer or email is missing
-        if (kundenNummer === null || kundenNummer === '' || kundenNummer === undefined && req.body.auftragbestEmail === null || req.body.auftragbestEmail === '' || req.body.auftragbestEmail === undefined) {
+        if (help.checkIfValuesAreAvailable(kundenNummer, req.body.auftragbestEmail)) {
             throw new ApplicationError("Camel-00", 400, "Kundennummer oder E-Mail konnte nicht gelesen werden.");
         }
 
@@ -329,6 +340,8 @@ app.post('/csv', async (req, res, next) => {
 
         // Map json Object to order so it can be saved
         // Resolves identificationnumber
+        // Resolve Path
+        let kndDir;
         if (isLoggedIn) {
             user = await User.findByKundenNummer(kundenNummer)
                 .catch(e => {
@@ -340,13 +353,13 @@ app.post('/csv', async (req, res, next) => {
             if (!user) {
                 throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
             }
-        }
 
-        // Resolve Path
-        let kndDir;
-        if (kundenNummer) {
-            kndDir = `${orderDir}/${kundenNummer}`;
+            // Check KundenNummer and create directory with Kundennummer
+            if (kundenNummer) {
+                kndDir = `${orderDir}/${kundenNummer}`;
+            }
         } else {
+            // Create director with E-Mail of Order
             kndDir = `${orderDir}/${jsonObject.auftragbestEmail}`;
         }
 
@@ -365,14 +378,12 @@ app.post('/csv', async (req, res, next) => {
             });
 
 
-        kndDateCountDir = `${kndDateDir}/${resultCount}`;
-
         if (user) {
-            identificationNumber = kundenNummer + "_" + dateForFile + "_" + resultCount;
+            identificationNumber = kundenNummer + dateForFile + resultCount;
             order = setup.mapOrder(jsonObject, user, new Date(), identificationNumber)
         } else {
             let substringEmail = req.body.auftragbestEmail.substring(0, req.body.auftragbestEmail.indexOf('@'));
-            identificationNumber = substringEmail + "_" + dateForFile + "_" + resultCount;
+            identificationNumber = substringEmail + dateForFile + resultCount;
             order = setup.mapOrder(jsonObject, null, new Date(), identificationNumber);
         }
 
@@ -395,6 +406,9 @@ app.post('/csv', async (req, res, next) => {
                 .catch(e => {
                     throw e
                 });
+
+            // Resolve Path for Storing PDF and barcode
+            kndDateCountDir = `${kndDateDir}/${resultCount}`;
 
             await generateBarcode(identificationNumber, kundenNummer, resultCount, kndDateCountDir)
                 .catch(e => {
@@ -462,7 +476,7 @@ app.get('/orders', authenticate, (req, res) => {
                 }
             }).catch((e) => {
             log.info(e);
-            throw new ApplicationError("Camel-21", 400, setup.getDatabaseErrorString())
+            throw new ApplicationError("Camel-21", 400, help.getDatabaseErrorString())
         })
     } catch (e) {
         if (e instanceof ApplicationError) {
@@ -510,7 +524,7 @@ app.post('/download', async (req, res) => {
  * @param countOrder
  * @param order
  */
-function generateBarcode(identificationNumber, kundenNummer,  countOrder, pathToSave) {
+function generateBarcode(identificationNumber, kundenNummer, countOrder, pathToSave) {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
     return new Promise(function (resolve, reject) {
