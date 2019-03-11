@@ -65,6 +65,13 @@ let AbsEmpfSchema = mongoose.Schema({
         min: 1, max: 20,
         unique: false
     },
+    email: {
+        type: String,
+        required: false,
+        trim: true,
+        min: 1, max: 40,
+        unique: false,
+    },
 });
 
 /**

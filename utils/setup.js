@@ -46,6 +46,7 @@ module.exports = {
                     plz: jsonObject.absPlz,
                     ort: jsonObject.absOrt,
                     telefon: jsonObject.absTel,
+                    email: jsonObject.absEmail,
                 },
                 empfaenger: {
                     firma: jsonObject.empfFirma,
@@ -56,6 +57,8 @@ module.exports = {
                     plz: jsonObject.empfPlz,
                     ort: jsonObject.empfOrt,
                     telefon: jsonObject.empfTel,
+                    email: jsonObject.empfEmail,
+
                 },
                 abholTermin: {
                     datum: jsonObject.abholDatum,
@@ -96,6 +99,8 @@ module.exports = {
                     plz: jsonObject.absPlz,
                     ort: jsonObject.absOrt,
                     telefon: jsonObject.absTel,
+                    email: jsonObject.absEmail,
+
                 },
                 empfaenger: {
                     firma: jsonObject.empfFirma,
@@ -106,6 +111,8 @@ module.exports = {
                     plz: jsonObject.empfPlz,
                     ort: jsonObject.empfOrt,
                     telefon: jsonObject.empfTel,
+                    email: jsonObject.empfEmail,
+
                 },
                 abholTermin: {
                     datum: jsonObject.abholDatum,

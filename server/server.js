@@ -319,12 +319,12 @@ app.post('/csv', async (req, res, next) => {
     let successful = false;
 
     try {
-        let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
-        await checkTransport.verify()
-            .catch(e => {
-                log.info(e);
-                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
-            });
+        // let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
+        // await checkTransport.verify()
+        //     .catch(e => {
+        //         log.info(e);
+        //         throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+        //     });
 
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -339,8 +339,6 @@ app.post('/csv', async (req, res, next) => {
         let jsonObject = req.body;
 
         // Map json Object to order so it can be saved
-        // Resolves identificationnumber
-        // Resolve Path
         let kndDir;
         if (isLoggedIn) {
             user = await User.findByKundenNummer(kundenNummer)
@@ -442,37 +440,40 @@ app.post('/csv', async (req, res, next) => {
         }
     } finally {
         if (successful) {
-            // Sent mail to Absender
-            await setup.sentMailAbs(identificationNumber, order, kndDateCountDir)
-                .then(() => {
-                    res.status(200).send(true);
-                }).catch(e => {
-                    if (e instanceof ApplicationError) {
-                        console.log(`[${date}] ${e.stack}`);
-                        log.error(e.errorCode + e.stack);
-                        res.status(e.status).send(e);
-                    } else {
-                        console.log(`[${date}] ${e}`);
-                        log.error(e.errorCode + e);
-                        res.status(400).send(e)
-                    }
-                });
+            // // Sent mail to Absender
+            // await setup.sentMailAbs(identificationNumber, order, kndDateCountDir)
+            //     .then(() => {
+            //         res.status(200).send(true);
+            //     }).catch(e => {
+            //         if (e instanceof ApplicationError) {
+            //             console.log(`[${date}] ${e.stack}`);
+            //             log.error(e.errorCode + e.stack);
+            //             res.status(e.status).send(e);
+            //         } else {
+            //             console.log(`[${date}] ${e}`);
+            //             log.error(e.errorCode + e);
+            //             res.status(400).send(e)
+            //         }
+            //     });
+            //
+            // // Sent mail to Empfänger
+            // await setup.sentMailEmpf(identificationNumber, order, kndDateCountDir)
+            //     .then(() => {
+            //         res.status(200).send(true);
+            //     }).catch(e => {
+            //         if (e instanceof ApplicationError) {
+            //             console.log(`[${date}] ${e.stack}`);
+            //             log.error(e.errorCode + e.stack);
+            //             res.status(e.status).send(e);
+            //         } else {
+            //             console.log(`[${date}] ${e}`);
+            //             log.error(e.errorCode + e);
+            //             res.status(400).send(e)
+            //         }
+            //     });
 
-            // Sent mail to Empfänger
-            await setup.sentMailEmpf(identificationNumber, order, kndDateCountDir)
-                .then(() => {
                     res.status(200).send(true);
-                }).catch(e => {
-                    if (e instanceof ApplicationError) {
-                        console.log(`[${date}] ${e.stack}`);
-                        log.error(e.errorCode + e.stack);
-                        res.status(e.status).send(e);
-                    } else {
-                        console.log(`[${date}] ${e}`);
-                        log.error(e.errorCode + e);
-                        res.status(400).send(e)
-                    }
-                });
+
         }
     }
 });
