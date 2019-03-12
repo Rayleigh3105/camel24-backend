@@ -228,15 +228,13 @@ module.exports = {
     getPdfFilePath: function (identificationNumber) {
         return new Promise((resolve, reject) => {
             try {
-                let splittedArray = identificationNumber.split("_");
-                let dirname = path.join(__dirname, '..');
-                let kundenNummer = splittedArray[0];
-                let date = splittedArray[1];
-                let count = splittedArray[2];
+                let kundenNummer = identificationNumber.substring(0, 5);
+                let date = identificationNumber.substring(5, 13);
+                let count = identificationNumber.substring(13, 14);
 
                 fs.readdir(`${orderDir}/${kundenNummer}/${date}/${count}`, (err, files) => {
                     if (err) {
-                        reject(new ApplicationError("Camel-30", 400, "Beim downloaden der PDF Datei ist etwas schiefgelaufen."));
+                        reject(err);
                     }
                     if (files) {
                         resolve(`${orderDir}/${kundenNummer}/${date}/${count}/Paketlabel.pdf`);
@@ -537,7 +535,7 @@ module.exports = {
 
                 let mailOptions = {
                     from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
-                    to:  order._doc.absender.email , // list of receivers
+                    to: order._doc.absender.email, // list of receivers
                     subject: `Ihr Camel-24 Paketlabel`, // Subject line
                     html: `Guten Tag,<br>im Anhang befindet sich Ihr Paketlabel mit dem Sie das Paket direkt selbst abfertigen können.<br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
 <br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a> `, // html body
@@ -554,11 +552,14 @@ module.exports = {
 
                 // send mail with defined transport object
                 transporter.sendMail(mailOptions)
+                    .then(() => {
+                        console.log(`[${date}] EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender : ${order._doc.absender.email}`);
+                        log.info(`EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender : ${order._doc.absender.email}`);
+                        resolve();
+                    })
                     .catch(e => reject(e));
 
-                console.log(`[${date}] EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender :  ${order._doc.absender.email}`);
-                log.info(`EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender :  ${order._doc.absender.email}`);
-                resolve();
+
             } catch (e) {
                 reject(new ApplicationError("Camel-29", 400, "Beim generieren der E-Mail für Absender" + order._doc.absender.email + " ist ein Fehler aufgetreten", e.message));
             }
@@ -572,17 +573,17 @@ module.exports = {
      * @param order
      * @param identificationNumber
      */
-    sentMailEmpf: function (identificationNumber, order) {
+    sentMailEmpf: async function (identificationNumber, order) {
         let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
         let formattedDate = moment(order.zustellTermin.datum).format("DD.MM.YYYY");
 
-        return new Promise(function (resolve, reject) {
+        return new Promise(async function (resolve, reject) {
             try {
                 let transporter = nodemailer.createTransport(help.getSmtpOptions());
 
                 let mailOptions = {
                     from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
-                    to:  order._doc.empfaenger.email , // list of receivers
+                    to: order._doc.empfaenger.email, // list of receivers
                     subject: `Ihr Paket von ${order._doc.absender.firma}`, // Subject line
                     html: `Guten Tag,<br> Ihre Sendung kommt voraussichtlich am ${formattedDate} zwischen ${order.zustellTermin.von}-${order.zustellTermin.bis} Uhr  an.<br><br><strong>Versandnummer:</strong>${identificationNumber}<br><br>Um zu sehen wo sich Ihre Sendung befindet können Sie über diesen Link einen Sendungsverfolgung tätigen <a href="http://kep-ag.kep-it.de/xtras/track.php">http://kep-ag.kep-it.de/xtras/track.php</a><br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
 <br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a> `, // html body
@@ -594,12 +595,13 @@ module.exports = {
                 };
 
                 // send mail with defined transport object
-                transporter.sendMail(mailOptions)
+                await transporter.sendMail(mailOptions)
+                    .then(() => {
+                        console.log(`[${date}] EMAIL-EMPFÄNGER: E-Mail wurde erfolgreich an Empfänger : ${order._doc.empfaenger.email}`);
+                        log.info(`EMAIL-EMPFÄNGER: E-Mail wurde erfolgreich an Empfänger : ${order._doc.empfaenger.email}`);
+                        resolve();
+                    })
                     .catch(e => reject(e));
-
-                console.log(`[${date}] EMAIL:  E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
-                log.info(`EMAIL: E-Mail wurde erfolgreich gesendet. ${identificationNumber}`);
-                resolve();
             } catch (e) {
                 reject(new ApplicationError("Camel-29", 400, "Beim generieren der E-Mail ist ein Fehler aufgetreten.", e.message));
             }
@@ -624,7 +626,7 @@ module.exports = {
                         if (err) {
                             reject(err)
                         } else {
-                            log.info(`Auftrag : ${order._id} wurde gelöscht.`);
+                            log.info(`${identificationNumber} - Auftrag : ${order._id} wurde gelöscht.`);
 
                             if (directoryToDelete) {
                                 // rimraf(directoryToDelete, function () { console.log('done'); });
@@ -636,7 +638,7 @@ module.exports = {
                                         for (const file of files) {
                                             fs.unlink(path.join(directoryToDelete, file), err => {
                                                 if (err) throw err;
-                                                log.info(`${file} wurde gelöscht.`);
+                                                log.info(`${identificationNumber} - ${file} wurde gelöscht.`);
                                             });
                                         }
                                     }
@@ -644,13 +646,13 @@ module.exports = {
                                     // Remove directory where PDF and PNG was stored
                                     fs.rmdir(directoryToDelete, function (err) {
                                         if (err) throw err;
-                                        log.info(`DIRECTORY: ${dir} wurde gelöscht.`);
+                                        log.info(`${identificationNumber} DIRECTORY: ${dir} wurde gelöscht.`);
                                     });
 
                                     // Delete CSV un tmp directory
                                     fs.unlink("./tmp/csv/" + identificationNumber + ".csv", err => {
                                         if (err) throw err;
-                                        log.info(`CSV: ${identificationNumber}.csv wurde gelöscht.`);
+                                        log.info(`${identificationNumber} CSV: ${identificationNumber}.csv wurde gelöscht.`);
                                         resolve();
                                     })
                                 });
@@ -682,8 +684,8 @@ module.exports = {
                         if (err) {
                             reject(err)
                         }
-                        log.info(`User : ${user._doc.email} wurde gelöscht.`);
-                        console.log(`[${date}] USER:  User wurde gelöscht. ${user._doc.email}`);
+                        log.info(`USER : ${user._doc.kundenNummer} wurde gelöscht.`);
+                        console.log(`[${date}] USER:  User wurde gelöscht. ${user._doc.kundenNummer}`);
                     })
                 }
             } catch (e) {

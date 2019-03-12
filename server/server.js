@@ -94,7 +94,6 @@ app.post('/user', async (req, res) => {
         const token = await user.generateAuthToken()
             .catch(e => {
                 log.info(e);
-
                 throw new ApplicationError("Camel-151", 400, help.getDatabaseErrorString())
             });
 
@@ -163,7 +162,7 @@ app.post('/user/login', async (req, res) => {
 
         const user = await User.findByCredentials(body.kundenNummer, body.password)
             .catch(e => {
-                log.info(e);
+                log.error(e);
                 throw new ApplicationError("Camel-16", 400, `Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.`, body);
             });
         await user.generateAuthToken().then((token) => {
@@ -172,10 +171,10 @@ app.post('/user/login', async (req, res) => {
                 user: user._doc,
                 token
             });
-            log.info(`Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
-            console.log(`[${date}] Benutzer ${user.kundenNummer} hat sich eingeloggt.`);
+            log.info(`${user.kundenNummer} hat sich eingeloggt.`);
+            console.log(`[${date}] ${user.kundenNummer} hat sich eingeloggt.`);
         }).catch(e => {
-            log.info(e);
+            log.error(e);
             throw new ApplicationError("Camel-152", 400, help.getDatabaseErrorString(), user);
         });
 
@@ -202,7 +201,7 @@ app.get('/user/me', authenticate, async (req, res) => {
         await User.findByToken(req.header('x-auth')).then(user => {
             res.status(200).send(user._doc);
         }).catch(e => {
-            log.info(e);
+            log.error(e);
             throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
         });
     } catch (e) {
@@ -254,11 +253,11 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             if (!user) {
                 throw new ApplicationError("Camel-16", 404, "Zu Bearbeitender Benutzer konnte nicht gefunden werden,", body)
             }
-            log.info(`Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
-            console.log(`Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
+            log.info(`${user._doc.kundenNummer} wurde bearbeitet`);
+            console.log(`[${date}] Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
             res.status(200).send(user._doc);
         }).catch(e => {
-            log.info(e);
+            log.error(e);
             throw new ApplicationError("Camel-18", 400, help.getDatabaseErrorString(), body)
         })
     } catch (e) {
@@ -286,7 +285,7 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
             console.log("[" + date + "]" + "User mit Token: " + req.token + " hat sich ausgeloggt.");
             res.status(200).send(true);
         }).catch(e => {
-            log.info(e);
+            log.error(e);
             throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
         });
     } catch (e) {
@@ -308,6 +307,7 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
 app.post('/csv', async (req, res, next) => {
     // VARIABLES
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let dateDir = moment().format("DDMMYYYY");
     let dateForFile = moment().format("DDMMYYYY");
     let isLoggedIn = req.header("x-auth");
     let kundenNummer = req.header('x-kundenNummer');
@@ -322,7 +322,7 @@ app.post('/csv', async (req, res, next) => {
         // let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
         // await checkTransport.verify()
         //     .catch(e => {
-        //         log.info(e);
+        //         log.errorx(e);
         //         throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
         //     });
 
@@ -331,7 +331,7 @@ app.post('/csv', async (req, res, next) => {
             + ",Content-Length"
         );
         // Dont create Order when Kundennummer or email is missing
-        if (help.checkIfValuesAreAvailable(kundenNummer, req.body.auftragbestEmail)) {
+        if (help.checkIfValuesAreAvailable(kundenNummer, req.body.absEmail)) {
             throw new ApplicationError("Camel-00", 400, "Kundennummer oder E-Mail konnte nicht gelesen werden.");
         }
 
@@ -343,7 +343,7 @@ app.post('/csv', async (req, res, next) => {
         if (isLoggedIn) {
             user = await User.findByKundenNummer(kundenNummer)
                 .catch(e => {
-                    log.info(e);
+                    log.error(e);
                     throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
                 });
 
@@ -361,7 +361,6 @@ app.post('/csv', async (req, res, next) => {
             kndDir = `${orderDir}/${jsonObject.auftragbestEmail}`;
         }
 
-        let dateDir = moment().format("DDMMYYYY");
         let kndDateDir = `${kndDir}/${dateDir}`;
 
         await setup.createKndDirectorys(kndDir, kndDateDir)
@@ -395,8 +394,8 @@ app.post('/csv', async (req, res, next) => {
                 if (err) {
                     throw new Error(date + ": " + err);
                 }
-                log.info("CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
-                console.log("[" + date + "]" + " CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
+                log.info( identificationNumber + " CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
+                console.log("[" + date + "] " + identificationNumber + " CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
             });
 
             // Save order in database
@@ -512,7 +511,7 @@ app.get('/orders', authenticate, (req, res) => {
 /**
  * Get´s Orders for customer
  */
-app.post('/download', async (req, res) => {
+app.post('/download', authenticate, async (req, res) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     try {
         await setup.getPdfFilePath(req.body.identificationNumber)
@@ -555,8 +554,6 @@ function generateBarcode(identificationNumber, kundenNummer, countOrder, pathToS
             console.log(`[${date}] Ordner ${pathToSave} wurde erstellt`);
         }
 
-        let pngBuffer;
-
         // Generates Barcode
         bwipjs.toBuffer({
             bcid: 'code128',       // Barcode type
@@ -567,16 +564,15 @@ function generateBarcode(identificationNumber, kundenNummer, countOrder, pathToS
             textxalign: 'center',        // Always good to set this
         }, function (err, png) {
             if (err) {
+                log.error(err);
                 reject(new ApplicationError("Camel-26", 400, "Beim erstellen des Barcodes ist etwas schiefgelaufen.", err));
             }
-            pngBuffer = png;
-            // WHEN USER IS LOGGED ON
-            fs.writeFile(`${pathToSave}/${identificationNumber}.png`, pngBuffer, 'binary', function (err) {
+            fs.writeFile(`${pathToSave}/${identificationNumber}.png`, png, 'binary', function (err) {
                 if (err) {
                     reject(new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err));
                 } else {
-                    log.info("PNG:" + identificationNumber + "wurde erstellt");
-                    console.log(`[${date}] PNG: ${identificationNumber} wurde erstellt.`);
+                    log.info(identificationNumber + " PNG:" + identificationNumber + "wurde erstellt");
+                    console.log(`[${date}] ${identificationNumber} PNG: ${identificationNumber} wurde erstellt.`);
                     resolve();
                 }
             });
@@ -596,8 +592,8 @@ async function generatePDF(identificationNumber, order, pathToSave) {
         try {
             setup.generatePDF(`${pathToSave}/${identificationNumber}.png`, pathToSave, identificationNumber, order);
 
-            log.info(`PDF: Erfolgreich generiert für ${identificationNumber}`);
-            console.log(`[${date}] PDF: Erfolgreich generiert für ${identificationNumber}`);
+            log.info(`${identificationNumber} PDF: Erfolgreich generiert für ${identificationNumber}`);
+            console.log(`[${date}] ${identificationNumber} PDF: Erfolgreich generiert für ${identificationNumber}`);
             resolve();
         } catch (e) {
             reject(e)
