@@ -129,7 +129,7 @@ let SendungsDatenSchema = mongoose.Schema({
     },
     wert: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         min: 1, max: 24,
         unique: false
