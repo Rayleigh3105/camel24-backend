@@ -149,11 +149,6 @@ let RechnungsDatenSchema = mongoose.Schema({
         required: true,
         trim: true,
         min: 1,
-        validate: {
-            isAsync: true,
-            validator: validator.isEmail,
-            message: '{VALUE} is not a valid email'
-        },
         max: 75
     },
     telefon: {
@@ -167,7 +162,7 @@ let RechnungsDatenSchema = mongoose.Schema({
     name: {
 
         type: String,
-        required: false,
+        required: true,
         trim: true,
         min: 1,
         max: 75,
@@ -175,21 +170,21 @@ let RechnungsDatenSchema = mongoose.Schema({
     },
     adresse: {
         type: String,
-        required: false,
+        required: true,
         trim: true,
         min: 1, max: 75,
         unique: false
     },
     plz: {
         type: String,
-        required: false,
+        required: true,
         trim: true,
         min: 1, max: 5,
         unique: false
     },
     ort: {
         type: String,
-        required: false,
+        required: true,
         trim: true,
         min: 1, max: 75,
         unique: false

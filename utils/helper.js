@@ -58,7 +58,7 @@ module.exports = {
      * @param doc - current PDF
      * @param order - current order to process
      */
-    createAmmoPaper(doc, order) {
+    createAmmoPaper: function (doc, order) {
         let formattedMuntionsDate = moment().format('DD.MM.YYYY');
         doc.addPage();
 
@@ -252,6 +252,46 @@ module.exports = {
 
         doc.text('Unterschrift Fahrzeugführer:', 380, 705);
         return doc
-    }
+    },
+
+    /**
+     * Checks if data from Request is valid
+     *
+     * @param json - json to validate
+     * @returns {Promise<any>}
+     */
+    checkRequiredDefaultData: function (json) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // Check if E-Mail is available for absender
+                if (json.absEmail === null || json.absEmail === '') {
+                    // Throw error for missing absender email
+                    reject("bruder muss los")
+                }
+
+                // Check if Empf Ansprechpartner is available when Zustell art == perönlich
+                if (json.zustellArt !== 'standard') {
+                    if (json.empfAnsprechpartner === null || json.empfAnsprechpartner === '') {
+                        // Throw error for missing Empf Ansprechpartner
+                    }
+                }
+                // Check if Zustell art == persoönlich wenn art der ware == Waffe || Munition
+                if (json.sendungsdatenArt !== 'Sonstiges') {
+                    if(json.zustellArt === 'standard') {
+                        // Throw error for not persönlich when  art der ware == Waffe || Munition
+
+                    }
+                }
+
+                // Check if AbholZeit and ZustellZeit have timezone of 2 hours && check if von is not bigger than bis
+
+                    resolve()
+            } catch (e) {
+                reject(e);
+            }
+
+        });
+    },
+
 
 };

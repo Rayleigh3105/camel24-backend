@@ -319,6 +319,17 @@ app.post('/csv', async (req, res, next) => {
     let successful = false;
 
     try {
+
+        // Convert Object to JSON
+        let jsonObject = req.body;
+
+        await setup.checkJsonValid(jsonObject)
+            .catch(error => {
+                log.error(error)
+            });
+
+        let convertedJson = setup.convertToCSV(jsonObject);
+
         // let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
         // await checkTransport.verify()
         //     .catch(e => {
@@ -335,8 +346,6 @@ app.post('/csv', async (req, res, next) => {
             throw new ApplicationError("Camel-00", 400, "Kundennummer oder E-Mail konnte nicht gelesen werden.");
         }
 
-        // Convert Object to JSON
-        let jsonObject = req.body;
 
         // Map json Object to order so it can be saved
         let kndDir;
@@ -386,7 +395,6 @@ app.post('/csv', async (req, res, next) => {
 
         // Convert JSON to CSV
         let filePath = setup.getFilePath(identificationNumber);
-        let convertedJson = setup.convertToCSV(jsonObject);
 
         if (convertedJson !== '') {
             // Create File
@@ -394,7 +402,7 @@ app.post('/csv', async (req, res, next) => {
                 if (err) {
                     throw new Error(date + ": " + err);
                 }
-                log.info( identificationNumber + " CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
+                log.info(identificationNumber + " CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
                 console.log("[" + date + "] " + identificationNumber + " CSV: Auftrag " + identificationNumber + ".csv" + " wurde erstellt");
             });
 
@@ -471,7 +479,7 @@ app.post('/csv', async (req, res, next) => {
             //         }
             //     });
 
-                    res.status(200).send(true);
+            res.status(200).send(true);
 
         }
     }
@@ -482,19 +490,39 @@ app.post('/csv', async (req, res, next) => {
  */
 app.get('/orders', authenticate, (req, res) => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let search = req.header('search');
 
     try {
-        Order.find({
-            _creator: req.user._id,
-        }).sort({createdAt: -1})
-            .then((order) => {
-                if (order) {
-                    res.status(200).send(order);
+        if (search) {
+            Order.find({
+                _creator: req.user._id,
+                identificationNumber: {
+                    '$regex': search,
+                    '$options': 'i'
                 }
-            }).catch((e) => {
-            log.info(e);
-            throw new ApplicationError("Camel-21", 400, help.getDatabaseErrorString())
-        })
+            }).sort({createdAt: -1})
+                .then((order) => {
+                    if (order) {
+                        res.status(200).send(order);
+                    }
+                }).catch((e) => {
+                log.info(e);
+                throw new ApplicationError("Camel-21", 400, help.getDatabaseErrorString())
+            })
+        } else {
+            Order.find({
+                _creator: req.user._id,
+            }).sort({createdAt: -1})
+                .then((order) => {
+                    if (order) {
+                        res.status(200).send(order);
+                    }
+                }).catch((e) => {
+                log.info(e);
+                throw new ApplicationError("Camel-21", 400, help.getDatabaseErrorString())
+            })
+        }
+
     } catch (e) {
         if (e instanceof ApplicationError) {
             console.log(`[${date}] ${e.stack}`);
