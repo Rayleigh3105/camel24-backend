@@ -263,29 +263,72 @@ module.exports = {
     checkRequiredDefaultData: function (json) {
         return new Promise(async (resolve, reject) => {
             try {
+                let abholZeitVon = json.abholZeitVon.substring(0, json.abholZeitVon.indexOf(':'));
+                let abholZeitBis = json.abholZeitBis.substring(0, json.abholZeitBis.indexOf(':'));
+                let zustellZeitVon = json.zustellZeitVon.substring(0, json.zustellZeitVon.indexOf(':'));
+                let zustellZeitBis = json.zustellZeitBis.substring(0, json.zustellZeitBis.indexOf(':'));
+
                 // Check if E-Mail is available for absender
                 if (json.absEmail === null || json.absEmail === '') {
                     // Throw error for missing absender email
-                    reject("bruder muss los")
+                    throw new ApplicationError('Camel-31', 400, "Angabe der E-Mail ist beim Absender erforderlich.", json)
                 }
 
                 // Check if Empf Ansprechpartner is available when Zustell art == perönlich
                 if (json.zustellArt !== 'standard') {
-                    if (json.empfAnsprechpartner === null || json.empfAnsprechpartner === '') {
+                    if (json.empfAnsprechpartner === null || json.empfAnsprechpartner === '' || json.empfAnsprechpartner === undefined) {
                         // Throw error for missing Empf Ansprechpartner
+                        throw new ApplicationError('Camel-32', 400, "Ansprechpartner muss bei persönlicher Zustellung gegeben sein.", json)
                     }
                 }
                 // Check if Zustell art == persoönlich wenn art der ware == Waffe || Munition
                 if (json.sendungsdatenArt !== 'Sonstiges') {
-                    if(json.zustellArt === 'standard') {
+                    if (json.zustellArt === 'standard') {
                         // Throw error for not persönlich when  art der ware == Waffe || Munition
-
+                        throw new ApplicationError("Camel-33", 400, "Bei Waffen oder Munitionsversand muss eine persönliche Zustellung erfolgen.", json)
                     }
                 }
 
-                // Check if AbholZeit and ZustellZeit have timezone of 2 hours && check if von is not bigger than bis
+                // ABHOLDATUM VALIDATION
+                let abholDatum = new Date(json.abholDatum);
+                abholDatum.setHours(0,0,0);
+                // Check if Datum is not on Weekend Abholzeit and ZustellZeit
+                if (abholDatum.getDay() === 0 || abholDatum.getDay() === 6) {
+                    // throw error for date on weekend
+                    throw new ApplicationError("Camel-34", 400, "Abholdatum muss zwischen Montag und Freitag liegen.", json)
+                }
+                // Check if Abhol Datum is one day after today and not a weekend day
+                if(!(abholDatum > new Date())) {
+                    // throw error for date not bigger than today
+                    throw new ApplicationError("Camel-38", 400, "Abholdatum muss mindestens einen Tag nach der Auftragserstellung sein.", json)
+                }
 
-                    resolve()
+                // ZUSTELLDATUM VALIDATION
+                let zustellDatum = new Date(json.zustellDatum);
+                zustellDatum.setHours(0,0,0);
+                if (zustellDatum.getDay() === 0 || zustellDatum.getDay() === 6) {
+                    // throw error for date on weekend
+                    throw new ApplicationError("Camel-35", 400, "Zustelldatum muss zwischen Montag und Freitag liegen.", json)
+                }
+                // Check if Zustell Datum os one day after abholdatum and not a weekend day
+                if(!(zustellDatum > abholDatum)) {
+                    // throw error for date not bigger than today
+                    throw new ApplicationError("Camel-39", 400, "Zustelldatum muss mindestens einen Tag nach der Auftragserstellung sein.", json)
+
+                }
+
+                // Check if AbholZeit and ZustellZeit have timezone of 2 hours && check if von is not bigger than bis
+                if (abholZeitVon > abholZeitBis || !(abholZeitBis - 2 >= abholZeitVon)) {
+                    // Throw error with timzone of 2 hours
+                    throw new ApplicationError("Camel-36", 400, "Abholzeitfenster muss mind. 2 Stunden betragen.", json)
+                }
+
+                if (zustellZeitVon > zustellZeitBis || !(zustellZeitBis - 2 >= zustellZeitVon)) {
+                    // Throw error with timzone of 2 hours
+                    throw new ApplicationError("Camel-37", 400, "Zustellzeitfenster muss mind. 2 Stunden betragen.", json)
+                }
+
+                resolve();
             } catch (e) {
                 reject(e);
             }

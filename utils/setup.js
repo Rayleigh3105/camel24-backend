@@ -657,17 +657,15 @@ module.exports = {
             }
 
         })
-
     },
 
     checkJsonValid: function (json) {
         return new Promise(async (resolve, reject) => {
             try {
-                await help.checkRequiredDefaultData(json)
+                await help.checkRequiredDefaultData(json).then(() => resolve())
             } catch (e) {
                 reject(e);
             }
-
         });
     },
 };

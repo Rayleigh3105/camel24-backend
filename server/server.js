@@ -319,13 +319,12 @@ app.post('/csv', async (req, res, next) => {
     let successful = false;
 
     try {
-
-        // Convert Object to JSON
         let jsonObject = req.body;
 
         await setup.checkJsonValid(jsonObject)
             .catch(error => {
-                log.error(error)
+                log.error(error);
+                throw error;
             });
 
         let convertedJson = setup.convertToCSV(jsonObject);
@@ -383,7 +382,7 @@ app.post('/csv', async (req, res, next) => {
                 throw e
             });
 
-
+        // Create identificationNumber
         if (user) {
             identificationNumber = kundenNummer + dateForFile + resultCount;
             order = setup.mapOrder(jsonObject, user, new Date(), identificationNumber)
@@ -393,7 +392,7 @@ app.post('/csv', async (req, res, next) => {
             order = setup.mapOrder(jsonObject, null, new Date(), identificationNumber);
         }
 
-        // Convert JSON to CSV
+        // Get File path for storing the CSV temporär
         let filePath = setup.getFilePath(identificationNumber);
 
         if (convertedJson !== '') {

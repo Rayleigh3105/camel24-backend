@@ -34,8 +34,13 @@
 - **Camel-28** -> Beim generieren der PDF ist etwas schief gelaufen
 - **Camel-29** -> Beim generieren der E-Mail ist ein Fehler aufgetreten.
 - **Camel-30** -> Beim downloaden der PDF Datei ist etwas schiefgelaufen.
-
-
-
-
-
+#### Json Validation
+- **Camel-31** -> Angabe der E-Mail ist beim Absender erforderlich.
+- **Camel-32** -> Ansprechpartner muss bei persönlicher Zustellung gegeben sein.
+- **Camel-33** -> Bei Waffen oder Munitionsversand muss eine persönliche Zustellung erfolgen.
+- **Camel-34** -> Abholdatum darf nicht muss zwischen Montag und Freitag erfolgen.
+- **Camel-35** -> Zustelldatum darf nicht muss zwischen Montag und Freitag erfolgen.
+- **Camel-36** -> Abholzeitfenster muss mind. 2 Stunden betragen.
+- **Camel-37** -> Zustellzeitfenster muss mind. 2 Stunden betragen.
+- **Camel-38** -> Abholdatum muss mindestens einen Tag nach der Auftragserstellung sein.
+- **Camel-39** -> Zustelldatum muss mind. 2 Stunden betragen.
