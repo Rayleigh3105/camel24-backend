@@ -12,6 +12,7 @@ let PDFDocument = require('pdfkit');
 let mongoose = require('mongoose');
 const path = require('path');
 let ftpDir = path.join(__dirname, '../../../ftp');
+let pattern = require('./ValidationPatterns');
 
 
 module.exports = {
@@ -291,30 +292,34 @@ module.exports = {
 
                 // ABHOLDATUM VALIDATION
                 let abholDatum = new Date(json.abholDatum);
-                abholDatum.setHours(0,0,0);
+                abholDatum.setHours(0, 0, 0);
                 // Check if Datum is not on Weekend Abholzeit and ZustellZeit
                 if (abholDatum.getDay() === 0 || abholDatum.getDay() === 6) {
                     // throw error for date on weekend
                     throw new ApplicationError("Camel-34", 400, "Abholdatum muss zwischen Montag und Freitag liegen.", json)
                 }
                 // Check if Abhol Datum is one day after today and not a weekend day
-                if(!(abholDatum > new Date())) {
+                if (!(abholDatum > new Date())) {
                     // throw error for date not bigger than today
                     throw new ApplicationError("Camel-38", 400, "Abholdatum muss mindestens einen Tag nach der Auftragserstellung sein.", json)
                 }
 
                 // ZUSTELLDATUM VALIDATION
                 let zustellDatum = new Date(json.zustellDatum);
-                zustellDatum.setHours(0,0,0);
+                zustellDatum.setHours(0, 0, 0);
                 if (zustellDatum.getDay() === 0 || zustellDatum.getDay() === 6) {
                     // throw error for date on weekend
                     throw new ApplicationError("Camel-35", 400, "Zustelldatum muss zwischen Montag und Freitag liegen.", json)
                 }
                 // Check if Zustell Datum os one day after abholdatum and not a weekend day
-                if(!(zustellDatum > abholDatum)) {
+                if (!(zustellDatum > abholDatum)) {
                     // throw error for date not bigger than today
                     throw new ApplicationError("Camel-39", 400, "Zustelldatum muss mindestens einen Tag nach der Auftragserstellung sein.", json)
 
+                }
+
+                if(!json.abholZeitVon.match(pattern.vonAndBisPattern) || !json.abholZeitBis.match(pattern.vonAndBisPattern)) {
+                    throw new ApplicationError("Camel-42", 400, "Abholzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.", json)
                 }
 
                 // Check if AbholZeit and ZustellZeit have timezone of 2 hours && check if von is not bigger than bis
@@ -323,9 +328,30 @@ module.exports = {
                     throw new ApplicationError("Camel-36", 400, "Abholzeitfenster muss mind. 2 Stunden betragen.", json)
                 }
 
+
+                // Check if von and bis have right format
+                if (abholZeitVon > 16 || abholZeitVon < 8 || abholZeitBis > 16 || abholZeitBis < 8) {
+                    // Throw error Abholzeit muss zwischen 08:00 und 16: Uhr erfolgen
+                    throw new ApplicationError("Camel-40", 400, "Abholung muss zwischen 08:00 und 16:00 Uhr erfolgen.", json)
+                }
+
+                if(!(json.abholZeitVon.match(pattern.vonAndBisPattern)) || !(json.abholZeitBis.match(pattern.vonAndBisPattern))) {
+                    throw new ApplicationError("Camel-43", 400, "Zustellzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.", json)
+                }
+
                 if (zustellZeitVon > zustellZeitBis || !(zustellZeitBis - 2 >= zustellZeitVon)) {
                     // Throw error with timzone of 2 hours
                     throw new ApplicationError("Camel-37", 400, "Zustellzeitfenster muss mind. 2 Stunden betragen.", json)
+                }
+
+                // Check if von and bis have right format
+                if (zustellZeitVon > 16 || zustellZeitVon < 8 || zustellZeitBis > 16 || zustellZeitBis < 8) {
+                    // Throw error Abholzeit muss zwischen 08:00 und 16: Uhr erfolgen
+                    throw new ApplicationError("Camel-41", 400, "Zustellung muss zwischen 08:00 und 16:00 Uhr erfolgen.", json)
+                }
+
+                if(!(json.absPlz.match(pattern.plzPattern)) || !(json.empfPlz.match(pattern.plzPattern)) || !(json.rechnungPlz.match(pattern.plzPattern))) {
+                    throw  new ApplicationError("Camel-44", 400, "PLZ muss Pattern ^[0-9]{5}$ entsprechen.")
                 }
 
                 resolve();

@@ -44,3 +44,8 @@
 - **Camel-37** -> Zustellzeitfenster muss mind. 2 Stunden betragen.
 - **Camel-38** -> Abholdatum muss mindestens einen Tag nach der Auftragserstellung sein.
 - **Camel-39** -> Zustelldatum muss mind. 2 Stunden betragen.
+- **Camel-40** -> Abholung muss zwischen 08:00 und 16:00 Uhr erfolgen.
+- **Camel-41** -> Zustellung muss zwischen 08:00 und 16:00 Uhr erfolgen.
+- **Camel-42** -> Abholzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.
+- **Camel-43** -> Zustellzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.
+- **Camel-44** -> PLZ muss Pattern ^[0-9]{5}$ entsprechen.

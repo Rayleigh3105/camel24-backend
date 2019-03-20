@@ -3,6 +3,11 @@ let conn = require('./../db/mongoose').conn;
 const validator = require('validator');
 
 // //////////////////////////////////////////////////////////////////////////
+//                              VALIDATOR                                  //
+// //////////////////////////////////////////////////////////////////////////
+
+
+// //////////////////////////////////////////////////////////////////////////
 //                              SCHEMAS                                    //
 // //////////////////////////////////////////////////////////////////////////
 /**
@@ -13,63 +18,71 @@ let AbsEmpfSchema = mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 75,
+        minlength: 1,
+        maxLength: 70,
         unique: false
     },
     zusatz: {
         type: String,
         required: false,
         trim: true,
-        min: 1, max: 75,
+        maxLength: 70,
         unique: false
     },
     ansprechpartner: {
         type: String,
         required: false,
         trim: true,
-        min: 1, max: 75,
+        minlength: 1,
+        maxLength: 70,
         unique: false
     },
     adresse: {
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 75,
+        minlength: 1,
+        maxLength: 70,
         unique: false
     },
     land: {
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 20,
+        minlength: 1,
+        maxLength: 20,
         unique: false
     },
     plz: {
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 5,
+        minlength: 5,
+        maxLength: 5,
         unique: false
     },
     ort: {
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 75,
+        minlength: 1,
+        maxLength: 70,
         unique: false
     },
     telefon: {
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 20,
+        minlength: 1,
+        maxLength: 20,
         unique: false
     },
     email: {
         type: String,
         required: false,
         trim: true,
-        min: 1, max: 40,
+        minlength: 1,
+        maxLength: 40,
         unique: false,
     },
 });
@@ -82,28 +95,32 @@ let TerminSchema = mongoose.Schema({
         type: Date,
         required: true,
         trim: true,
-        min: 1,
+        minlength: 1,
+        maxLength: 30,
         unique: false
     },
     von: {
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 12,
+        minlength: 1,
+        maxLength: 5,
         unique: false
     },
     bis: {
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 12,
+        minlength: 1,
+        maxLength: 5,
         unique: false
     },
     art: {
         type: String,
         required: false,
         trim: true,
-        max: 50,
+        minlength: 1,
+        maxLength: 50,
         unique: false
     }
 
@@ -117,21 +134,24 @@ let SendungsDatenSchema = mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 5,
+        minlength: 1,
+        maxLength: 5,
         unique: false
     },
     art: {
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 75,
+        minlength: 1,
+        maxLength: 70,
         unique: false
     },
     wert: {
         type: String,
         required: false,
         trim: true,
-        min: 1, max: 24,
+        minlength: 1,
+        maxLength: 24,
         unique: false
     },
     transportVers: {
@@ -148,45 +168,48 @@ let RechnungsDatenSchema = mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        min: 1,
-        max: 75
+        minlength: 1,
+        maxLength: 70,
     },
     telefon: {
         type: String,
         required: true,
         trim: true,
-        min: 1,
         unique: false,
-        max: 20
+        minlength: 1,
+        maxLength: 20,
     },
     name: {
 
         type: String,
         required: true,
         trim: true,
-        min: 1,
-        max: 75,
+        minlength: 1,
+        maxLength: 70,
         unique: false
     },
     adresse: {
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 75,
+        minlength: 1,
+        maxLength: 70,
         unique: false
     },
     plz: {
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 5,
+        minlength: 1,
+        maxLength: 5,
         unique: false
     },
     ort: {
         type: String,
         required: true,
         trim: true,
-        min: 1, max: 75,
+        minlength: 1,
+        maxLength: 70,
         unique: false
     },
 });

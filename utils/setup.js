@@ -170,9 +170,9 @@ module.exports = {
         }
 
         if (!fs.existsSync(`${baseDir}/logs`)) {
-            fs.mkdirSync("${baseDir}/log");
-            log.info(`Ordner ${baseDir}/log wurde erstellt`);
-            console.log(`[${date}] Ordner ${baseDir}/log wurde erstellt`);
+            fs.mkdirSync(`${baseDir}/logs`);
+            log.info(`Ordner ${baseDir}/logs wurde erstellt`);
+            console.log(`[${date}] Ordner ${baseDir}/logs wurde erstellt`);
         }
 
         if (!fs.existsSync(ftpDir)) {
@@ -558,6 +558,7 @@ module.exports = {
             }
         })
     },
+
     /**
      * Counts Files in directory
      *
@@ -581,7 +582,6 @@ module.exports = {
                     if (!hasTmpFile) {
                         resolve(files.length + 1)
                     }
-
                 })
             } catch (e) {
                 reject(e);

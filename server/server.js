@@ -27,7 +27,6 @@ const crypto = require('crypto');
 const fs = require('fs');
 
 // +++ VARIABLES +++
-let dir = path.join(__dirname, '../../../../camel');
 let orderDir = path.join(__dirname, '../../../../camel/auftraege');
 let app = express();
 
@@ -319,6 +318,8 @@ app.post('/csv', async (req, res, next) => {
     let successful = false;
 
     try {
+        setup.createNeededDirectorys();
+
         let jsonObject = req.body;
 
         await setup.checkJsonValid(jsonObject)
@@ -572,7 +573,6 @@ function generateBarcode(identificationNumber, kundenNummer, countOrder, pathToS
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
     return new Promise(function (resolve, reject) {
-        setup.createNeededDirectorys();
 
         // Creates ./tmp/kundenNummer/date/count when countOder is available
         if (!fs.existsSync(pathToSave)) {
