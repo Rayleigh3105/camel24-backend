@@ -1,0 +1,27 @@
+{
+  "user": {
+    "tokens": [
+      {
+        "access": "auth",
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1Yzg3ZGExMmFhNzYyMmQxNGUxODgzOTUiLCJhY2Nlc3MiOiJhdXRoIiwiaWF0IjoxNTUyNDA3MDU4fQ.KlIKQmwJcZUITV94ZwOPeKgacmh85JP5jJtZRvMPdH8",
+        "_id": "5c87da12aa7622d14e188396"
+      },
+    ],
+    "zusatz": "beispiel",
+    "telefon": "09141 111111",
+    "plz": "91757",
+    "ort": "Treuchtlingen",
+    "land": "Deutschland",
+    "ansprechpartner": "Max Mustermann",
+    "adresse": "Musterstraße-str 19",
+    "__v": 2,
+    "kundenNummer": 14000,
+    "password": "$2a$10$VJWjWUg3qfqWLWXuTOUEOuJlF1fJaSG./Dl8ekeGMpbthNXuJlKIa",
+    "email": "max@mustermann.de",
+    "firmenName": "Musterfirma",
+    "lastName": "Mustermann",
+    "firstName": "Max",
+    "_id": "5c87da12aa7622d14e188395"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1Yzg3ZGExMmFhNzYyMmQxNGUxODgzOTUiLCJhY2Nlc3MiOiJhdXRoIiwiaWF0IjoxNTUyNDA3MTg0fQ.3HRkrIAJsziaEyTP9K6JX4gBpfDDzCrHUZzP7i950D0"
+}

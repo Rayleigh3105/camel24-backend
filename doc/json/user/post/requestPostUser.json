@@ -1,0 +1,12 @@
+{
+  "firstName": "Max",
+  "lastName": "Mustermann",
+  "email": "max@mustermann.de",
+  "password": "secretpassword",
+  "firmenName": "Musterfirma",
+  "adresse": "Musterstraße-str 19",
+  "land": "Deutschland",
+  "plz": "91757",
+  "ort": "Treuchtlingen",
+  "telefon": "09141 111111"
+}
