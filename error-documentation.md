@@ -10,7 +10,7 @@
 - **Camel-12** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn nach User gesucht wird mit filter)
 - **Camel-13** -> E-Mail ist schon regestriert. (When fetching for user und Anzahl wird berechnet)
 - **Camel-14** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn beim Speichern des Benutzers in der Datenbank was falsch läuft)
-- **Camel-151** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird) -> Register
+- **Camel-15** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird) -> Register
 - **Camel-152** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird) -> Login
 - **Camel-16**
     - Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, , oder nicht gültiges Passwort.
@@ -49,3 +49,6 @@
 - **Camel-42** -> Abholzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.
 - **Camel-43** -> Zustellzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.
 - **Camel-44** -> PLZ muss Pattern ^[0-9]{5}$ entsprechen.
+
+
+raml2html -t nunjucks/template.nunjucks -i camel-api-documentation.raml -o camel-api-documentation.html

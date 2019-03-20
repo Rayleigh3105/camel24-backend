@@ -1,0 +1,49 @@
+<li class="apiarg">
+  {% if item.displayName %}
+    <code style="font-size: 110%">{{ item.displayName }}</code>:
+  {% else %}
+    <code style="font-size: 110%">{{ key }}</code>:
+  {% endif %}
+
+  <em>
+    {%- if item.required -%}required {% endif -%}
+    (
+    {%- if item.enum -%}
+      one of {{ item.enum.join(', ') }}
+    {%- else -%}
+      {{ item.type }}
+    {%- endif -%}
+
+    {%- if item.default %} - default: {{ item.default }}{%- endif -%}
+    {%- if item.repeat %} - repeat: {{ item.repeat }}{%- endif -%}
+    {%- if item.type == 'string' -%}
+      {%- if item.minLength %} - minLength: {{ item.minLength }}{%- endif -%}
+      {%- if item.maxLength %} - maxLength: {{ item.maxLength }}{%- endif -%}
+    {%- else -%}
+      {%- if item.minimum %} - minimum: {{ item.minimum }}{%- endif -%}
+      {%- if item.maximum %} - maximum: {{ item.maximum }}{%- endif -%}
+    {%- endif -%}
+    {%- if item.pattern %} - pattern: {{ item.pattern }}{%- endif -%}
+    )
+  </em>
+
+  {% markdown %}{{ item.description }}{% endmarkdown %}
+
+  {% if item.schema %}
+    <p><strong>Schema</strong>:</p>
+    <pre><code>{{ item.schema | escape }}</code></pre>
+  {% endif %}
+
+  {% if item.example %}
+	<div class="panel panel-default" style="margin-bottom: 10px;">
+		<div class="panel-heading" style="padding: 3px 5px 3px 10px;background-color:#FFFFFF;">Example</div>
+		<div class="panel-body" style="padding:0;">
+			{% if item.type == 'string' %}
+			<pre style="border:0px; padding: 6.5px;margin:0;">{{ item.example | escape }}</pre>
+			{% else %}
+			<pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{{ item.example | escape }}</code></pre>
+			{% endif %}
+		</div>
+	</div>
+  {% endif %}
+</li>

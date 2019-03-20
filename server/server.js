@@ -93,7 +93,7 @@ app.post('/user', async (req, res) => {
         const token = await user.generateAuthToken()
             .catch(e => {
                 log.info(e);
-                throw new ApplicationError("Camel-151", 400, help.getDatabaseErrorString())
+                throw new ApplicationError("Camel-15", 400, help.getDatabaseErrorString())
             });
 
         // create reusable transporter object using the default SMTP transport

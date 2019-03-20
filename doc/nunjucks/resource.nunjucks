@@ -1,0 +1,304 @@
+{% if (resource.methods or (resource.description and resource.parentUrl)) %}
+  <div class="panel panel-white">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a class="collapsed" data-toggle="collapse" href="#panel_{{ resource.uniqueId }}">
+          <span class="parent">{{ resource.parentUrl }}</span>{{ resource.relativeUri }}
+        </a>
+
+        <span class="methods">
+          {% for method in resource.methods %}
+            <a href="#{{ resource.uniqueId }}_{{ method.method }}"><!-- modal shown by hashchange event -->
+              <span class="badge badge_{{ method.method }}">{{ method.method }}{% if method.securedBy.length %} <span class="glyphicon glyphicon-lock" title="Authentication required"></span>{% endif %}</span>
+            </a>
+          {% endfor %}
+        </span>
+      </h4>
+    </div>
+
+    <div id="panel_{{ resource.uniqueId }}" class="panel-collapse collapse">
+      <div class="panel-body">
+        {% if resource.parentUrl %}
+          {% if resource.description %}
+            <div class="resource-description">
+              {% markdown %}{{ resource.description }}{% endmarkdown %}
+            </div>
+          {% endif %}
+        {% endif %}
+
+        <div class="list-group">
+          {% for method in resource.methods %}
+            <div onclick="window.location.href = '#{{ resource.uniqueId }}_{{ method.method }}'" class="list-group-item">
+              <span class="badge badge_{{ method.method }}">{{ method.method }}{% if method.securedBy.length %} <span class="glyphicon glyphicon-lock" title="Authentication required"></span>{% endif %}</span>
+              <div class="method_description">
+                {% markdown %}{{ method.description}}{% endmarkdown %}
+              </div>
+              <div class="clearfix"></div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    {% for method in resource.methods %}
+      <div class="modal fade" tabindex="0" id="{{ resource.uniqueId }}_{{ method.method }}">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+              <h4 class="modal-title" >
+                <span class="badge badge_{{ method.method }}">{{ method.method }}{% if method.securedBy.length %} <span class="glyphicon glyphicon-lock" title="Authentication required"></span>{% endif %}</span>
+                <span class="parent">{{ resource.parentUrl }}</span>{{ resource.relativeUri }}
+              </h4>
+            </div>
+
+            <div class="modal-body">
+              {% if method.description %}
+                <div class="alert alert-info">
+                  {% markdown %}{{ method.description}}{% endmarkdown %}
+                </div>
+              {% endif %}
+
+              {% if method.securedBy.length %}
+                {% for securedBy in method.securedBy %}
+                  <div class="alert alert-warning">
+                    <span class="glyphicon glyphicon-lock" title="Authentication required"></span> Secured by {{ securedBy }}
+                    {% set securityScheme = securitySchemeWithName(securedBy) %}
+                    {% if securityScheme.description %}
+                      {% markdown %}{{ securityScheme.description }}{% endmarkdown %}
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              {% endif %}
+
+              <!-- Nav tabs -->
+              <ul class="nav nav-tabs">
+                {% if method.allUriParameters.length or method.queryParameters or method.headers or method.body %}
+                  <li class="active">
+                    <a href="#{{ resource.uniqueId }}_{{ method.method }}_request" data-toggle="tab">Request</a>
+                  </li>
+                {% endif %}
+
+                {% if method.responses %}
+                  <li{%
+                    if not method.allUriParameters.length and not method.queryParameters
+                    and not method.headers and not method.body
+                    %} class="active"{%
+                    endif
+                    %}>
+                    <a href="#{{ resource.uniqueId }}_{{ method.method }}_response" data-toggle="tab">Response</a>
+                  </li>
+                {% endif %}
+
+                {% if method.securedBy.length %}
+                  <li>
+                    <a href="#{{ resource.uniqueId }}_{{ method.method }}_securedby" data-toggle="tab">Security</a>
+                  </li>
+                {% endif %}
+              </ul>
+
+              <!-- Tab panes -->
+              <div class="tab-content">
+                {% if method.allUriParameters.length or method.queryParameters or method.headers or method.body %}
+                  <div class="tab-pane active" id="{{ resource.uniqueId }}_{{ method.method }}_request">
+					  <ul class="list-group" style="padding-left: 0;">
+                    {% if resource.allUriParameters.length %}
+					  {% set collId = resource.uniqueId + "_" + method.method + "_request_uriparams" %}
+					<li class="list-group-item">
+						<a data-toggle="collapse" href="#{{ collId }}">URI Parameters ({{ resource.allUriParameters | length }})</a>
+						<ul class="collapse" id="{{ collId }}" style="padding-top: 1em;">
+                        {% for item in resource.allUriParameters %}
+                          {% include "./item.nunjucks" %}
+                        {% endfor %}
+					    </ul>
+					</li>
+                    {% endif %}
+
+                    {% if method.headers %}
+					  {% set collId = resource.uniqueId + "_" + method.method + "_request_headers" %}
+					  {% set cnt = 0 %}
+					  {% for name, item in method.headers %}
+						  {% set cnt = cnt + 1 %}
+					  {% endfor %}
+					<li class="list-group-item">
+						<a data-toggle="collapse" href="#{{ collId }}">Headers ({{ cnt }})</a>
+						<ul class="collapse" id="{{ collId }}" style="padding-top: 1em;">
+                        {% for key, item in method.headers %}
+                          {% include "./item.nunjucks" %}
+                        {% endfor %}
+                      </ul>
+					</li>
+                    {% endif %}
+
+                    {% if method.queryParameters %}
+					  {% set collId = resource.uniqueId + "_" + method.method + "_request_qparams" %}
+					  {% set cnt = 0 %}
+					  {% for name, item in method.queryParameters %}
+						  {% set cnt = cnt + 1 %}
+					  {% endfor %}
+					<li class="list-group-item">
+						<a data-toggle="collapse" href="#{{ collId }}">Query Parameters ({{ cnt }})</a>
+						<ul class="collapse" id="{{ collId }}" style="padding-top: 1em;">
+                        {% for key, item in method.queryParameters %}
+                          {% include "./item.nunjucks" %}
+                        {% endfor %}
+                      </ul>
+					</li>
+                    {% endif %}
+
+                    {% if method.body %}
+					  {% set collId = resource.uniqueId + "_" + method.method + "_request_body" %}
+					  {% set ctId = 0 %}
+					  {% for key, b in method.body %}
+					    {% set ctId = ctId + 1 %}
+						{% set ctRefId = collId + "_" + ctId %}
+					<li class="list-group-item">
+						<a data-toggle="collapse" href="#{{ctRefId}}">Request Body: {{ key }}</a>
+
+							 <div class="collapse" id="{{ ctRefId }}">
+
+							  {% if b.schema %}
+							  {% set schemaId = ctRefId + "_schema" %}
+								<div class="panel panel-default" style="margin-top: 10px">
+									<div class="panel-heading" style="padding: 3px 5px 3px 10px"><a data-toggle="collapse" href="#{{schemaId}}">Schema</a></div>
+									<div class="panel-body collapse" id="{{schemaId}}" style="padding:0;">
+										<pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{{ b.schema | escape }}</code></pre>
+									</div>
+								</div>
+							  {% endif %}
+
+							  {% if b.example %}
+								<div class="panel panel-default" style="margin-top: 10px">
+									<div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div>
+									<div class="panel-body" style="padding:0;">
+										<pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{{ b.example | escape }}</code></pre>
+									</div>
+								</div>
+								{% endif %}
+							</div>
+					</li>
+                      {% endfor %}
+                    {% endif %}
+					</ul>
+                  </div>
+                {% endif %}
+
+                {% if method.responses %}
+                  <div class="tab-pane{%
+                    if not method.allUriParameters.length and not method.queryParameters
+                    and not method.headers and not method.body
+                    %} active{%
+                    endif
+                    %}" id="{{ resource.uniqueId }}_{{ method.method }}_response">
+                    {% for key, response in method.responses %}
+					  <div class="panel panel-default" style="margin-bottom:15px;">
+						  <div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/{{ key }}" target="_blank">{{ key }}</a></div>
+						  {% if response.description %}
+						  <div class="panel-body">
+							  {% markdown %}{{ response.description}}{% endmarkdown %}
+						  </div>
+						  {% endif %}
+						  <ul class="list-group" style="padding-left: 0;">
+					  {% set headerId = resource.uniqueId + "_" + method.method + "_response_" + key + "_headers" %}
+					  {% set bodyId = resource.uniqueId + "_" + method.method + "_response_" + key + "_body" %}
+
+					  {% if response.headers %}
+					  	  {% set cnt = 0 %}
+					  	  {% for name, item in response.headers %}
+						     {% set cnt = cnt + 1 %}
+						  {% endfor %}
+						  <li class="list-group-item">
+							  <div>
+							  <a data-toggle="collapse" href="#{{ headerId }}">Headers ({{ cnt }})</a>
+								<div class="collapse" id="{{ headerId }}" style="padding-top: 1em;">
+								<ul>
+								  {% for key, item in response.headers %}
+									{% include "./item.nunjucks" %}
+								  {% endfor %}
+								</ul>
+							    </div>
+				              </div>
+			             </li>
+                      {% endif %}
+
+                      {% if response.body %}
+						  {% set ctId = 0 %}
+						  {% for key, b in response.body %}
+						  <li class="list-group-item">
+							 <div>
+								  {% set ctId = ctId + 1 %}
+							      {% set ctRefId = bodyId + "_ct" +ctId %}
+								 <a data-toggle="collapse" href="#{{ctRefId}}">Response Body: {{key}}</a>
+								 <div class="collapse" id="{{ ctRefId }}">
+
+								  {% if b.schema %}
+							      {% set schemaId = ctRefId + "_schema" %}
+								  	<div class="panel panel-default" style="margin-top: 10px">
+										<div class="panel-heading" style="padding: 3px 5px 3px 10px"><a data-toggle="collapse" href="#{{schemaId}}">Schema</a></div>
+										<div class="panel-body collapse" id="{{schemaId}}" style="padding:0;">
+											<pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{{ b.schema | escape }}</code></pre>
+										</div>
+								    </div>
+								  {% endif %}
+
+								  {% if b.example %}
+								  	<div class="panel panel-default" style="margin-top: 10px">
+										<div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div>
+										<div class="panel-body" style="padding:0;">
+											<pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{{ b.example | escape }}</code></pre>
+										</div>
+								    </div>
+									{% endif %}
+								</div>
+							</div>
+				          </li>
+						 {% endfor %}
+					  {% endif %}
+						</ul>
+					</div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+                {% if method.securedBy.length %}
+                  <div class="tab-pane" id="{{ resource.uniqueId }}_{{ method.method }}_securedby">
+                    {% set securityScheme = securitySchemeWithName(method.securedBy) %}
+                    Secured by {{ method.securedBy }}
+
+                    {% if securityScheme.describedBy.headers %}
+                      <h3>Headers</h3>
+                      <ul>
+                        {% for key, item in securityScheme.describedBy.headers %}
+                          {% include "./item.nunjucks" %}
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
+
+                    {% for key, response in securityScheme.describedBy.responses %}
+                      <h2>HTTP status code <a href="http://httpstatus.es/{{ key }}" target="_blank">{{ key }}</a></h2>
+                      {% markdown %}{{ response.description}}{% endmarkdown %}
+
+                      {% if response.headers %}
+                        <h3>Headers</h3>
+                        <ul>
+                          {% for key, item in response.headers %}
+                            {% include "./item.nunjucks" %}
+                          {% endfor %}
+                        </ul>
+                      {% endif %}
+                    {% endfor %}
+
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% for resource in resource.resources %}
+  {% include "./resource.nunjucks" %}
+{% endfor %}

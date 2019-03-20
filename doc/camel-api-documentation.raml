@@ -1,24 +1,55 @@
-#%RAML 1.0
----
+#%RAML 0.8
 title: Camel-24 Online Auftrag Service
-baseUri: http://localhost:3000
-version: 0.0
+version: v0.1
+mediaType: application/json
+
+baseUri: https://{host}
+baseUriParameters:
+   host:
+    description: 'The host with port where Camel-24 Online Auftrags service REST API is located.'
+    example: 'localhost:3000'
+
+## JSON IMPORTS ----------------------------------------------------------------
+traits:
+  - request_header_authentication: !include traits/standardAuthorization.yaml
 
 /user:
   post:
-    description: Erstellt einen Benutzer.
+    description: Create a user.
+    body:
+      application/json:
+        example: !include json/user/post/requestPostUser.json
     responses:
       201:
+        description: Return the user object which was created.
         body:
           application/json:
             example: !include json/user/post/responsePostUser.json
-
-/user/login:
-   post:
-     description: Es wird ein Token bei erfolreicher Anmeldung generiert.
+      400:
+        description: |
+         * `Camel-01`: Es konnte keine Verbindung zum E-Mail Client hergestellt werden.
+         * `Camel-11`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn nach User gesucht wird ohne filter).
+         * `Camel-12`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn nach User gesucht wird ohne filter).
+  /login:
+    post:
+     description: A token when is generated when the user logs in.
+     body:
+       application/json:
+         example: !include json/user/login/post/requestPostUserLogin.json
      responses:
        200:
+         description: Returns the whole user object with the generated token.
+         body:
+           application/json:
+             example: !include json/user/login/post/requestPostUserLogin.json
+
+  /me:
+    is: [request_header_authentication]
+    get:
+     description: Get current info of user
+     responses:
+       200:
+         description: Returns the whole user object .
          body:
            application/json:
              example: !include json/user/post/responsePostUser.json
-

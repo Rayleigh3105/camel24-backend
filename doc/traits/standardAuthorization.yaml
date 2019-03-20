@@ -1,0 +1,5 @@
+headers:
+  x-auth:
+    description: 'This is the current token that the user becomes when Signing up or login in.'
+    required: true
+    example: 'Bearer eyJjdHkiOiJhZG1pblVpVG9rZW5f...'
