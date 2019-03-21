@@ -1,0 +1,24 @@
+{
+  "tokens": [
+    {
+      "access": "auth",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzkzMjY3OGU4M2NkN2VkMTMyMjZiNTIiLCJhY2Nlc3MiOiJhdXRoIiwiaWF0IjoxNTUzMTQ3NTEzfQ.t4CUl_I9zZxW3t7x_kSklAC4CyC8--wz96djR2SoSaQ",
+      "_id": "5c932679e83cd7ed13226b53"
+    }
+  ],
+  "zusatz": "Musterzusatz",
+  "telefon": "0000000000",
+  "plz": "11111",
+  "ort": "Musterort",
+  "land": "Deutschland",
+  "ansprechpartner": "Muster Ansprechpartner",
+  "adresse": "Musterstraße",
+  "__v": 1,
+  "kundenNummer": 14000,
+  "password": "$2a$10$A/VablVXjUUDOFePML0VzeeJ0zu2imCDGu9suGPj6UAD6qMqW1IHi",
+  "email": "muster@email.de",
+  "firmenName": "Muster Firma",
+  "lastName": "Muster Name",
+  "firstName": "Muster Name",
+  "_id": "5c932678e83cd7ed13226b52"
+}

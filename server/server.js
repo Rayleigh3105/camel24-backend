@@ -174,7 +174,7 @@ app.post('/user/login', async (req, res) => {
             console.log(`[${date}] ${user.kundenNummer} hat sich eingeloggt.`);
         }).catch(e => {
             log.error(e);
-            throw new ApplicationError("Camel-152", 400, help.getDatabaseErrorString(), user);
+            throw new ApplicationError("Camel-15", 400, help.getDatabaseErrorString(), user);
         });
 
     } catch (e) {
@@ -227,7 +227,7 @@ app.patch('/user/:userId', authenticate, (req, res) => {
 
     try {
         if (!ObjectID.isValid(userId)) {
-            throw new ApplicationError("Camel-00", 404, "Datenbank Identifikations Nummer ist nicht gültig.", userId)
+            throw new ApplicationError("Camel-00", 404, "Datenbank Identifikations Nummer für Benutzer ist nicht gültig.", userId)
         }
 
         // Find User with ID and updates it with payload from request
@@ -250,14 +250,14 @@ app.patch('/user/:userId', authenticate, (req, res) => {
             new: true
         }).then((user) => {
             if (!user) {
-                throw new ApplicationError("Camel-16", 404, "Zu Bearbeitender Benutzer konnte nicht gefunden werden,", body)
+                throw new ApplicationError("Camel-16", 404, "Zu Bearbeitender Benutzer konnte nicht gefunden werden.", body)
             }
             log.info(`${user._doc.kundenNummer} wurde bearbeitet`);
             console.log(`[${date}] Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
             res.status(200).send(user._doc);
         }).catch(e => {
             log.error(e);
-            throw new ApplicationError("Camel-18", 400, help.getDatabaseErrorString(), body)
+            throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird).", body)
         })
     } catch (e) {
         if (e instanceof ApplicationError) {
@@ -303,7 +303,7 @@ app.delete('/user/me/token', authenticate, async (req, res) => {
 /**
  * CREATES Csv based on the given values in the request Body, also handles errors
  */
-app.post('/csv', async (req, res, next) => {
+app.post('/order', async (req, res, next) => {
     // VARIABLES
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let dateDir = moment().format("DDMMYYYY");
@@ -412,7 +412,7 @@ app.post('/csv', async (req, res, next) => {
                     throw e
                 });
 
-            // Resolve Path for Storing PDF and barcode
+            // Resolve Path for Storing PDF ad barcode
             kndDateCountDir = `${kndDateDir}/${resultCount}`;
 
             await generateBarcode(identificationNumber, kundenNummer, resultCount, kndDateCountDir)

@@ -28,8 +28,12 @@ traits:
       400:
         description: |
          * `Camel-01`: Es konnte keine Verbindung zum E-Mail Client hergestellt werden.
+         * `Camel-02`: Es konnte keine Verbindung zum E-Mail Client hergestellt werden wenn Email versendet werden soll.
          * `Camel-11`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn nach User gesucht wird ohne filter).
-         * `Camel-12`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn nach User gesucht wird ohne filter).
+         * `Camel-12`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn nach User gesucht wird mit filter).
+         * `Camel-13`: E-Mail ist schon regestriert. (When fetching for user und Anzahl wird berechnet)
+         * `Camel-14`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn beim Speichern des Benutzers in der Datenbank was falsch läuft).
+         * `Camel-15`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird)
   /login:
     post:
      description: A token when is generated when the user logs in.
@@ -42,7 +46,10 @@ traits:
          body:
            application/json:
              example: !include json/user/login/post/requestPostUserLogin.json
-
+       400:
+         description: |
+          * `Camel-15`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird)
+          * `Camel-16`: Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.
   /me:
     is: [request_header_authentication]
     get:
@@ -53,3 +60,83 @@ traits:
          body:
            application/json:
              example: !include json/user/post/responsePostUser.json
+       400:
+         description: |
+          * `Camel-17`: Authentifizierungs Token konnte nicht gefunden werden.
+    /token:
+        is: [request_header_authentication]
+        delete:
+         description: Delete Auth token in database
+         responses:
+           200:
+             description: No content
+           400:
+             description: |
+              * `Camel-18`: Authentifizierungs Token konnte nicht gelöscht werden.
+  /{userId}:
+      is: [request_header_authentication]
+      patch:
+       description: Updates current user.
+       body:
+         application/json:
+           example: !include json/user/update/patch/requestPatchUser.json
+       responses:
+         200:
+           description: Returns the whole updated user object .
+           body:
+             application/json:
+               example: !include json/user/update/patch/responsePatchUser.json
+         400:
+           description: |
+            * `Camel-00`: Datenbank Identifikations Nummer für Benutzerist nicht gültig.
+            * `Camel-16`: Zu Bearbeitender Benutzer konnte nicht gefunden werden.
+            * `Camel-19`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird).
+/order:
+  post:
+    headers:
+      x-auth:
+        description: 'NOT REQUIRED - This is the current token that the user becomes when Signing up or login in.'
+        required: false
+        example: 'Bearer eyJjdHkiOiJhZG1pblVpVG9rZW5f...'
+      x-kundenNummer:
+        description: 'NOT REQUIRED - This is the number between 14000 - 15000, should only get´s sent with when User is registered in the database.'
+        required: false
+        example: '14000'
+    description: Generates CSV file and lays it down in an FTP directory. Generates Identifikation number for package. Generates Barcode out of the Identifikation number of the packacke.  Generates PDF based on the sent data and the barcode which was above generated.Saves order into Database. Sents E-Mail to 'Absender' and 'Empfänger'
+    body:
+      application/json:
+        example: !include json/order/post/requestPostOrder.json
+    responses:
+      201:
+        description: Returns boolean with information if request was successfull or not.
+        body:
+          application/json:
+            example: !include json/order/post/responsePostOrder.json
+      400:
+        description: |
+         * `Camel-00`: Kundennummer oder E-Mail konnte nicht gelesen werden.
+         * `Camel-01`: Es konnte keine Verbindung zum E-Mail Client hergestellt werden.
+         * `Camel-16`: Benutzer (${kundenNummer}) konnte nicht gefunden werden.
+         * `Camel-25`: Keine Daten für die Umwandlung zum CSV Format.
+         * `Camel-26`: Beim erstellen des Barcodes ist etwas schiefgelaufen.
+         * `Camel-27`: Beim Speicher des Barcodes ist ein Fehler aufgetreten.
+         * `Camel-29`: Beim generieren der E-Mail für Absender ${absender} ist ein Fehler aufgetreten
+         * `Camel-31`: Angabe der E-Mail ist beim Absender erforderlich.
+         * `Camel-32`: Ansprechpartner muss bei persönlicher Zustellung gegeben sein.
+         * `Camel-33`: Bei Waffen oder Munitionsversand muss eine persönliche Zustellung erfolgen.
+         * `Camel-34`: Abholdatum muss zwischen Montag und Freitag erfolgen.
+         * `Camel-35`: Zustelldatum muss zwischen Montag und Freitag erfolgen.
+         * `Camel-36`: Abholzeitfenster muss mind. 2 Stunden betragen.
+         * `Camel-37`: Zustellzeitfenster muss mind. 2 Stunden betragen.
+         * `Camel-38`: Abholdatum muss mindestens einen Tag nach der Auftragserstellung sein.
+         * `Camel-39`: Zustelldatum muss mind. 2 Stunden betragen.
+         * `Camel-40`: Abholung muss zwischen 08:00 und 16:00 Uhr erfolgen.
+         * `Camel-41`: Zustellung muss zwischen 08:00 und 16:00 Uhr erfolgen.
+         * `Camel-42`: Abholzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.
+         * `Camel-43`: Zustellzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.
+         * `Camel-44`: PLZ muss Pattern ^[0-9]{5}$ entsprechen.
+         
+
+
+
+

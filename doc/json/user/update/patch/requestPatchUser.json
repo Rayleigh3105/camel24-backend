@@ -1,0 +1,13 @@
+{
+  "_id": "5c932678e83cd7ed13226b52",
+  "firstName": "Muster Name",
+  "lastName": "Muster Name",
+  "firmenName": "Muster Firma",
+  "adresse": "Musterstraße",
+  "ort": "Musterort",
+  "land": "Deutschland",
+  "telefon": "0000000000",
+  "plz": "11111",
+  "zusatz": "Musterzusatz",
+  "ansprechpartner": "Muster Ansprechpartner"
+}
