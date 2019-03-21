@@ -207,9 +207,6 @@
 			  </div>
 
 			  <div class="panel panel-default">
-				  <div class="panel-heading">
-					  <h3 class="panel-title">Documentation</h3>
-				  </div>
 				  <ul class="list-group">
 					  {% set cnt = 0 %}
 					  {% for chapter in documentation %}

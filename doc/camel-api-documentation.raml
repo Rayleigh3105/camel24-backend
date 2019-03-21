@@ -36,7 +36,7 @@ traits:
          * `Camel-15`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird)
   /login:
     post:
-     description: A token when is generated when the user logs in.
+     description: A token is generated when the user logs in.
      body:
        application/json:
          example: !include json/user/login/post/requestPostUserLogin.json
@@ -102,7 +102,7 @@ traits:
         description: 'NOT REQUIRED - This is the number between 14000 - 15000, should only get´s sent with when User is registered in the database.'
         required: false
         example: '14000'
-    description: Generates CSV file and lays it down in an FTP directory. Generates Identifikation number for package. Generates Barcode out of the Identifikation number of the packacke.  Generates PDF based on the sent data and the barcode which was above generated.Saves order into Database. Sents E-Mail to 'Absender' and 'Empfänger'
+    description: Generates CSV file and lays it down in an FTP directory. Generates Identifikation number for package. Generates Barcode out of the Identifikation number of the packacke.  Generates PDF based on the sent data and the barcode which was above generated.Saves order into Database. Sents E-Mail to 'Absender' and 'Empfänger' with generated PDF.
     body:
       application/json:
         example: !include json/order/post/requestPostOrder.json
