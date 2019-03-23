@@ -34,6 +34,10 @@ traits:
          * `Camel-13`: E-Mail ist schon regestriert. (When fetching for user und Anzahl wird berechnet)
          * `Camel-14`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn beim Speichern des Benutzers in der Datenbank was falsch läuft).
          * `Camel-15`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird)
+        body:
+           application/json:
+             example: !include json/error/errorObject.json
+
   /login:
     post:
      description: A token is generated when the user logs in.
@@ -50,6 +54,9 @@ traits:
          description: |
           * `Camel-15`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird)
           * `Camel-16`: Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.
+         body:
+            application/json:
+              example: !include json/error/errorObject.json
   /me:
     is: [request_header_authentication]
     get:
@@ -63,6 +70,10 @@ traits:
        400:
          description: |
           * `Camel-17`: Authentifizierungs Token konnte nicht gefunden werden.
+         body:
+            application/json:
+              example: !include json/error/errorObject.json
+
     /token:
         is: [request_header_authentication]
         delete:
@@ -73,6 +84,10 @@ traits:
            400:
              description: |
               * `Camel-18`: Authentifizierungs Token konnte nicht gelöscht werden.
+             body:
+                application/json:
+                  example: !include json/error/errorObject.json
+
   /{userId}:
       is: [request_header_authentication]
       patch:
@@ -91,6 +106,10 @@ traits:
             * `Camel-00`: Datenbank Identifikations Nummer für Benutzerist nicht gültig.
             * `Camel-16`: Zu Bearbeitender Benutzer konnte nicht gefunden werden.
             * `Camel-19`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird).
+           body:
+              application/json:
+                example: !include json/error/errorObject.json
+
 /order:
   post:
     headers:
@@ -102,7 +121,12 @@ traits:
         description: 'NOT REQUIRED - This is the number between 14000 - 15000, should only get´s sent with when User is registered in the database.'
         required: false
         example: '14000'
-    description: Generates CSV file and lays it down in an FTP directory. Generates Identifikation number for package. Generates Barcode out of the Identifikation number of the packacke.  Generates PDF based on the sent data and the barcode which was above generated.Saves order into Database. Sents E-Mail to 'Absender' and 'Empfänger' with generated PDF.
+    description: |
+     * Generates CSV file and lays it down in an FTP directory.
+     * Generates Identifikation number for package.
+     * Generates Barcode out of the Identifikation number of the packacke.
+     * Generates PDF based on the sent data and the barcode which was above generated.
+     * Saves order into Database. Sents E-Mail to 'Absender' and 'Empfänger' with generated PDF.
     body:
       application/json:
         example: !include json/order/post/requestPostOrder.json
@@ -135,7 +159,10 @@ traits:
          * `Camel-42`: Abholzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.
          * `Camel-43`: Zustellzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.
          * `Camel-44`: PLZ muss Pattern ^[0-9]{5}$ entsprechen.
-         
+        body:
+          application/json:
+            example: !include json/error/errorObject.json
+
 
 
 
