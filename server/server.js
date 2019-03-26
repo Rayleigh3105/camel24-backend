@@ -7,9 +7,7 @@ const cors = require('cors');
 const _ = require('lodash');
 let moment = require('moment');
 let bodyParser = require('body-parser');
-const {ObjectID} = require('mongodb');
 const bwipjs = require('bwip-js');
-const nodemailer = require("nodemailer");
 let log = require("./../utils/logger");
 let setup = require('./../utils/setup');
 let help = require('./../utils/helper');
@@ -39,121 +37,13 @@ app.use(bodyParser.json(), cors({origin: '*'}));
 setup.createNeededDirectorys();
 
 /**
- * Creates User and generates xauth token
+ * User routes
  */
 app.use('/user', require('../controller/user.controller'));
-app.use('/user/login', require('../controller/user.controller'));
-
 
 /**
- * Get current info of User
+ * Order route
  */
-app.get('/user/me', authenticate, async (req, res) => {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    try {
-        // Finds User by Token
-        await User.findByToken(req.header('x-auth')).then(user => {
-            res.status(200).send(user._doc);
-        }).catch(e => {
-            log.error(e);
-            throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
-        });
-    } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
-    }
-
-});
-
-/**
- * Updates user with given values
- */
-app.patch('/user/:userId', authenticate, (req, res) => {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let userId = req.params.userId;
-    let body = req.body;
-
-    try {
-        if (!ObjectID.isValid(userId)) {
-            throw new ApplicationError("Camel-00", 404, "Datenbank Identifikations Nummer für Benutzer ist nicht gültig.", userId)
-        }
-
-        // Find User with ID and updates it with payload from request
-        User.findOneAndUpdate({
-            _id: userId,
-        }, {
-            $set: {
-                adresse: body.adresse,
-                ort: body.ort,
-                plz: body.plz,
-                land: body.land,
-                telefon: body.telefon,
-                firstName: body.firstName,
-                lastName: body.lastName,
-                firmenName: body.firmenName,
-                ansprechpartner: body.ansprechpartner,
-                zusatz: body.zusatz
-            }
-        }, {
-            new: true
-        }).then((user) => {
-            if (!user) {
-                throw new ApplicationError("Camel-16", 404, "Zu Bearbeitender Benutzer konnte nicht gefunden werden.", body)
-            }
-            log.info(`${user._doc.kundenNummer} wurde bearbeitet`);
-            console.log(`[${date}] Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
-            res.status(200).send(user._doc);
-        }).catch(e => {
-            log.error(e);
-            throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird).", body)
-        })
-    } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
-    }
-});
-
-/**
- * Deletes token from user collection -> logout
- */
-app.delete('/user/me/token', authenticate, async (req, res) => {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    try {
-        // Deletes token for specifc user in database
-        await req.user.removeToken(req.token).then(() => {
-            log.info(" User mit Token: " + req.token + " hat sich ausgeloggt.");
-            console.log("[" + date + "]" + "User mit Token: " + req.token + " hat sich ausgeloggt.");
-            res.status(200).send(true);
-        }).catch(e => {
-            log.error(e);
-            throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
-        });
-    } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
-    }
-});
 
 /**
  * CREATES Csv based on the given values in the request Body, also handles errors

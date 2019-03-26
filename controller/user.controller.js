@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+const {ObjectID} = require('mongodb');
+
 
 
 let {User} = require('./../models/user');
@@ -9,6 +11,8 @@ let log = require("./../utils/logger");
 let setup = require('./../utils/setup');
 let help = require('./../utils/helper');
 const ApplicationError = require('./../models/error');
+let {authenticate} = require('./../middleware/authenticate');
+
 
 const nodemailer = require("nodemailer");
 let moment = require('moment');
@@ -20,6 +24,9 @@ module.exports = router;
 
 router.post('', createUser);
 router.post('/login', loginUser);
+router.get('/me', authenticate, getUserInfo);
+router.patch('/:userId', authenticate, updateUser);
+router.delete('/token', authenticate, logoutUser);
 
 /**
  * PUBLIC ROUTE to create an User:
@@ -173,6 +180,128 @@ async function loginUser(req, res, next) {
             throw new ApplicationError("Camel-15", 400, help.getDatabaseErrorString(), user);
         });
 
+    } catch (e) {
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
+    }
+}
+
+/**
+ * PRIVATE ROUTE - Updates given User object
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<User>}
+ */
+async function updateUser(req, res, next) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let userId = req.params.userId;
+    let body = req.body;
+
+    try {
+        if (!ObjectID.isValid(userId)) {
+            throw new ApplicationError("Camel-00", 404, "Datenbank Identifikations Nummer für Benutzer ist nicht gültig.", userId)
+        }
+
+        // Find User with ID and updates it with payload from request
+        User.findOneAndUpdate({
+            _id: userId,
+        }, {
+            $set: {
+                adresse: body.adresse,
+                ort: body.ort,
+                plz: body.plz,
+                land: body.land,
+                telefon: body.telefon,
+                firstName: body.firstName,
+                lastName: body.lastName,
+                firmenName: body.firmenName,
+                ansprechpartner: body.ansprechpartner,
+                zusatz: body.zusatz
+            }
+        }, {
+            new: true
+        }).then((user) => {
+            if (!user) {
+                throw new ApplicationError("Camel-16", 404, "Zu Bearbeitender Benutzer konnte nicht gefunden werden.", body)
+            }
+            log.info(`${user._doc.kundenNummer} wurde bearbeitet`);
+            console.log(`[${date}] Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
+            res.status(200).send(user._doc);
+        }).catch(e => {
+            log.error(e);
+            throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird).", body)
+        })
+    } catch (e) {
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
+    }
+}
+
+/**
+ * PRIVATE ROUTE - Deletes token in database
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<void>}
+ */
+async function logoutUser(req, res, next) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    try {
+        // Deletes token for specifc user in database
+        await req.user.removeToken(req.token).then(() => {
+            log.info(" User mit Token: " + req.token + " hat sich ausgeloggt.");
+            console.log("[" + date + "]" + "User mit Token: " + req.token + " hat sich ausgeloggt.");
+            res.status(200).send(true);
+        }).catch(e => {
+            log.error(e);
+            throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
+        });
+    } catch (e) {
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
+    }
+}
+/**
+ * PRIVATE ROUTE get´s current info of user
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<void>}
+ */
+async function getUserInfo(req, res, next) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    try {
+        // Finds User by Token
+        await User.findByToken(req.header('x-auth')).then(user => {
+            res.status(200).send(user._doc);
+        }).catch(e => {
+            log.error(e);
+            throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
+        });
     } catch (e) {
         if (e instanceof ApplicationError) {
             console.log(`[${date}] ${e.stack}`);
