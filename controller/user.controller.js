@@ -13,15 +13,15 @@ let help = require('./../utils/helper');
 const ApplicationError = require('./../models/error');
 let {authenticate} = require('./../middleware/authenticate');
 
-
 const nodemailer = require("nodemailer");
 let moment = require('moment');
 const _ = require('lodash');
 
-
-
 module.exports = router;
 
+/**
+ * ROUTES
+ */
 router.post('', createUser);
 router.post('/login', loginUser);
 router.get('/me', authenticate, getUserInfo);
