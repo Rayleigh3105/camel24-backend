@@ -15,11 +15,48 @@ const path = require('path');
 let ftpDir = path.join(__dirname, '../../../../camel/ftp');
 let baseDir = path.join(__dirname, '../../../../camel');
 let orderDir = path.join(__dirname, '../../../../camel/auftraege');
+let Role = require('./../models/role');
 
 /**
- * Thiis is the SETUP
+ * This is the SETUP
  */
 module.exports = {
+
+    /**
+     * Creates Admin User
+     */
+    createAdminUser: async function () {
+        let userData =
+            {
+                firstName: "Camel-24",
+                lastName: "Camel-24",
+                email: "info@Camel-24.de",
+                password: "camel2414000!",
+                firmenName: "Camel-24",
+                adresse: "Wehrweg 3",
+                land: "Deutschland",
+                plz: "91230",
+                ort: "Happurg",
+                telefon: "+49 911 400 87 27",
+                role: Role.Admin,
+                kundenNummer: 14000
+
+            };
+        let user = new User(userData);
+
+        User.findOne({
+            kundenNummer: 14000,
+            role: Role.Admin
+        }).then((userDatabase) => {
+            if (!userDatabase) {
+                // Save User to Database
+                user.save()
+                    .catch(() => {
+                        throw new ApplicationError("Camel-14", 400, help.getDatabaseErrorString(), user)
+                    });
+            }
+        });
+    },
 
 
     /**
@@ -144,7 +181,9 @@ module.exports = {
         }
 
 
-    },
+    }
+
+    ,
 
     /**
      * Creates Needed Directorys on the Server
@@ -185,7 +224,8 @@ module.exports = {
             log.info(`Ordner ${orderDir} wurde erstellt`);
             console.log(`[${date}] Ordner ${orderDir} wurde erstellt`);
         }
-    },
+    }
+    ,
 
     /**
      * Converts Arrays of objects into a CSV string
@@ -199,7 +239,8 @@ module.exports = {
             str += jsonObject[lol] + ";";
         });
         return str.slice(0, -1);
-    },
+    }
+    ,
 
     /**
      * Get´s Path for laying down file in FTP directory
@@ -219,7 +260,8 @@ module.exports = {
         }
 
         return "./tmp/csv/" + identificationNumber + ".csv"
-    },
+    }
+    ,
 
 
     /**
@@ -245,7 +287,8 @@ module.exports = {
             }
 
         });
-    },
+    }
+    ,
 
     /**
      * Generates PDF in given Path
@@ -381,7 +424,8 @@ module.exports = {
             help.createAmmoPaper(doc, order);
         }
         doc.end();
-    },
+    }
+    ,
 
 
     /**
@@ -429,7 +473,8 @@ module.exports = {
                 reject(new ApplicationError("Camel-29", 400, "Beim generieren der E-Mail für Absender" + order._doc.absender.email + " ist ein Fehler aufgetreten", e.message));
             }
         })
-    },
+    }
+    ,
 
 
     /**
@@ -471,7 +516,8 @@ module.exports = {
                 reject(new ApplicationError("Camel-29", 400, "Beim generieren der E-Mail ist ein Fehler aufgetreten.", e.message));
             }
         })
-    },
+    }
+    ,
 
     /**
      * Rollsback changes made when something went wrong
@@ -529,7 +575,8 @@ module.exports = {
                 reject(e);
             }
         })
-    },
+    }
+    ,
 
 
     /**
@@ -557,7 +604,8 @@ module.exports = {
                 reject(e);
             }
         })
-    },
+    }
+    ,
 
     /**
      * Counts Files in directory
@@ -587,7 +635,8 @@ module.exports = {
                 reject(e);
             }
         })
-    },
+    }
+    ,
 
     /**
      * Creates Directorys for :
@@ -622,7 +671,8 @@ module.exports = {
                 reject(e);
             }
         })
-    },
+    }
+    ,
 
     /**
      * Copys csv file into FTP directory and deletes temp csv file.
@@ -657,7 +707,8 @@ module.exports = {
             }
 
         })
-    },
+    }
+    ,
 
     checkJsonValid: function (json) {
         return new Promise(async (resolve, reject) => {
@@ -667,6 +718,7 @@ module.exports = {
                 reject(e);
             }
         });
-    },
+    }
+    ,
 };
 

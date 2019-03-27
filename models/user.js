@@ -100,7 +100,13 @@ let UserSchema = new mongoose.Schema({
             type: String,
             required: true
         }
-    }]
+    }],
+    role: {
+        type: String,
+        require: true,
+        maxlength: 40,
+        unique: false
+    },
 });
 
 UserSchema.methods.toJSON = function () {

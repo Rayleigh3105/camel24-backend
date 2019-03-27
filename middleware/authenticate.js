@@ -1,7 +1,7 @@
 let { User } = require('./../models/user');
 
 
-let authenticate = ( req, res, next ) => {
+let authenticate = ( req, res, next, roles = [] ) => {
     let token = req.header('x-auth');
 
     User.findByToken( token ).then( ( user ) => {

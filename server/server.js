@@ -22,6 +22,7 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.json(), cors({origin: '*'}));
 
 setup.createNeededDirectorys();
+setup.createAdminUser();
 
 /**
  * User routes

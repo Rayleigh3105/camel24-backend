@@ -12,6 +12,7 @@ let setup = require('./../utils/setup');
 let help = require('./../utils/helper');
 const ApplicationError = require('./../models/error');
 let {authenticate} = require('./../middleware/authenticate');
+let Role = require('./../models/role');
 
 const nodemailer = require("nodemailer");
 let moment = require('moment');
@@ -66,6 +67,7 @@ async function createUser(req, res, next) {
             });
         let body = req.body;
         body.kundenNummer = startGenerationNumber + countUser;
+        body.role = Role.User;
         user = new User(body);
 
         // Checks if Email is taken
