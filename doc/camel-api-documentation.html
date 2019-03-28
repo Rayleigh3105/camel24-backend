@@ -1,4 +1,4 @@
-<!DOCTYPE HTML><html><head><title>Camel-24 Online Auftrag Service API documentation</title><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="generator" content="https://github.com/kevinrenskers/raml2html 3.0.0"><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/styles/default.min.css"><script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script><script type="text/javascript" src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/highlight.min.js"></script><script type="text/javascript">
+<!DOCTYPE HTML><html><head><title>Camel-24 Online Auftrag Service API documentation</title><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="generator" content="https://github.com/kevinrenskers/raml2html 3.0.1"><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/styles/default.min.css"><script type="text/javascript" src="https://code.jquery.com/jquery-1.11.0.min.js"></script><script type="text/javascript" src="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.5.0/highlight.min.js"></script><script type="text/javascript">
       $(document).ready(function() {
         $('.page-header pre code, .top-resource-description pre code').each(function(i, block) {
           hljs.highlightBlock(block);
@@ -197,23 +197,13 @@
     "__v": 1
   },
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzkwOTM0Yzk3NzU4MWU1NWIxMjc0NTIiLCJhY2Nlc3MiOiJhdXRoIiwiaWF0IjoxNTUyOTc4NzY0fQ.V6nLkqySKIxmrxPm57egSlaqBW16PFMKyXftUFX3L4w"
-}</code></pre></div></div></div></div></li></ul></div><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/400" target="_blank">400</a></div><div class="panel-body"><ul><li><code>Camel-01</code>: Es konnte keine Verbindung zum E-Mail Client hergestellt werden.</li><li><code>Camel-02</code>: Es konnte keine Verbindung zum E-Mail Client hergestellt werden wenn Email versendet werden soll.</li><li><code>Camel-11</code>: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn nach User gesucht wird ohne filter).</li><li><code>Camel-12</code>: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn nach User gesucht wird mit filter).</li><li><code>Camel-13</code>: E-Mail ist schon regestriert. (When fetching for user und Anzahl wird berechnet)</li><li><code>Camel-14</code>: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn beim Speichern des Benutzers in der Datenbank was falsch läuft).</li><li><code>Camel-15</code>: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird)</li></ul></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user_post_response_400_body_ct1">Response Body: application/json</a><div class="collapse" id="user_post_response_400_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
-  "message": "see description",
-  "status": 400,
-  "errorCode": "see description",
-  "payload": {}
-}</code></pre></div></div></div></div></li></ul></div></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_user_login"><span class="parent">/user</span>/login</a> <span class="methods"><a href="#user_login_post"><span class="badge badge_post">post</span></a></span></h4></div><div id="panel_user_login" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#user_login_post'" class="list-group-item"><span class="badge badge_post">post</span><div class="method_description"><p>A token is generated when the user logs in.</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="user_login_post"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title"><span class="badge badge_post">post</span> <span class="parent">/user</span>/login</h4></div><div class="modal-body"><div class="alert alert-info"><p>A token is generated when the user logs in.</p></div><ul class="nav nav-tabs"><li class="active"><a href="#user_login_post_request" data-toggle="tab">Request</a></li><li><a href="#user_login_post_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="user_login_post_request"><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><a data-toggle="collapse" href="#user_login_post_request_body_1">Request Body: application/json</a><div class="collapse" id="user_login_post_request_body_1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
+}</code></pre></div></div></div></div></li></ul></div><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/400" target="_blank">400</a></div><div class="panel-body"><ul><li><code>Camel-01</code>: Es konnte keine Verbindung zum E-Mail Client hergestellt werden.</li><li><code>Camel-02</code>: Es konnte keine Verbindung zum E-Mail Client hergestellt werden wenn Email versendet werden soll.</li><li><code>Camel-11</code>: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn nach User gesucht wird ohne filter).</li><li><code>Camel-12</code>: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn nach User gesucht wird mit filter).</li><li><code>Camel-13</code>: E-Mail ist schon regestriert. (When fetching for user und Anzahl wird berechnet)</li><li><code>Camel-14</code>: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn beim Speichern des Benutzers in der Datenbank was falsch läuft).</li><li><code>Camel-15</code>: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird)</li></ul></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user_post_response_400_body_ct1">Response Body: application/json</a><div class="collapse" id="user_post_response_400_body_ct1"></div></div></li></ul></div></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_user_login"><span class="parent">/user</span>/login</a> <span class="methods"><a href="#user_login_post"><span class="badge badge_post">post</span></a></span></h4></div><div id="panel_user_login" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#user_login_post'" class="list-group-item"><span class="badge badge_post">post</span><div class="method_description"><p>A token is generated when the user logs in.</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="user_login_post"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title"><span class="badge badge_post">post</span> <span class="parent">/user</span>/login</h4></div><div class="modal-body"><div class="alert alert-info"><p>A token is generated when the user logs in.</p></div><ul class="nav nav-tabs"><li class="active"><a href="#user_login_post_request" data-toggle="tab">Request</a></li><li><a href="#user_login_post_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="user_login_post_request"><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><a data-toggle="collapse" href="#user_login_post_request_body_1">Request Body: application/json</a><div class="collapse" id="user_login_post_request_body_1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
   "kundenNummer": "14000",
   "password": "secretpassword"
 }</code></pre></div></div></div></li></ul></div><div class="tab-pane" id="user_login_post_response"><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></div><div class="panel-body"><p>Returns the whole user object with the generated token.</p></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user_login_post_response_200_body_ct1">Response Body: application/json</a><div class="collapse" id="user_login_post_response_200_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
   "kundenNummer": "14000",
   "password": "secretpassword"
-}</code></pre></div></div></div></div></li></ul></div><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/400" target="_blank">400</a></div><div class="panel-body"><ul><li><code>Camel-15</code>: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird)</li><li><code>Camel-16</code>: Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.</li></ul></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user_login_post_response_400_body_ct1">Response Body: application/json</a><div class="collapse" id="user_login_post_response_400_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
-  "message": "see description",
-  "status": 400,
-  "errorCode": "see description",
-  "payload": {}
-}</code></pre></div></div></div></div></li></ul></div></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_user_me"><span class="parent">/user</span>/me</a> <span class="methods"><a href="#user_me_get"><span class="badge badge_get">get</span></a></span></h4></div><div id="panel_user_me" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#user_me_get'" class="list-group-item"><span class="badge badge_get">get</span><div class="method_description"><p>Get current info of user</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="user_me_get"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title"><span class="badge badge_get">get</span> <span class="parent">/user</span>/me</h4></div><div class="modal-body"><div class="alert alert-info"><p>Get current info of user</p></div><ul class="nav nav-tabs"><li class="active"><a href="#user_me_get_request" data-toggle="tab">Request</a></li><li><a href="#user_me_get_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="user_me_get_request"><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><a data-toggle="collapse" href="#user_me_get_request_headers">Headers (1)</a><ul class="collapse" id="user_me_get_request_headers" style="padding-top: 1em;"><li class="apiarg"><code style="font-size: 110%">x-auth</code>: <em>required (string)</em><p>This is the current token that the user becomes when Signing up or login in.</p><div class="panel panel-default" style="margin-bottom: 10px;"><div class="panel-heading" style="padding: 3px 5px 3px 10px;background-color:#FFFFFF;">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 6.5px;margin:0;">Bearer eyJjdHkiOiJhZG1pblVpVG9rZW5f...</pre></div></div></li></ul></li></ul></div><div class="tab-pane" id="user_me_get_response"><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></div><div class="panel-body"><p>Returns the whole user object .</p></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user_me_get_response_200_body_ct1">Response Body: application/json</a><div class="collapse" id="user_me_get_response_200_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
+}</code></pre></div></div></div></div></li></ul></div><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/400" target="_blank">400</a></div><div class="panel-body"><ul><li><code>Camel-15</code>: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird)</li><li><code>Camel-16</code>: Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.</li></ul></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user_login_post_response_400_body_ct1">Response Body: application/json</a><div class="collapse" id="user_login_post_response_400_body_ct1"></div></div></li></ul></div></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_user_me"><span class="parent">/user</span>/me</a> <span class="methods"><a href="#user_me_get"><span class="badge badge_get">get</span></a></span></h4></div><div id="panel_user_me" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#user_me_get'" class="list-group-item"><span class="badge badge_get">get</span><div class="method_description"><p>Get current info of user</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="user_me_get"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title"><span class="badge badge_get">get</span> <span class="parent">/user</span>/me</h4></div><div class="modal-body"><div class="alert alert-info"><p>Get current info of user</p></div><ul class="nav nav-tabs"><li class="active"><a href="#user_me_get_request" data-toggle="tab">Request</a></li><li><a href="#user_me_get_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="user_me_get_request"><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><a data-toggle="collapse" href="#user_me_get_request_headers">Headers (1)</a><ul class="collapse" id="user_me_get_request_headers" style="padding-top: 1em;"><li class="apiarg"><code style="font-size: 110%">x-auth</code>: <em>required (string)</em><p>This is the current token that the user becomes when Signing up or login in.</p><div class="panel panel-default" style="margin-bottom: 10px;"><div class="panel-heading" style="padding: 3px 5px 3px 10px;background-color:#FFFFFF;">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 6.5px;margin:0;">Bearer eyJjdHkiOiJhZG1pblVpVG9rZW5f...</pre></div></div></li></ul></li></ul></div><div class="tab-pane" id="user_me_get_response"><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></div><div class="panel-body"><p>Returns the whole user object .</p></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user_me_get_response_200_body_ct1">Response Body: application/json</a><div class="collapse" id="user_me_get_response_200_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
   "user": {
     "tokens": [
       {
@@ -237,17 +227,7 @@
     "__v": 1
   },
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzkwOTM0Yzk3NzU4MWU1NWIxMjc0NTIiLCJhY2Nlc3MiOiJhdXRoIiwiaWF0IjoxNTUyOTc4NzY0fQ.V6nLkqySKIxmrxPm57egSlaqBW16PFMKyXftUFX3L4w"
-}</code></pre></div></div></div></div></li></ul></div><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/400" target="_blank">400</a></div><div class="panel-body"><ul><li><code>Camel-17</code>: Authentifizierungs Token konnte nicht gefunden werden.</li></ul></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user_me_get_response_400_body_ct1">Response Body: application/json</a><div class="collapse" id="user_me_get_response_400_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
-  "message": "see description",
-  "status": 400,
-  "errorCode": "see description",
-  "payload": {}
-}</code></pre></div></div></div></div></li></ul></div></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_user_me_token"><span class="parent">/user/me</span>/token</a> <span class="methods"><a href="#user_me_token_delete"><span class="badge badge_delete">delete</span></a></span></h4></div><div id="panel_user_me_token" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#user_me_token_delete'" class="list-group-item"><span class="badge badge_delete">delete</span><div class="method_description"><p>Delete Auth token in database</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="user_me_token_delete"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title"><span class="badge badge_delete">delete</span> <span class="parent">/user/me</span>/token</h4></div><div class="modal-body"><div class="alert alert-info"><p>Delete Auth token in database</p></div><ul class="nav nav-tabs"><li class="active"><a href="#user_me_token_delete_request" data-toggle="tab">Request</a></li><li><a href="#user_me_token_delete_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="user_me_token_delete_request"><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><a data-toggle="collapse" href="#user_me_token_delete_request_headers">Headers (1)</a><ul class="collapse" id="user_me_token_delete_request_headers" style="padding-top: 1em;"><li class="apiarg"><code style="font-size: 110%">x-auth</code>: <em>required (string)</em><p>This is the current token that the user becomes when Signing up or login in.</p><div class="panel panel-default" style="margin-bottom: 10px;"><div class="panel-heading" style="padding: 3px 5px 3px 10px;background-color:#FFFFFF;">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 6.5px;margin:0;">Bearer eyJjdHkiOiJhZG1pblVpVG9rZW5f...</pre></div></div></li></ul></li></ul></div><div class="tab-pane" id="user_me_token_delete_response"><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></div><div class="panel-body"><p>No content</p></div><ul class="list-group" style="padding-left: 0;"></ul></div><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/400" target="_blank">400</a></div><div class="panel-body"><ul><li><code>Camel-18</code>: Authentifizierungs Token konnte nicht gelöscht werden.</li></ul></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user_me_token_delete_response_400_body_ct1">Response Body: application/json</a><div class="collapse" id="user_me_token_delete_response_400_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
-  "message": "see description",
-  "status": 400,
-  "errorCode": "see description",
-  "payload": {}
-}</code></pre></div></div></div></div></li></ul></div></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_user__userId_"><span class="parent">/user</span>/{userId}</a> <span class="methods"><a href="#user__userId__patch"><span class="badge badge_patch">patch</span></a></span></h4></div><div id="panel_user__userId_" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#user__userId__patch'" class="list-group-item"><span class="badge badge_patch">patch</span><div class="method_description"><p>Updates current user.</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="user__userId__patch"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title"><span class="badge badge_patch">patch</span> <span class="parent">/user</span>/{userId}</h4></div><div class="modal-body"><div class="alert alert-info"><p>Updates current user.</p></div><ul class="nav nav-tabs"><li class="active"><a href="#user__userId__patch_request" data-toggle="tab">Request</a></li><li><a href="#user__userId__patch_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="user__userId__patch_request"><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><a data-toggle="collapse" href="#user__userId__patch_request_uriparams">URI Parameters (1)</a><ul class="collapse" id="user__userId__patch_request_uriparams" style="padding-top: 1em;"><li class="apiarg"><code style="font-size: 110%">userId</code>: <em>required (string)</em></li></ul></li><li class="list-group-item"><a data-toggle="collapse" href="#user__userId__patch_request_headers">Headers (1)</a><ul class="collapse" id="user__userId__patch_request_headers" style="padding-top: 1em;"><li class="apiarg"><code style="font-size: 110%">x-auth</code>: <em>required (string)</em><p>This is the current token that the user becomes when Signing up or login in.</p><div class="panel panel-default" style="margin-bottom: 10px;"><div class="panel-heading" style="padding: 3px 5px 3px 10px;background-color:#FFFFFF;">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 6.5px;margin:0;">Bearer eyJjdHkiOiJhZG1pblVpVG9rZW5f...</pre></div></div></li></ul></li><li class="list-group-item"><a data-toggle="collapse" href="#user__userId__patch_request_body_1">Request Body: application/json</a><div class="collapse" id="user__userId__patch_request_body_1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
+}</code></pre></div></div></div></div></li></ul></div><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/400" target="_blank">400</a></div><div class="panel-body"><ul><li><code>Camel-17</code>: Authentifizierungs Token konnte nicht gefunden werden.</li></ul></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user_me_get_response_400_body_ct1">Response Body: application/json</a><div class="collapse" id="user_me_get_response_400_body_ct1"></div></div></li></ul></div></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_user_me_token"><span class="parent">/user/me</span>/token</a> <span class="methods"><a href="#user_me_token_delete"><span class="badge badge_delete">delete</span></a></span></h4></div><div id="panel_user_me_token" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#user_me_token_delete'" class="list-group-item"><span class="badge badge_delete">delete</span><div class="method_description"><p>Delete Auth token in database</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="user_me_token_delete"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title"><span class="badge badge_delete">delete</span> <span class="parent">/user/me</span>/token</h4></div><div class="modal-body"><div class="alert alert-info"><p>Delete Auth token in database</p></div><ul class="nav nav-tabs"><li class="active"><a href="#user_me_token_delete_request" data-toggle="tab">Request</a></li><li><a href="#user_me_token_delete_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="user_me_token_delete_request"><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><a data-toggle="collapse" href="#user_me_token_delete_request_headers">Headers (1)</a><ul class="collapse" id="user_me_token_delete_request_headers" style="padding-top: 1em;"><li class="apiarg"><code style="font-size: 110%">x-auth</code>: <em>required (string)</em><p>This is the current token that the user becomes when Signing up or login in.</p><div class="panel panel-default" style="margin-bottom: 10px;"><div class="panel-heading" style="padding: 3px 5px 3px 10px;background-color:#FFFFFF;">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 6.5px;margin:0;">Bearer eyJjdHkiOiJhZG1pblVpVG9rZW5f...</pre></div></div></li></ul></li></ul></div><div class="tab-pane" id="user_me_token_delete_response"><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></div><div class="panel-body"><p>No content</p></div><ul class="list-group" style="padding-left: 0;"></ul></div><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/400" target="_blank">400</a></div><div class="panel-body"><ul><li><code>Camel-18</code>: Authentifizierungs Token konnte nicht gelöscht werden.</li></ul></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user_me_token_delete_response_400_body_ct1">Response Body: application/json</a><div class="collapse" id="user_me_token_delete_response_400_body_ct1"></div></div></li></ul></div></div></div></div></div></div></div></div><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_user__userId_"><span class="parent">/user</span>/{userId}</a> <span class="methods"><a href="#user__userId__patch"><span class="badge badge_patch">patch</span></a></span></h4></div><div id="panel_user__userId_" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#user__userId__patch'" class="list-group-item"><span class="badge badge_patch">patch</span><div class="method_description"><p>Updates current user.</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="user__userId__patch"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title"><span class="badge badge_patch">patch</span> <span class="parent">/user</span>/{userId}</h4></div><div class="modal-body"><div class="alert alert-info"><p>Updates current user.</p></div><ul class="nav nav-tabs"><li class="active"><a href="#user__userId__patch_request" data-toggle="tab">Request</a></li><li><a href="#user__userId__patch_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="user__userId__patch_request"><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><a data-toggle="collapse" href="#user__userId__patch_request_uriparams">URI Parameters (1)</a><ul class="collapse" id="user__userId__patch_request_uriparams" style="padding-top: 1em;"><li class="apiarg"><code style="font-size: 110%">userId</code>: <em>required (string)</em></li></ul></li><li class="list-group-item"><a data-toggle="collapse" href="#user__userId__patch_request_headers">Headers (1)</a><ul class="collapse" id="user__userId__patch_request_headers" style="padding-top: 1em;"><li class="apiarg"><code style="font-size: 110%">x-auth</code>: <em>required (string)</em><p>This is the current token that the user becomes when Signing up or login in.</p><div class="panel panel-default" style="margin-bottom: 10px;"><div class="panel-heading" style="padding: 3px 5px 3px 10px;background-color:#FFFFFF;">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 6.5px;margin:0;">Bearer eyJjdHkiOiJhZG1pblVpVG9rZW5f...</pre></div></div></li></ul></li><li class="list-group-item"><a data-toggle="collapse" href="#user__userId__patch_request_body_1">Request Body: application/json</a><div class="collapse" id="user__userId__patch_request_body_1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
   "_id": "5c932678e83cd7ed13226b52",
   "firstName": "Muster Name",
   "lastName": "Muster Name",
@@ -259,7 +239,7 @@
   "plz": "11111",
   "zusatz": "Musterzusatz",
   "ansprechpartner": "Muster Ansprechpartner"
-}</code></pre></div></div></div></li></ul></div><div class="tab-pane" id="user__userId__patch_response"><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></div><div class="panel-body"><p>Returns the whole updated user object .</p></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user__userId__patch_response_200_body_ct1">Response Body: application/json</a><div class="collapse" id="user__userId__patch_response_200_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
+}</code></pre></div></div></div></li></ul></div><div class="tab-pane" id="user__userId__patch_response"><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></div><div class="panel-body"><p>Returns the whole updated user object.</p></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user__userId__patch_response_200_body_ct1">Response Body: application/json</a><div class="collapse" id="user__userId__patch_response_200_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
   "tokens": [
     {
       "access": "auth",
@@ -282,12 +262,289 @@
   "lastName": "Muster Name",
   "firstName": "Muster Name",
   "_id": "5c932678e83cd7ed13226b52"
-}</code></pre></div></div></div></div></li></ul></div><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/400" target="_blank">400</a></div><div class="panel-body"><ul><li><code>Camel-00</code>: Datenbank Identifikations Nummer für Benutzerist nicht gültig.</li><li><code>Camel-16</code>: Zu Bearbeitender Benutzer konnte nicht gefunden werden.</li><li><code>Camel-19</code>: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird).</li></ul></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user__userId__patch_response_400_body_ct1">Response Body: application/json</a><div class="collapse" id="user__userId__patch_response_400_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
-  "message": "see description",
-  "status": 400,
-  "errorCode": "see description",
-  "payload": {}
-}</code></pre></div></div></div></div></li></ul></div></div></div></div></div></div></div></div></div></div></div><div class="panel panel-default"><div class="panel-heading"><h3 id="order" class="panel-title">/order</h3></div><div class="panel-body"><div class="panel-group"><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_order"><span class="parent"></span>/order</a> <span class="methods"><a href="#order_post"><span class="badge badge_post">post</span></a></span></h4></div><div id="panel_order" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#order_post'" class="list-group-item"><span class="badge badge_post">post</span><div class="method_description"><ul><li>Generates CSV file and lays it down in an FTP directory.</li><li>Generates Identifikation number for package.</li><li>Generates Barcode out of the Identifikation number of the packacke.</li><li>Generates PDF based on the sent data and the barcode which was above generated.</li><li>Saves order into Database. Sents E-Mail to &#39;Absender&#39; and &#39;Empfänger&#39; with generated PDF.</li></ul></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="order_post"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title"><span class="badge badge_post">post</span> <span class="parent"></span>/order</h4></div><div class="modal-body"><div class="alert alert-info"><ul><li>Generates CSV file and lays it down in an FTP directory.</li><li>Generates Identifikation number for package.</li><li>Generates Barcode out of the Identifikation number of the packacke.</li><li>Generates PDF based on the sent data and the barcode which was above generated.</li><li>Saves order into Database. Sents E-Mail to &#39;Absender&#39; and &#39;Empfänger&#39; with generated PDF.</li></ul></div><ul class="nav nav-tabs"><li class="active"><a href="#order_post_request" data-toggle="tab">Request</a></li><li><a href="#order_post_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="order_post_request"><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><a data-toggle="collapse" href="#order_post_request_headers">Headers (2)</a><ul class="collapse" id="order_post_request_headers" style="padding-top: 1em;"><li class="apiarg"><code style="font-size: 110%">x-auth</code>: <em>(string)</em><p>NOT REQUIRED - This is the current token that the user becomes when Signing up or login in.</p><div class="panel panel-default" style="margin-bottom: 10px;"><div class="panel-heading" style="padding: 3px 5px 3px 10px;background-color:#FFFFFF;">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 6.5px;margin:0;">Bearer eyJjdHkiOiJhZG1pblVpVG9rZW5f...</pre></div></div></li><li class="apiarg"><code style="font-size: 110%">x-kundenNummer</code>: <em>(string)</em><p>NOT REQUIRED - This is the number between 14000 - 15000, should only get´s sent with when User is registered in the database.</p><div class="panel panel-default" style="margin-bottom: 10px;"><div class="panel-heading" style="padding: 3px 5px 3px 10px;background-color:#FFFFFF;">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 6.5px;margin:0;">14000</pre></div></div></li></ul></li><li class="list-group-item"><a data-toggle="collapse" href="#order_post_request_body_1">Request Body: application/json</a><div class="collapse" id="order_post_request_body_1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
+}</code></pre></div></div></div></div></li></ul></div><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/400" target="_blank">400</a></div><div class="panel-body"><ul><li><code>Camel-00</code>: Datenbank Identifikations Nummer für Benutzerist nicht gültig.</li><li><code>Camel-16</code>: Zu Bearbeitender Benutzer konnte nicht gefunden werden.</li><li><code>Camel-19</code>: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird).</li></ul></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#user__userId__patch_response_400_body_ct1">Response Body: application/json</a><div class="collapse" id="user__userId__patch_response_400_body_ct1"></div></div></li></ul></div></div></div></div></div></div></div></div></div></div></div><div class="panel panel-default"><div class="panel-heading"><h3 id="order" class="panel-title">/order</h3></div><div class="panel-body"><div class="panel-group"><div class="panel panel-white"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_order"><span class="parent"></span>/order</a> <span class="methods"><a href="#order_post"><span class="badge badge_post">post</span></a></span></h4></div><div id="panel_order" class="panel-collapse collapse"><div class="panel-body"><div class="list-group"><div onclick="window.location.href = '#order_post'" class="list-group-item"><span class="badge badge_post">post</span><div class="method_description"><ul><li>Generates CSV file and lays it down in an FTP directory.</li><li>Generates Identifikation number for package.</li><li>Generates Barcode out of the Identifikation number of the packacke.</li><li>Generates PDF based on the sent data and the barcode which was above generated.</li><li>Saves order into Database. Sents E-Mail to &#39;Absender&#39; and &#39;Empfänger&#39; with generated PDF.</li></ul></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="order_post"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title"><span class="badge badge_post">post</span> <span class="parent"></span>/order</h4></div><div class="modal-body"><div class="alert alert-info"><ul><li>Generates CSV file and lays it down in an FTP directory.</li><li>Generates Identifikation number for package.</li><li>Generates Barcode out of the Identifikation number of the packacke.</li><li>Generates PDF based on the sent data and the barcode which was above generated.</li><li>Saves order into Database. Sents E-Mail to &#39;Absender&#39; and &#39;Empfänger&#39; with generated PDF.</li></ul></div><ul class="nav nav-tabs"><li class="active"><a href="#order_post_request" data-toggle="tab">Request</a></li><li><a href="#order_post_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="order_post_request"><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><a data-toggle="collapse" href="#order_post_request_headers">Headers (2)</a><ul class="collapse" id="order_post_request_headers" style="padding-top: 1em;"><li class="apiarg"><code style="font-size: 110%">x-auth</code>: <em>(string)</em><p>NOT REQUIRED - This is the current token that the user becomes when Signing up or login in.</p><div class="panel panel-default" style="margin-bottom: 10px;"><div class="panel-heading" style="padding: 3px 5px 3px 10px;background-color:#FFFFFF;">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 6.5px;margin:0;">Bearer eyJjdHkiOiJhZG1pblVpVG9rZW5f...</pre></div></div></li><li class="apiarg"><code style="font-size: 110%">x-kundenNummer</code>: <em>(string)</em><p>NOT REQUIRED - This is the number between 14000 - 15000, should only get´s sent with when User is registered in the database.</p><div class="panel panel-default" style="margin-bottom: 10px;"><div class="panel-heading" style="padding: 3px 5px 3px 10px;background-color:#FFFFFF;">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 6.5px;margin:0;">14000</pre></div></div></li></ul></li><li class="list-group-item"><a data-toggle="collapse" href="#order_post_request_body_1">Request Body: application/json</a><div class="collapse" id="order_post_request_body_1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px"><a data-toggle="collapse" href="#order_post_request_body_1_schema">Schema</a></div><div class="panel-body collapse" id="order_post_request_body_1_schema" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
+  "$schema": "http://json-schema.org/draft-03/schema#",
+  "type": "object",
+  "properties": {
+    "absFirma": {
+      "description": "Company which sends the Order.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "absZusatz": {
+      "description": "Addition to the company name.",
+      "type": "string",
+      "required": false,
+      "maxLength": 70,
+      "unique": false
+    },
+    "absAnsprechpartner": {
+      "description": "Sender contact Person.",
+      "type": "string",
+      "required": false,
+      "maxLength": 70,
+      "unique": false
+    },
+    "absAdresse": {
+      "description": "Adress of the sender.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "absLand": {
+      "description": "Country of the sender",
+      "type": "string",
+      "pattern": "Deutschland|Schweiz|Österreich",
+      "required": true,
+      "unique": false
+    },
+    "absPlz": {
+      "description": "Post code of the sender.",
+      "type": "string",
+      "pattern": "^[0-9]{5}$",
+      "required": true,
+      "minLength": 5,
+      "maxLength": 5,
+      "unique": false
+    },
+    "absOrt": {
+      "description": "City of the sender.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "absTel": {
+      "description": "Telefonnumber of the sender.",
+      "type": "string",
+      "pattern": "(\\(?([\\d \\-\\)\\–\\+\\/\\(]+){5,}\\)?([ .-–\\/]?)([\\d]+))",
+      "required": true,
+      "unique": false
+    },
+    "absEmail": {
+      "description": "E-Mail of the sender.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 40,
+      "unique": false
+    },
+    "empfFirma": {
+      "description": "Company which get´s the Order.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "empfZusatz": {
+      "description": "Addition to the company name.",
+      "type": "string",
+      "required": false,
+      "maxLength": 70,
+      "unique": false
+    },
+    "empfAnsprechpartner": {
+      "description": "Receiver contact Person. (Is required when zustellung is personal)",
+      "type": "string",
+      "required": "false OR true",
+      "maxLength": 70,
+      "unique": false
+    },
+    "empfAdresse": {
+      "description": "Adress of the receiver.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "empfLand": {
+      "description": "Country of the receiver",
+      "type": "string",
+      "pattern": "Deutschland|Schweiz|Österreich",
+      "required": true,
+      "unique": false
+    },
+    "empfPlz": {
+      "description": "Post code of the receiver.",
+      "type": "string",
+      "pattern": "^[0-9]{5}$",
+      "required": true,
+      "minLength": 5,
+      "maxLength": 5,
+      "unique": false
+    },
+    "empfOrt": {
+      "description": "City of the receiver.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "empfTel": {
+      "description": "Telefonnumber of the receiver.",
+      "type": "string",
+      "pattern": "(\\(?([\\d \\-\\)\\–\\+\\/\\(]+){5,}\\)?([ .-–\\/]?)([\\d]+))",
+      "required": false,
+      "unique": false
+    },
+    "empfEmail": {
+      "description": "E-Mail of the receiver.",
+      "type": "string",
+      "required": false,
+      "minLength": 1,
+      "maxLength": 40,
+      "unique": false
+    },
+    "abholDatum": {
+      "description": "Date where the package get´s picked up from the sender. (Must be between Monday and Friday and one day after today)",
+      "type": "Date",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 40,
+      "unique": false
+    },
+    "abholZeitVon": {
+      "description": "Start time for the pickup period. (Must be after 08:00 o clock)",
+      "type": "string",
+      "pattern": "^[0-9]{2}:[0-9]{2}$",
+      "required": true,
+      "minLength": 5,
+      "maxLength": 5,
+      "unique": false
+    },
+    "abholZeitBis": {
+      "description": "End time for the pickup period. (Must be before 16:00 o clock)",
+      "type": "string",
+      "pattern": "^[0-9]{2}:[0-9]{2}$",
+      "required": true,
+      "minLength": 5,
+      "maxLength": 5,
+      "unique": false
+    },
+    "sendungsDatenArt": {
+      "description": "Type of the goods which will be sent.",
+      "type": "string",
+      "pattern": "Waffe|Munition|Sonstiges",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 20,
+      "unique": false
+    },
+    "sendungsDatenGewicht": {
+      "description": "Weight of the goods.",
+      "type": "string",
+      "pattern": "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30",
+      "required": true,
+      "unique": false
+    },
+    "sendungsdatenVers": {
+      "description": "Wether the goods should be saved with an insurance or not.",
+      "type": "string",
+      "pattern": "Ja|Nein",
+      "required": true,
+      "unique": false
+    },
+    "sendungsdatenWert": {
+      "description": "Value of the good.",
+      "type": "string",
+      "required": false,
+      "unique": false
+    },
+    "zustellDatum": {
+      "description": "Date where the package should arrive to the receiver. (Must be between Monday and Friday and atleast one day after abholDatum)",
+      "type": "Date",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 40,
+      "unique": false
+    },
+    "zustellZeitVon": {
+      "description": "Start time for the receive period. (Must be after 08:00 o clock)",
+      "type": "string",
+      "pattern": "^[0-9]{2}:[0-9]{2}$",
+      "required": true,
+      "minLength": 5,
+      "maxLength": 5,
+      "unique": false
+    },
+    "zustellZeitBis": {
+      "description": "End time for the receive period. (Must be before 16:00 o clock)",
+      "type": "string",
+      "pattern": "^[0-9]{2}:[0-9]{2}$",
+      "required": true,
+      "minLength": 5,
+      "maxLength": 5,
+      "unique": false
+    },
+    "zustellArt": {
+      "description": "Type of delivery.",
+      "type": "string",
+      "pattern": "standard|persoenlich|persoenlichIdent",
+      "required": true,
+      "minLength": 5,
+      "maxLength": 5,
+      "unique": false
+    },
+    "auftragbestEmail": {
+      "description": "E-Mail of the Order confirmation.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 40,
+      "unique": false
+    },
+    "auftragbestTelefon": {
+      "description": "E-Mail of the Order confirmation.",
+      "type": "string",
+      "required": true,
+      "pattern": "(\\(?([\\d \\-\\)\\–\\+\\/\\(]+){5,}\\)?([ .-–\\/]?)([\\d]+))",
+      "unique": false
+    },
+    "rechnungName": {
+      "description": "Receiver of the Invoice.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "rechnungAdresse": {
+      "description": "Address of the Invoice receiver.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "rechnungPlz": {
+      "description": "Post code of the Invoice receiver.",
+      "type": "string",
+      "pattern": "^[0-9]{5}$",
+      "required": true,
+      "minLength": 5,
+      "maxLength": 5,
+      "unique": false
+    },
+    "rechnungPlz": {
+      "description": "City of the Invoice receiver.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    }
+  }
+}
+</code></pre></div></div><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
   "absFirma": "Muster Firma",
   "absZusatz": "Musterzusatz",
   "absAnsprechpartner": "Muster Ansprechpartner",
@@ -324,9 +581,4 @@
   "rechnungPlz": "11111",
   "rechnungOrt": "Musterort"
 }
-</code></pre></div></div></div></li></ul></div><div class="tab-pane" id="order_post_response"><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/201" target="_blank">201</a></div><div class="panel-body"><p>Returns boolean with information if request was successfull or not.</p></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#order_post_response_201_body_ct1">Response Body: application/json</a><div class="collapse" id="order_post_response_201_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>true</code></pre></div></div></div></div></li></ul></div><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/400" target="_blank">400</a></div><div class="panel-body"><ul><li><code>Camel-00</code>: Kundennummer oder E-Mail konnte nicht gelesen werden.</li><li><code>Camel-01</code>: Es konnte keine Verbindung zum E-Mail Client hergestellt werden.</li><li><code>Camel-16</code>: Benutzer (${kundenNummer}) konnte nicht gefunden werden.</li><li><code>Camel-25</code>: Keine Daten für die Umwandlung zum CSV Format.</li><li><code>Camel-26</code>: Beim erstellen des Barcodes ist etwas schiefgelaufen.</li><li><code>Camel-27</code>: Beim Speicher des Barcodes ist ein Fehler aufgetreten.</li><li><code>Camel-29</code>: Beim generieren der E-Mail für Absender ${absender} ist ein Fehler aufgetreten</li><li><code>Camel-31</code>: Angabe der E-Mail ist beim Absender erforderlich.</li><li><code>Camel-32</code>: Ansprechpartner muss bei persönlicher Zustellung gegeben sein.</li><li><code>Camel-33</code>: Bei Waffen oder Munitionsversand muss eine persönliche Zustellung erfolgen.</li><li><code>Camel-34</code>: Abholdatum muss zwischen Montag und Freitag erfolgen.</li><li><code>Camel-35</code>: Zustelldatum muss zwischen Montag und Freitag erfolgen.</li><li><code>Camel-36</code>: Abholzeitfenster muss mind. 2 Stunden betragen.</li><li><code>Camel-37</code>: Zustellzeitfenster muss mind. 2 Stunden betragen.</li><li><code>Camel-38</code>: Abholdatum muss mindestens einen Tag nach der Auftragserstellung sein.</li><li><code>Camel-39</code>: Zustelldatum muss mind. 2 Stunden betragen.</li><li><code>Camel-40</code>: Abholung muss zwischen 08:00 und 16:00 Uhr erfolgen.</li><li><code>Camel-41</code>: Zustellung muss zwischen 08:00 und 16:00 Uhr erfolgen.</li><li><code>Camel-42</code>: Abholzeit &#39;von&#39; und &#39;bis&#39; muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.</li><li><code>Camel-43</code>: Zustellzeit &#39;von&#39; und &#39;bis&#39; muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.</li><li><code>Camel-44</code>: PLZ muss Pattern ^[0-9]{5}$ entsprechen.</li></ul></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#order_post_response_400_body_ct1">Response Body: application/json</a><div class="collapse" id="order_post_response_400_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>{
-  "message": "see description",
-  "status": 400,
-  "errorCode": "see description",
-  "payload": {}
-}</code></pre></div></div></div></div></li></ul></div></div></div></div></div></div></div></div></div></div></div></div></div></div></body></html>
+</code></pre></div></div></div></li></ul></div><div class="tab-pane" id="order_post_response"><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/201" target="_blank">201</a></div><div class="panel-body"><p>Returns boolean with information if request was successfull or not.</p></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#order_post_response_201_body_ct1">Response Body: application/json</a><div class="collapse" id="order_post_response_201_body_ct1"><div class="panel panel-default" style="margin-top: 10px"><div class="panel-heading" style="padding: 3px 5px 3px 10px">Example</div><div class="panel-body" style="padding:0;"><pre style="border:0px; padding: 0px 0px 0px 5px;margin:0;"><code>true</code></pre></div></div></div></div></li></ul></div><div class="panel panel-default" style="margin-bottom:15px;"><div class="panel-heading" style="background-color: #f0f0f0;">HTTP status code <a href="http://httpstatus.es/400" target="_blank">400</a></div><div class="panel-body"><ul><li><code>Camel-00</code>: Kundennummer oder E-Mail konnte nicht gelesen werden.</li><li><code>Camel-01</code>: Es konnte keine Verbindung zum E-Mail Client hergestellt werden.</li><li><code>Camel-16</code>: Benutzer (${kundenNummer}) konnte nicht gefunden werden.</li><li><code>Camel-25</code>: Keine Daten für die Umwandlung zum CSV Format.</li><li><code>Camel-26</code>: Beim erstellen des Barcodes ist etwas schiefgelaufen.</li><li><code>Camel-27</code>: Beim Speicher des Barcodes ist ein Fehler aufgetreten.</li><li><code>Camel-29</code>: Beim generieren der E-Mail für Absender ${absender} ist ein Fehler aufgetreten</li><li><code>Camel-31</code>: Angabe der E-Mail ist beim Absender erforderlich.</li><li><code>Camel-32</code>: Ansprechpartner muss bei persönlicher Zustellung gegeben sein.</li><li><code>Camel-33</code>: Bei Waffen oder Munitionsversand muss eine persönliche Zustellung erfolgen.</li><li><code>Camel-34</code>: Abholdatum muss zwischen Montag und Freitag erfolgen.</li><li><code>Camel-35</code>: Zustelldatum muss zwischen Montag und Freitag erfolgen.</li><li><code>Camel-36</code>: Abholzeitfenster muss mind. 2 Stunden betragen.</li><li><code>Camel-37</code>: Zustellzeitfenster muss mind. 2 Stunden betragen.</li><li><code>Camel-38</code>: Abholdatum muss mindestens einen Tag nach der Auftragserstellung sein.</li><li><code>Camel-39</code>: Zustelldatum muss mind. 2 Stunden betragen.</li><li><code>Camel-40</code>: Abholung muss zwischen 08:00 und 16:00 Uhr erfolgen.</li><li><code>Camel-41</code>: Zustellung muss zwischen 08:00 und 16:00 Uhr erfolgen.</li><li><code>Camel-42</code>: Abholzeit &#39;von&#39; und &#39;bis&#39; muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.</li><li><code>Camel-43</code>: Zustellzeit &#39;von&#39; und &#39;bis&#39; muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.</li><li><code>Camel-44</code>: PLZ muss Pattern ^[0-9]{5}$ entsprechen.</li></ul></div><ul class="list-group" style="padding-left: 0;"><li class="list-group-item"><div><a data-toggle="collapse" href="#order_post_response_400_body_ct1">Response Body: application/json</a><div class="collapse" id="order_post_response_400_body_ct1"></div></div></li></ul></div></div></div></div></div></div></div></div></div></div></div></div></div></div></body></html>

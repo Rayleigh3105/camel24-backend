@@ -265,6 +265,9 @@ module.exports = {
             try {
 
                 // TODO - Check if land is DEUTSCHLAND | SCHWEIZ | ÖSTERREICH
+                // TODO - Check Sendungsdaten Vers
+                // TODO - Check Sendungsdatengewicht <= 30
+                // TODO - Check if Art === Waffe|Munitijon|Sonstiges
                 let abholZeitVon = json.abholZeitVon.substring(0, json.abholZeitVon.indexOf(':'));
                 let abholZeitBis = json.abholZeitBis.substring(0, json.abholZeitBis.indexOf(':'));
                 let zustellZeitVon = json.zustellZeitVon.substring(0, json.zustellZeitVon.indexOf(':'));
