@@ -47,7 +47,8 @@
 - **Camel-45** -> Absender | Empfänger Land darf nur Deutschland | Österreich | Schweiz beinhalten.
 - **Camel-46** -> Art der Ware darf nur Waffe | Munition | Sonstiges sein.
 - **Camel-47** -> Sendungsdaten Versicherung muss entweder Ja|Nein sein.
-- **Camel-47** -> Zustellart darf nur standard | persoenlich | persoenlichIdent sein.
+- **Camel-48** -> Zustellart darf nur standard | persoenlich | persoenlichIdent sein.
+- **Camel-49** -> Gewicht darf 30 Kilogramm nicht überschreiten.
 
 
 raml2html -t nunjucks/template.nunjucks -i camel-api-documentation.raml -o camel-api-documentation.html

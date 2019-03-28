@@ -266,9 +266,8 @@ module.exports = {
                 let allowedCountrys = ['Deutschland','Schweiz','Österreich'];
                 let allowedType = ['Waffe','Munition', 'Sonstiges'];
                 let allowedVersicherung = ['Ja','Nein'];
-                let allowedZustellArt = ['standard, persoenlich, persoenlichIdent'];
+                let allowedZustellArt = ['standard', 'persoenlich', 'persoenlichIdent'];
 
-                // TODO - Check Sendungsdatengewicht <= 30 parse Int
                 let abholZeitVon = json.abholZeitVon.substring(0, json.abholZeitVon.indexOf(':'));
                 let abholZeitBis = json.abholZeitBis.substring(0, json.abholZeitBis.indexOf(':'));
                 let zustellZeitVon = json.zustellZeitVon.substring(0, json.zustellZeitVon.indexOf(':'));
@@ -377,10 +376,9 @@ module.exports = {
                     throw new ApplicationError("Camel-47", 400, "Sendungsdaten Versicher muss entweder Ja|Nein sein.")
                 }
 
-
-
-
-
+                if(parseInt(json.sendungsdatenGewicht) > 30) {
+                    throw new ApplicationError("Camel-49", 400, "Gewicht darf 30 Kilogramm nicht überschreiten.")
+                }
                 resolve();
             } catch (e) {
                 reject(e);

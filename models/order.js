@@ -1,11 +1,5 @@
 const mongoose = require('mongoose');
 let conn = require('./../db/mongoose').conn;
-const validator = require('validator');
-
-// //////////////////////////////////////////////////////////////////////////
-//                              VALIDATOR                                  //
-// //////////////////////////////////////////////////////////////////////////
-
 
 // //////////////////////////////////////////////////////////////////////////
 //                              SCHEMAS                                    //
@@ -237,6 +231,20 @@ let OrderSchema = new mongoose.Schema({
 
 });
 
+OrderSchema.statics.countOrderForUser = function (kundenNummer) {
+    let Order = this;
+
+    return Order.find({
+        identificationNumber: {
+            '$regex': kundenNummer,
+            '$options': 'i'
+        }
+    }).count().then(count => {
+            return Promise.resolve(count)
+
+        }
+    )
+};
 let Order = conn.model('Order', OrderSchema);
 
 module.exports = {Order};

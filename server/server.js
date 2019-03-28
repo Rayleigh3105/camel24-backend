@@ -21,8 +21,7 @@ const port = process.env.PORT || 3000;
 // Setup Middleware
 app.use(bodyParser.json(), cors({origin: '*'}));
 
-setup.createNeededDirectorys();
-setup.createAdminUser();
+
 
 /**
  * User routes
@@ -34,11 +33,19 @@ app.use('/user', require('../controller/user.controller'));
  */
 app.use('/order', require('../controller/order.controller'));
 
+/**
+ * Admin route
+ */
+app.use('/admindashboard', require('../controller/admindashboard.controller'));
+
 app.listen(port, () => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
     log.info(`Server ist hochgefahren - Port: ${port}`);
     console.log(`[${date}] Server ist hochgefahren - Port: ${port}`);
+
+    setup.createNeededDirectorys();
+    setup.createAdminUser();
 });
 
 module.exports = { app };

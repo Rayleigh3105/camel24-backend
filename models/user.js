@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-let  conn = require('./../db/mongoose').conn;
+let conn = require('./../db/mongoose').conn;
 const validator = require('validator');
-
 
 let bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -128,12 +127,12 @@ UserSchema.methods.generateAuthToken = function () {
     });
 };
 
-UserSchema.statics.findByToken = function ( token ) {
+UserSchema.statics.findByToken = function (token) {
     let User = this;
     let decoded;
 
     try {
-        decoded = jwt.verify( token, process.env.JWT_SECRET );
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (e) {
         return Promise.reject()
     }
@@ -145,18 +144,18 @@ UserSchema.statics.findByToken = function ( token ) {
     })
 };
 
-UserSchema.statics.findByCredentials = function ( kundenNummer, password ) {
+UserSchema.statics.findByCredentials = function (kundenNummer, password) {
     let User = this;
 
-    return User.findOne({ kundenNummer }).then( ( user ) => {
-        if ( !user ) {
+    return User.findOne({kundenNummer}).then((user) => {
+        if (!user) {
             return Promise.reject();
         }
 
-        return  new Promise(  (resolve, reject) => {
-            bcrypt.compare( password, user.password, ( err, res ) => {
-                if ( res ) {
-                    resolve( user );
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(password, user.password, (err, res) => {
+                if (res) {
+                    resolve(user);
                 } else {
                     reject();
                 }
@@ -165,38 +164,59 @@ UserSchema.statics.findByCredentials = function ( kundenNummer, password ) {
     })
 };
 
-UserSchema.statics.findByKundenNummer = function ( kundenNummer) {
+UserSchema.statics.findAll = function () {
     let User = this;
 
-    return User.findOne({ kundenNummer }).then( ( user ) => {
-        if ( !user ) {
+    return User.find({
+        kundenNummer: {
+            $not: {$eq: 14000}
+        }
+    }).sort({kundenNummer: 1})
+        .then((user) => {
+                if (user) {
+                    let userArray = [];
+                    for (let userObject of user) {
+
+                        userArray.push(userObject._doc);
+
+                    }
+                    return Promise.resolve(userArray)
+                }
+            }
+        )
+};
+
+UserSchema.statics.findByKundenNummer = function (kundenNummer) {
+    let User = this;
+
+    return User.findOne({kundenNummer}).then((user) => {
+        if (!user) {
             return Promise.reject();
         }
 
-        return Promise.resolve( user );
+        return Promise.resolve(user);
     })
 };
 
 
-
 // Instance Method
-UserSchema.methods.removeToken = function ( token ) {
+UserSchema.methods.removeToken = function (token) {
     let user = this;
 
     // Removes Token
     return user.update({
         $pull: {
-            tokens: { token }
+            tokens: {token}
         }
     })
 };
 
-UserSchema.pre( 'save', function ( next ) {
+UserSchema.pre('save', function (next) {
     let user = this;
 
-    if ( user.isModified( 'password')) {
-        bcrypt.genSalt( 10, ( err, salt ) => {
-            bcrypt.hash( user.password, salt, ( err, hash ) => {
+    if (user.isModified('password')) {
+        bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(user.password, salt, (err, hash) => {
                 user.password = hash;
                 next();
             });

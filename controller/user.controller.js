@@ -5,7 +5,6 @@ const fs = require('fs');
 const {ObjectID} = require('mongodb');
 
 
-
 let {User} = require('./../models/user');
 let log = require("./../utils/logger");
 let setup = require('./../utils/setup');
@@ -287,6 +286,7 @@ async function logoutUser(req, res, next) {
         }
     }
 }
+
 /**
  * PRIVATE ROUTE get´s current info of user
  * @param req

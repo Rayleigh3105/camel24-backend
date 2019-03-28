@@ -39,7 +39,7 @@ traits:
          * `Camel-15`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn der Auth Token generiert wird)
         body:
            application/json:
-#             example: !include json/error/errorObject.json
+             example: !include json/error/errorObject.json
 
   /login:
     post:
@@ -59,7 +59,7 @@ traits:
           * `Camel-16`: Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.
          body:
             application/json:
-#              example: !include json/error/errorObject.json
+              example: !include json/error/errorObject.json
   /me:
     is: [request_header_authentication]
     get:
@@ -75,7 +75,7 @@ traits:
           * `Camel-17`: Authentifizierungs Token konnte nicht gefunden werden.
          body:
             application/json:
-#              example: !include json/error/errorObject.json
+              example: !include json/error/errorObject.json
 
     /token:
         is: [request_header_authentication]
@@ -89,7 +89,7 @@ traits:
               * `Camel-18`: Authentifizierungs Token konnte nicht gelöscht werden.
              body:
                 application/json:
-#                  example: !include json/error/errorObject.json
+                  example: !include json/error/errorObject.json
 
   /{userId}:
       is: [request_header_authentication]
@@ -111,7 +111,7 @@ traits:
             * `Camel-19`: Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird).
            body:
               application/json:
-#                example: !include json/error/errorObject.json
+                example: !include json/error/errorObject.json
 
 /order:
   post:
@@ -167,6 +167,7 @@ traits:
          * `Camel-46`: Art der Ware darf nur Waffe | Munition | Sonstiges sein.
          * `Camel-47`: Sendungsdaten Versicherung muss entweder Ja|Nein sein.
          * `Camel-48`: Zustellart darf nur standard | persoenlich | persoenlichIdent sein.
+         * `Camel-49`: Gewicht darf 30 Kilogramm nicht überschreiten.
         body:
           application/json:
-#            example: !include json/error/errorObject.json
+            example: !include json/error/errorObject.json

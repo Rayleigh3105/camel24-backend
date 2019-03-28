@@ -52,8 +52,19 @@ module.exports = {
             if (!userDatabase) {
                 // Save User to Database
                 user.save()
+                    .then(() => {
+                        log.info(`Admin User wurde erstellt.`);
+                        console.log(`[${date}] Admin User wurde erstellt.`);
+                    })
                     .catch(() => {
                         throw new ApplicationError("Camel-14", 400, help.getDatabaseErrorString(), user)
+                    });
+
+                // Generate Auth Token for created User
+                user.generateAuthToken()
+                    .catch(e => {
+                        log.info(e);
+                        throw new ApplicationError("Camel-15", 400, help.getDatabaseErrorString())
                     });
             }
         });

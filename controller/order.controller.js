@@ -11,6 +11,7 @@ let help = require('./../utils/helper');
 let ApplicationError = require('./../models/error');
 let {authenticate} = require('./../middleware/authenticate');
 let {Order} = require('./../models/order');
+let {User} = require('./../models/user');
 
 
 let nodemailer = require("nodemailer");

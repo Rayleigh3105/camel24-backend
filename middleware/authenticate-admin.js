@@ -1,8 +1,8 @@
 let { User } = require('./../models/user');
-let { Role } = require('./../models/Role');
+let { Role } = require('./../models/role');
 
 
-let authenticate = ( req, res, next) => {
+let authenticateAdmin = ( req, res, next) => {
     let token = req.header('x-auth');
 
     User.findByToken( token ).then( ( user ) => {
@@ -10,7 +10,7 @@ let authenticate = ( req, res, next) => {
             return Promise.reject()
         }
 
-        if (user.role === 'Admin' || user.role === 'User') {
+        if (user._doc.role === 'Admin') {
             req.user = user;
             req.token = token;
 
@@ -25,4 +25,4 @@ let authenticate = ( req, res, next) => {
     });
 };
 
-module.exports = { authenticate };
+module.exports = { authenticateAdmin };
