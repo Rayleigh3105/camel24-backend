@@ -10,6 +10,9 @@ baseUriParameters:
     example: 'localhost:3000'
 
 ## JSON IMPORTS ----------------------------------------------------------------
+schemas:
+  - orderJson: !include json/order/post/schemaPostOrder.json
+
 traits:
   - request_header_authentication: !include traits/standardAuthorization.yaml
 
@@ -97,7 +100,7 @@ traits:
            example: !include json/user/update/patch/requestPatchUser.json
        responses:
          200:
-           description: Returns the whole updated user object .
+           description: Returns the whole updated user object.
            body:
              application/json:
                example: !include json/user/update/patch/responsePatchUser.json
@@ -129,6 +132,7 @@ traits:
      * Saves order into Database. Sents E-Mail to 'Absender' and 'Empfänger' with generated PDF.
     body:
       application/json:
+        schema: orderJson
         example: !include json/order/post/requestPostOrder.json
     responses:
       201:

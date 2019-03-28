@@ -1,0 +1,146 @@
+{
+  "$schema": "http://json-schema.org/draft-03/schema#",
+  "type": "object",
+  "properties": {
+    "absFirma": {
+      "description": "Company which sends the Order.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "absZusatz": {
+      "description": "Addition to the company name.",
+      "type": "string",
+      "required": false,
+      "maxLength": 70,
+      "unique": false
+    },
+    "absAnsprechpartner": {
+      "description": "Sender contact Person.",
+      "type": "string",
+      "required": false,
+      "maxLength": 70,
+      "unique": false
+    },
+    "absAdresse": {
+      "description": "Adress of the sender.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "absLand": {
+      "description": "Country of the sender",
+      "type": "string",
+      "pattern": "Deutschland|Schweiz|Österreich",
+      "required": true,
+      "unique": false
+    },
+    "absPlz": {
+      "description": "Post code of the sender.",
+      "type": "string",
+      "pattern": "^[0-9]{5}$",
+      "required": true,
+      "minLength": 5,
+      "maxLength": 5,
+      "unique": false
+    },
+    "absOrt": {
+      "description": "City of the sender.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "absTel": {
+      "description": "Telefonnumber of the sender.",
+      "type": "string",
+      "pattern": "(\\(?([\\d \\-\\)\\–\\+\\/\\(]+){5,}\\)?([ .-–\\/]?)([\\d]+))",
+      "required": true,
+      "unique": false
+    },
+    "absEmail": {
+      "description": "E-Mail of the sender.",
+      "type": "string",
+      "pattern": "(\\(?([\\d \\-\\)\\–\\+\\/\\(]+){5,}\\)?([ .-–\\/]?)([\\d]+))",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 40,
+      "unique": false
+    },
+    "empfFirma": {
+      "description": "Company which get´s the Order.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "empfZusatz": {
+      "description": "Addition to the company name.",
+      "type": "string",
+      "required": false,
+      "maxLength": 70,
+      "unique": false
+    },
+    "empfAnsprechpartner": {
+      "description": "Receiver contact Person. (Is required when zustellung is personal)",
+      "type": "string",
+      "required": "false OR true",
+      "maxLength": 70,
+      "unique": false
+    },
+    "empfAdresse": {
+      "description": "Adress of the receiver.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "empfLand": {
+      "description": "Country of the receiver",
+      "type": "string",
+      "pattern": "Deutschland|Schweiz|Österreich",
+      "required": true,
+      "unique": false
+    },
+    "empfPlz": {
+      "description": "Post code of the receiver.",
+      "type": "string",
+      "pattern": "^[0-9]{5}$",
+      "required": true,
+      "minLength": 5,
+      "maxLength": 5,
+      "unique": false
+    },
+    "empfOrt": {
+      "description": "City of the receiver.",
+      "type": "string",
+      "required": true,
+      "minLength": 1,
+      "maxLength": 70,
+      "unique": false
+    },
+    "empfTel": {
+      "description": "Telefonnumber of the receiver.",
+      "type": "string",
+      "pattern": "(\\(?([\\d \\-\\)\\–\\+\\/\\(]+){5,}\\)?([ .-–\\/]?)([\\d]+))",
+      "required": false,
+      "unique": false
+    },
+    "empfEmail": {
+      "description": "E-Mail of the receiver.",
+      "type": "string",
+      "pattern": "(\\(?([\\d \\-\\)\\–\\+\\/\\(]+){5,}\\)?([ .-–\\/]?)([\\d]+))",
+      "required": false,
+      "minLength": 1,
+      "maxLength": 40,
+      "unique": false
+    }
+  }
+}

@@ -236,7 +236,6 @@ module.exports = {
             align: 'center'
         });
 
-
         doc.lineCap('round')
             .moveTo(90, 700)
             .lineTo(210, 700)
@@ -264,6 +263,8 @@ module.exports = {
     checkRequiredDefaultData: function (json) {
         return new Promise(async (resolve, reject) => {
             try {
+
+                // TODO - Check if land is DEUTSCHLAND | SCHWEIZ | ÖSTERREICH
                 let abholZeitVon = json.abholZeitVon.substring(0, json.abholZeitVon.indexOf(':'));
                 let abholZeitBis = json.abholZeitBis.substring(0, json.abholZeitBis.indexOf(':'));
                 let zustellZeitVon = json.zustellZeitVon.substring(0, json.zustellZeitVon.indexOf(':'));
