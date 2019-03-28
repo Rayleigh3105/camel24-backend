@@ -121,7 +121,7 @@ traits:
         required: false
         example: 'Bearer eyJjdHkiOiJhZG1pblVpVG9rZW5f...'
       x-kundenNummer:
-        description: 'NOT REQUIRED - This is the number between 14000 - 15000, should only get´s sent with when User is registered in the database.'
+        description: 'NOT REQUIRED - This is the number between 14001 - 15000, should only get´s sent with when User is registered in the database.'
         required: false
         example: '14000'
     description: |
@@ -163,11 +163,10 @@ traits:
          * `Camel-42`: Abholzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.
          * `Camel-43`: Zustellzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.
          * `Camel-44`: PLZ muss Pattern ^[0-9]{5}$ entsprechen.
+         * `Camel-45`: Absender | Empfänger Land darf nur Deutschland | Österreich | Schweiz beinhalten.
+         * `Camel-46`: Art der Ware darf nur Waffe | Munition | Sonstiges sein.
+         * `Camel-47`: Sendungsdaten Versicherung muss entweder Ja|Nein sein.
+         * `Camel-48`: Zustellart darf nur standard | persoenlich | persoenlichIdent sein.
         body:
           application/json:
 #            example: !include json/error/errorObject.json
-
-
-
-
-

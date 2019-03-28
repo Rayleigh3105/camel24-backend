@@ -12,9 +12,10 @@ let moment = require('moment');
 let PDFDocument = require('pdfkit');
 let mongoose = require('mongoose');
 const path = require('path');
-let ftpDir = path.join(__dirname, '../../../../camel/ftp');
-let baseDir = path.join(__dirname, '../../../../camel');
-let orderDir = path.join(__dirname, '../../../../camel/auftraege');
+const homedir = require('os').homedir();
+let ftpDir = path.join(homedir, '/camel/ftp');
+let baseDir = path.join(homedir, '/camel');
+let orderDir = path.join(homedir, '/camel/auftraege');
 let Role = require('./../models/role');
 
 /**

@@ -263,11 +263,12 @@ module.exports = {
     checkRequiredDefaultData: function (json) {
         return new Promise(async (resolve, reject) => {
             try {
+                let allowedCountrys = ['Deutschland','Schweiz','Österreich'];
+                let allowedType = ['Waffe','Munition', 'Sonstiges'];
+                let allowedVersicherung = ['Ja','Nein'];
+                let allowedZustellArt = ['standard, persoenlich, persoenlichIdent'];
 
-                // TODO - Check if land is DEUTSCHLAND | SCHWEIZ | ÖSTERREICH
-                // TODO - Check Sendungsdaten Vers
-                // TODO - Check Sendungsdatengewicht <= 30
-                // TODO - Check if Art === Waffe|Munitijon|Sonstiges
+                // TODO - Check Sendungsdatengewicht <= 30 parse Int
                 let abholZeitVon = json.abholZeitVon.substring(0, json.abholZeitVon.indexOf(':'));
                 let abholZeitBis = json.abholZeitBis.substring(0, json.abholZeitBis.indexOf(':'));
                 let zustellZeitVon = json.zustellZeitVon.substring(0, json.zustellZeitVon.indexOf(':'));
@@ -279,6 +280,10 @@ module.exports = {
                     throw new ApplicationError('Camel-31', 400, "Angabe der E-Mail ist beim Absender erforderlich.", json)
                 }
 
+                if (!allowedZustellArt.includes(json.zustellArt)) {
+                    throw new ApplicationError("Camel-48", 400, "Zustellart darf nur standard | persoenlich | persoenlichIdent sein.")
+                }
+
                 // Check if Empf Ansprechpartner is available when Zustell art == perönlich
                 if (json.zustellArt !== 'standard') {
                     if (json.empfAnsprechpartner === null || json.empfAnsprechpartner === '' || json.empfAnsprechpartner === undefined) {
@@ -286,6 +291,12 @@ module.exports = {
                         throw new ApplicationError('Camel-32', 400, "Ansprechpartner muss bei persönlicher Zustellung gegeben sein.", json)
                     }
                 }
+
+                //Check if Sendungsdaten art is Waffe|Munition|Sonstiges
+                if (!allowedType.includes(json.sendungsdatenArt)) {
+                    throw new ApplicationError("Camel-46", 400, "Art der Ware darf nur Waffe | Munition | Sonstiges sein.")
+                }
+
                 // Check if Zustell art == persoönlich wenn art der ware == Waffe || Munition
                 if (json.sendungsdatenArt !== 'Sonstiges') {
                     if (json.zustellArt === 'standard') {
@@ -358,6 +369,18 @@ module.exports = {
                     throw  new ApplicationError("Camel-44", 400, "PLZ muss Pattern ^[0-9]{5}$ entsprechen.")
                 }
 
+                if (!allowedCountrys.includes(json.absLand) || !allowedCountrys.includes(json.empfLand)) {
+                    throw new ApplicationError("Camel-45", 400, "Absender | Empfänger Land darf nur Deutschland | Österreich | Schweiz beinhalten.")
+                }
+
+                if (!allowedVersicherung.includes(json.sendungsdatenVers)) {
+                    throw new ApplicationError("Camel-47", 400, "Sendungsdaten Versicher muss entweder Ja|Nein sein.")
+                }
+
+
+
+
+
                 resolve();
             } catch (e) {
                 reject(e);
@@ -365,6 +388,4 @@ module.exports = {
 
         });
     },
-
-
 };

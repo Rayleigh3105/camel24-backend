@@ -44,6 +44,10 @@
 - **Camel-42** -> Abholzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.
 - **Camel-43** -> Zustellzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.
 - **Camel-44** -> PLZ muss Pattern ^[0-9]{5}$ entsprechen.
+- **Camel-45** -> Absender | Empfänger Land darf nur Deutschland | Österreich | Schweiz beinhalten.
+- **Camel-46** -> Art der Ware darf nur Waffe | Munition | Sonstiges sein.
+- **Camel-47** -> Sendungsdaten Versicherung muss entweder Ja|Nein sein.
+- **Camel-47** -> Zustellart darf nur standard | persoenlich | persoenlichIdent sein.
 
 
 raml2html -t nunjucks/template.nunjucks -i camel-api-documentation.raml -o camel-api-documentation.html
