@@ -171,6 +171,11 @@ UserSchema.statics.findAll = function () {
         kundenNummer: {
             $not: {$eq: 14000}
         }
+    }, {
+        tokens: 0,
+        __v: 0,
+        password: 0,
+        role: 0
     }).sort({kundenNummer: 1})
         .then((user) => {
                 if (user) {
