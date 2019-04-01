@@ -19,7 +19,7 @@ module.exports = router;
 /**
  * ROUTES
  */
-router.get('/users', authenticateAdmin, getAllUsers);
+router.get('/users', getAllUsers);
 router.get('/orders/:kundenNummer', getOrdersForKundenNumber);
 
 /**
@@ -60,9 +60,17 @@ async function getAllUsers(req, res, next) {
     }
 }
 
+/**
+ *  Get´s all orders for specific Kundennummer
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<void>}
+ */
 async function getOrdersForKundenNumber(req, res, next) {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let kundenNummer = req.params.kundenNummer
+    let kundenNummer = req.params.kundenNummer;
+
     try {
         await Order.find({
             identificationNumber: {
