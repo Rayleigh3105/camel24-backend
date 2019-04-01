@@ -44,12 +44,12 @@ async function createUser(req, res, next) {
     let countUser;
     let user;
     try {
-        // let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
-        // await checkTransport.verify()
-        //     .catch(e => {
-        //         log.info(e);
-        //         throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
-        //     });
+        let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
+        await checkTransport.verify()
+            .catch(e => {
+                log.info(e);
+                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+            });
 
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -112,17 +112,13 @@ async function createUser(req, res, next) {
         };
 
         // send mail with defined transport object
-        // await transporter.sendMail(mailOptions).then(() => {
-        //     res.status(200).send({
-        //         user: user._doc,
-        //         token
-        //     });
-        //     log.info(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
-        //     console.log(`[${date}] User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
-        // }).catch(e => {
-        //     log.info(e);
-        //     throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
-        // })
+        await transporter.sendMail(mailOptions).then(() => {
+            log.info(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
+            console.log(`[${date}] User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
+        }).catch(e => {
+            log.info(e);
+            throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
+        });
 
         res.status(200).send({
             user: user._doc,

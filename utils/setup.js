@@ -27,6 +27,8 @@ module.exports = {
      * Creates Admin User
      */
     createAdminUser: async function () {
+        let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+
         let userData =
             {
                 firstName: "Camel-24",
@@ -56,7 +58,7 @@ module.exports = {
                         log.info(`Admin User wurde erstellt.`);
                         console.log(`[${date}] Admin User wurde erstellt.`);
                     })
-                    .catch(() => {
+                    .catch(e => {
                         throw new ApplicationError("Camel-14", 400, help.getDatabaseErrorString(), user)
                     });
 
@@ -80,10 +82,11 @@ module.exports = {
      * @param identificationNumber of order
      * @returns {@link Order}
      */
-    mapOrder: function (jsonObject, userId, createdAt, identificationNumber) {
+    mapOrder: function (jsonObject, userId, createdAt, identificationNumber, kundenNummer) {
         if (userId) {
             return new Order({
                 _creator: userId,
+                kundenNummer,
                 createdAt,
                 identificationNumber,
                 absender: {

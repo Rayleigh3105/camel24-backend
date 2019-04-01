@@ -70,12 +70,12 @@ async function generateOrder(req, res, next) {
 
         let convertedJson = setup.convertToCSV(jsonObject);
 
-        // let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
-        // await checkTransport.verify()
-        //     .catch(e => {
-        //         log.errorx(e);
-        //         throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
-        //     });
+        let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
+        await checkTransport.verify()
+            .catch(e => {
+                log.errorx(e);
+                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
+            });
 
         res.header("access-control-expose-headers",
             ",x-auth"
@@ -126,11 +126,11 @@ async function generateOrder(req, res, next) {
         // Create identificationNumber
         if (user) {
             identificationNumber = kundenNummer + dateForFile + resultCount;
-            order = setup.mapOrder(jsonObject, user, new Date(), identificationNumber)
+            order = setup.mapOrder(jsonObject, user, new Date(), identificationNumber, kundenNummer)
         } else {
             let substringEmail = req.body.auftragbestEmail.substring(0, req.body.auftragbestEmail.indexOf('@'));
             identificationNumber = substringEmail + dateForFile + resultCount;
-            order = setup.mapOrder(jsonObject, null, new Date(), identificationNumber);
+            order = setup.mapOrder(jsonObject, null, new Date(), identificationNumber, kundenNummer);
         }
 
         // Get File path for storing the CSV temporär
@@ -186,41 +186,47 @@ async function generateOrder(req, res, next) {
             res.status(400).send(e)
         }
     } finally {
+        let succesfulSentMailAbs = false;
+        let succesfulSentMailEmpf = false;
         if (successful) {
-            // // Sent mail to Absender
-            // await setup.sentMailAbs(identificationNumber, order, kndDateCountDir)
-            //     .then(() => {
-            //         res.status(200).send(true);
-            //     }).catch(e => {
-            //         if (e instanceof ApplicationError) {
-            //             console.log(`[${date}] ${e.stack}`);
-            //             log.error(e.errorCode + e.stack);
-            //             res.status(e.status).send(e);
-            //         } else {
-            //             console.log(`[${date}] ${e}`);
-            //             log.error(e.errorCode + e);
-            //             res.status(400).send(e)
-            //         }
-            //     });
-            //
-            // // Sent mail to Empfänger
-            // await setup.sentMailEmpf(identificationNumber, order, kndDateCountDir)
-            //     .then(() => {
-            //         res.status(200).send(true);
-            //     }).catch(e => {
-            //         if (e instanceof ApplicationError) {
-            //             console.log(`[${date}] ${e.stack}`);
-            //             log.error(e.errorCode + e.stack);
-            //             res.status(e.status).send(e);
-            //         } else {
-            //             console.log(`[${date}] ${e}`);
-            //             log.error(e.errorCode + e);
-            //             res.status(400).send(e)
-            //         }
-            //     });
+            // Sent mail to Absender
+            await setup.sentMailAbs(identificationNumber, order, kndDateCountDir)
+                .then(() => {
+                    succesfulSentMailAbs = true
+                })
+               .catch(e => {
+                    if (e instanceof ApplicationError) {
+                        console.log(`[${date}] ${e.stack}`);
+                        log.error(e.errorCode + e.stack);
+                        res.status(e.status).send(e);
+                    } else {
+                        console.log(`[${date}] ${e}`);
+                        log.error(e.errorCode + e);
+                        res.status(400).send(e)
+                    }
+                });
 
-            res.status(200).send(true);
-
+            // Sent mail to Empfänger
+            await setup.sentMailEmpf(identificationNumber, order, kndDateCountDir)
+                .then(() => {
+                    succesfulSentMailEmpf = true
+                })
+                .catch(e => {
+                    if (e instanceof ApplicationError) {
+                        console.log(`[${date}] ${e.stack}`);
+                        log.error(e.errorCode + e.stack);
+                        res.status(e.status).send(e);
+                    } else {
+                        console.log(`[${date}] ${e}`);
+                        log.error(e.errorCode + e);
+                        res.status(400).send(e)
+                    }
+                });
+            if (succesfulSentMailEmpf && succesfulSentMailAbs) {
+                res.status(200).send(true);
+            } else {
+                res.status(400).send("bruder mus los")
+            }
         }
     }
 }

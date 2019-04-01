@@ -144,8 +144,6 @@ let SendungsDatenSchema = mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        minlength: 1,
-        maxLength: 24,
         unique: false
     },
     transportVers: {
@@ -225,6 +223,10 @@ let OrderSchema = new mongoose.Schema({
         default: null
     },
     identificationNumber: {
+        type: String,
+        required: true
+    },
+    kundenNummer: {
         type: String,
         required: true
     }

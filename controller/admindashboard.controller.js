@@ -72,19 +72,41 @@ async function getAllUsers(req, res, next) {
 async function getOrdersForKundenNumber(req, res, next) {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let kundenNummer = req.params.kundenNummer;
+    let search = req.header('search');
 
     try {
-        await Order.find({
-            identificationNumber: {
-                '$regex': kundenNummer,
-                '$options': 'i'
-            }
-        }).sort({createdAt: -1})
-            .then(orders => {
-                if (orders) {
-                    res.status(200).send(orders);
+        if (search) {
+            await Order.find({
+                $and : [{
+                    kundenNummer: kundenNummer
+                }, {
+                    identificationNumber: {
+                        '$regex': search    ,
+                        '$options': 'i'
+                    }
                 }
-            });
+                ]
+
+            }).sort({createdAt: -1})
+                .then(orders => {
+                    if (orders) {
+                        res.status(200).send(orders);
+                    }
+                });
+        } else {
+            await Order.find({
+                identificationNumber: {
+                    '$regex': kundenNummer,
+                    '$options': 'i'
+                }
+            }).sort({createdAt: -1})
+                .then(orders => {
+                    if (orders) {
+                        res.status(200).send(orders);
+                    }
+                });
+        }
+
     } catch (e) {
         if (e instanceof ApplicationError) {
             console.log(`[${date}] ${e.stack}`);
