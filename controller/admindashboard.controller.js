@@ -34,10 +34,12 @@ router.get('/orders/:kundenNummer', getOrdersForKundenNumber);
  */
 async function getAllUsers(req, res, next) {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let search = req.header('search');
+
     try {
         let userArray = [];
         let resultArray = [];
-        await User.findAll().then(user => userArray = user);
+        await User.findAll(search).then(user => userArray = user);
         for (let userObject of userArray) {
             await Order.countOrderForUser(userObject.kundenNummer)
                 .then(count => {

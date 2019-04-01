@@ -164,13 +164,77 @@ UserSchema.statics.findByCredentials = function (kundenNummer, password) {
     })
 };
 
-UserSchema.statics.findAll = function () {
+// TODO search for user with kundenNummer for filtering
+UserSchema.statics.findAll = function (kundenNummer) {
     let User = this;
+    let kundenNummerInt = null;
+    if (kundenNummer) {
+        kundenNummerInt = Number(kundenNummer);
+        return User.find({
+            $and: [
+                {
+                    kundenNummer: {
+                        $not: {$eq: 14000},
+                    }
+                },
+                {
+                    kundenNummer: kundenNummerInt
+                }
+            ]
+        }, {
+            tokens: 0,
+            __v: 0,
+            password: 0,
+            role: 0
+        }).sort({kundenNummer: 1})
+            .then((user) => {
+                    if (user) {
+                        let userArray = [];
+                        for (let userObject of user) {
+
+                            userArray.push(userObject._doc);
+
+                        }
+                        return Promise.resolve(userArray)
+                    }
+                }
+            )
+    } else {
+        return User.find({
+            $and: [
+                {
+                    kundenNummer: {$not: {$eq: 14000}}
+                }
+            ]
+        }, {
+            tokens: 0,
+            __v: 0,
+            password: 0,
+            role: 0
+        }).sort({kundenNummer: 1})
+            .then((user) => {
+                    if (user) {
+                        let userArray = [];
+                        for (let userObject of user) {
+
+                            userArray.push(userObject._doc);
+
+                        }
+                        return Promise.resolve(userArray)
+                    }
+                }
+            )
+    }
 
     return User.find({
-        kundenNummer: {
-            $not: {$eq: 14000}
-        }
+        $and: [
+            {
+                kundenNummer: {$not: {$eq: 14000}}
+            },
+            {
+                kundenNummer: 14002
+            }
+        ]
     }, {
         tokens: 0,
         __v: 0,
