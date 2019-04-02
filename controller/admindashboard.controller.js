@@ -19,8 +19,7 @@ module.exports = router;
 /**
  * ROUTES
  */
-router.get('/users', getAllUsers);
-router.get('/orders/:kundenNummer', getOrdersForKundenNumber);
+router.get('/users', authenticateAdmin, getAllUsers);
 
 /**
  * ADMIN - ROUTE
@@ -62,60 +61,3 @@ async function getAllUsers(req, res, next) {
     }
 }
 
-/**
- *  Get´s all orders for specific Kundennummer
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
- */
-async function getOrdersForKundenNumber(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let kundenNummer = req.params.kundenNummer;
-    let search = req.header('search');
-
-    try {
-        if (search) {
-            await Order.find({
-                $and : [{
-                    kundenNummer: kundenNummer
-                }, {
-                    identificationNumber: {
-                        '$regex': search    ,
-                        '$options': 'i'
-                    }
-                }
-                ]
-
-            }).sort({createdAt: -1})
-                .then(orders => {
-                    if (orders) {
-                        res.status(200).send(orders);
-                    }
-                });
-        } else {
-            await Order.find({
-                identificationNumber: {
-                    '$regex': kundenNummer,
-                    '$options': 'i'
-                }
-            }).sort({createdAt: -1})
-                .then(orders => {
-                    if (orders) {
-                        res.status(200).send(orders);
-                    }
-                });
-        }
-
-    } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
-    }
-}
