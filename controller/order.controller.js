@@ -18,8 +18,8 @@ let nodemailer = require("nodemailer");
 let moment = require('moment');
 const _ = require('lodash');
 const bwipjs = require('bwip-js');
-
-let orderDir = path.join(__dirname, '../../../../camel/auftraege');
+const homedir = require('os').homedir();
+let orderDir = path.join(homedir, '/camel/auftraege');
 
 module.exports = router;
 
@@ -85,7 +85,6 @@ async function generateOrder(req, res, next) {
         if (help.checkIfValuesAreAvailable(kundenNummer, req.body.absEmail)) {
             throw new ApplicationError("Camel-00", 400, "Kundennummer oder E-Mail konnte nicht gelesen werden.");
         }
-
 
         // Map json Object to order so it can be saved
         let kndDir;
