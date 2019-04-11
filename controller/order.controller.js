@@ -73,7 +73,7 @@ async function generateOrder(req, res, next) {
         let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
         await checkTransport.verify()
             .catch(e => {
-                log.errorx(e);
+                log.error(e);
                 throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
             });
 
@@ -225,6 +225,7 @@ async function generateOrder(req, res, next) {
             if (succesfulSentMailEmpf && succesfulSentMailAbs) {
                 res.status(200).send(true);
             } else {
+                // Todo - Error Message
                 res.status(400).send("bruder mus los")
             }
         }
@@ -326,7 +327,6 @@ async function generatePDF(identificationNumber, order, pathToSave) {
             reject(e)
         }
     })
-
 }
 
 /**

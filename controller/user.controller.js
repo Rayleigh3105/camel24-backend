@@ -1,7 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path');
-const fs = require('fs');
 const {ObjectID} = require('mongodb');
 
 
@@ -33,9 +31,7 @@ router.delete('/token', authenticate, logoutUser);
  * - generates Kundennummer for User
  * - sents email to user
  * - logs process
- * @param req
- * @param res
- * @param next
+ *
  * @returns {Promise<void>}
  */
 async function createUser(req, res, next) {

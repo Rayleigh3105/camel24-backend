@@ -5,14 +5,10 @@ const router = express.Router();
 let {User} = require('./../models/user');
 let {Order} = require('./../models/order');
 let log = require("./../utils/logger");
-let setup = require('./../utils/setup');
-let help = require('./../utils/helper');
 const ApplicationError = require('./../models/error');
 let {authenticateAdmin} = require('./../middleware/authenticate-admin');
-let Role = require('./../models/role');
 
 let moment = require('moment');
-const _ = require('lodash');
 
 module.exports = router;
 
@@ -47,7 +43,6 @@ async function getAllUsers(req, res, next) {
                 })
         }
         res.status(200).send(resultArray);
-
     } catch (e) {
         if (e instanceof ApplicationError) {
             console.log(`[${date}] ${e.stack}`);
