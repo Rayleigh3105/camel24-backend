@@ -1,5 +1,4 @@
 let { User } = require('./../models/user');
-let { Role } = require('./../models/Role');
 
 
 let authenticate = ( req, res, next) => {

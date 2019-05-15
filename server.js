@@ -1,16 +1,16 @@
 // --- CONFIG ---
-require('./../config/config');
+require('./config/config');
 
 // +++ THIRD PARTY MODULES +++
 let express = require('express');
 const cors = require('cors');
-let moment = require('moment');
+let moment = require('moment/moment');
 let bodyParser = require('body-parser');
-let log = require("./../utils/logger");
-let setup = require('./../utils/setup');
+let log = require("./utils/logger");
+let setup = require('./utils/setup');
 // +++ LOCAL +++
-let mongoose = require('./../db/mongoose').mongoose;
-let conn = require('./../db/mongoose').conn;
+let mongoose = require('./db/mongoose').mongoose;
+let conn = require('./db/mongoose').conn;
 
 // +++ VARIABLES +++
 let app = express();
@@ -26,17 +26,17 @@ app.use(bodyParser.json(), cors({origin: '*'}));
 /**
  * User routes
  */
-app.use('/user', require('../controller/user.controller'));
+app.use('/user', require('./controller/user.controller'));
 
 /**
  * Order route
  */
-app.use('/order', require('../controller/order.controller'));
+app.use('/order', require('./controller/order.controller'));
 
 /**
  * Admin route
  */
-app.use('/admindashboard', require('../controller/admindashboard.controller'));
+app.use('/admindashboard', require('./controller/admindashboard.controller'));
 
 app.listen(port, () => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");

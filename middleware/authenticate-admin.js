@@ -1,5 +1,4 @@
 let { User } = require('./../models/user');
-let { Role } = require('./../models/role');
 
 
 let authenticateAdmin = ( req, res, next) => {
