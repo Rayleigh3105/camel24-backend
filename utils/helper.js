@@ -1,7 +1,5 @@
 let ApplicationError = require('./../models/error');
 // MODULES
-
-
 let moment = require('moment');
 let mongoose = require('mongoose');
 let pattern = require('./ValidationPatterns');

@@ -21,8 +21,6 @@ const port = process.env.PORT || 3000;
 // Setup Middleware
 app.use(bodyParser.json(), cors({origin: '*'}));
 
-
-
 /**
  * User routes
  */
