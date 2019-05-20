@@ -4,18 +4,17 @@ services:
     container_name: camel-backend
     restart: always
     build: https://github.com/Rayleigh3105/camel24-backend.git
-    image: mvogt3105/camel-backend:initial
     ports:
-      - "3000:3000"
+      - "8181:80"
     volumes:
       - .:/app
     links:
       - mongo
   camel-frontend:
     container_name: camel-frontend
+    hostname: localhost
     restart: always
     build: https://github.com/Rayleigh3105/camel24-angular.git
-    image: mvogt3105/camel-frontend:initial
     ports:
       - "4200:4200"
     volumes:
