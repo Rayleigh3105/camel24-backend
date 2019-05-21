@@ -5,9 +5,9 @@ services:
     restart: always
     build: https://github.com/Rayleigh3105/camel24-backend.git
     ports:
-      - "8181:80"
+      - "3000:3000"
     volumes:
-      - .:/app
+      - C:\\Users\\morit\\camel:\\root\\camel
     links:
       - mongo
   camel-frontend:
@@ -16,7 +16,7 @@ services:
     restart: always
     build: https://github.com/Rayleigh3105/camel24-angular.git
     ports:
-      - "4200:4200"
+      - "80:80"
     volumes:
       - .:/usr/src/app
   mongo:
