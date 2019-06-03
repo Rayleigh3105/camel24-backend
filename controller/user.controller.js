@@ -95,7 +95,7 @@ async function createUser(req, res, next) {
 
         // setup email data with unicode symbols
         let mailOptions = {
-            from: '"Moritz Vogt" <moritz.vogt@vogges.de>', // sender address
+            from: '"Camel-24 Transportvermittlung & Kurierdienst" <support@camel-24.de>', // sender address
             to: user.email, // list of receivers
             subject: `Herzlich Willkommen beim Camel-24 Online Auftragsservice - ${body.kundenNummer}`, // Subject line
             html: `Guten Tag,<br>Vielen Dank für Ihr Vertrauen!<br><br><strong>Kundennummer:</strong> ${body.kundenNummer}<br><br>Wir freuen uns auf eine gute Zusammenarbeit.<br>Bei Fragen oder Anregungen rufen Sie uns doch bitte an.<br>Sie erreichen uns Montag bis Freitag von 08:00 - 18:00 Uhr unter <strong>0911/400727</strong><br><br> Mit freundlichen Grüßen Ihr Camel-24 Team <br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 

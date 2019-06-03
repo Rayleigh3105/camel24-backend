@@ -13,12 +13,12 @@ module.exports = {
      */
     getSmtpOptions: function () {
         return {
-            host: "smtp.ionos.de",
-            port: 465,
-            secure: true, // true for 465, false for other ports
+            host: "mail.camel-24.de",
+            port: 143,
+            secure: false, // true for 465, false for other ports
             auth: {
-                user: 'moritz.vogt@vogges.de', // generated ethereal user
-                pass: 'mori00001' // generated ethereal password
+                user: 'support@camel-24.de', // generated ethereal user
+                pass: 'Saganer24?' // generated ethereal password
             }
         };
     },
