@@ -164,7 +164,6 @@ UserSchema.statics.findByCredentials = function (kundenNummer, password) {
     })
 };
 
-// TODO search for user with kundenNummer for filtering
 UserSchema.statics.findAll = function (kundenNummer) {
     let User = this;
     let kundenNummerInt = null;

@@ -18,6 +18,7 @@ module.exports = router;
  */
 router.get('/users', authenticateAdmin, getAllUsers);
 router.get('/configSmtp', getAllSmtpConfigs);
+router.patch('/configSmtp', authenticateAdmin, updateSmtpOptions)
 
 /**
  * ADMIN - ROUTE
@@ -70,18 +71,12 @@ async function getAllSmtpConfigs(req, res, next) {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
     try {
-        let ap = require("./../config/applicationProperties");
+        let config = new SmtpOptions();
 
-        let config = new SmtpOptions({
-            smtpHost : ap.smtpHost,
-            smtpPort : ap.smtpPort,
-            smtpSecure : ap.smtpSecure,
-            smtpAuthUser : ap.smtpauth.user,
-            smtpAuthPassword : ap.smtpauth.pass,
-        });
+        await SmtpOptions.find().then(configs => config = configs);
 
+        res.status(200).send(config[0]);
 
-        res.status(200).send(config);
     } catch (e) {
         if (e instanceof ApplicationError) {
             console.log(`[${date}] ${e.stack}`);
@@ -95,3 +90,53 @@ async function getAllSmtpConfigs(req, res, next) {
     }
 }
 
+/**
+ * Updates all SMTP configs
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<void>}
+ */
+async function updateSmtpOptions(req, res, next) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let body = req.body;
+
+    try {
+        console.log(body)
+        await SmtpOptions.findOneAndUpdate({
+            _id: body._id,
+        }, {
+            $set: {
+                smtpHost: body.smtpHost,
+                smtpPort: body.smtpPort,
+                smtpSecure: body.smtpSecure,
+                smtpUser: body.smtpUser,
+                smtpPassword: body.smtpPassword,
+            }
+        }, {
+            new: true
+        }).then((config) => {
+            if (!config) {
+                throw new ApplicationError("Camel-16", 404, "Zu bearbeitende Smtp Config konnte nicht gefunden werden.", body)
+            }
+            log.info(`Config wurde bearbeitet`);
+            console.log(`[${date}] Config wurde bearbeitet`);
+            res.status(200).send(config._doc);
+        }).catch(e => {
+            log.error(e);
+            throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn Smtp Config geupdated wird).", body)
+        })
+
+    }catch (e) {
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
+    }
+}

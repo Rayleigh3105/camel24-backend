@@ -44,6 +44,7 @@ app.listen(port, () => {
 
     setup.createNeededDirectorys();
     setup.createAdminUser();
+    setup.createSmtpOptions();
 });
 
 module.exports = { app };

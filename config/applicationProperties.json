@@ -1,9 +1,0 @@
-{
-  "smtpHost": "mail.camel-24.de",
-  "smtpPort": 143,
-  "smtpSecure": false,
-  "smtpauth": {
-    "user": "moritz.vogt@vogges.de",
-    "pass": "Saganer24!"
-  }
-}

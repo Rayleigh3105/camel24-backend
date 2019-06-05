@@ -16,13 +16,13 @@ let SmtpOptionsSchema = new mongoose.Schema({
     smtpSecure: {
         type: Boolean,
     },
-    smtpAuthUser: {
+    smtpUser: {
         type: String,
         trim: true,
         minlength: 1,
         maxLength: 70,
     },
-    smtpAuthPassword: {
+    smtpPassword: {
         type: String,
         trim: true,
         minlength: 1,

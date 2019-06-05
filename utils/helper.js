@@ -3,6 +3,7 @@ let ApplicationError = require('./../models/error');
 let moment = require('moment');
 let mongoose = require('mongoose');
 let pattern = require('./ValidationPatterns');
+let {SmtpOptions} = require('./../models/smtpOptions');
 
 
 module.exports = {
@@ -11,14 +12,19 @@ module.exports = {
      *
      * @return {{port: number, auth: {pass: string, user: string}, host: string, secure: boolean}}
      */
-    getSmtpOptions: function () {
+    getSmtpOptions: async function () {
+        let config = new SmtpOptions();
+
+        await SmtpOptions.find().then(configs => config = configs[0]);
+        console.log("hallo" + config)
+
         return {
-            host: "mail.camel-24.de",
-            port: 143,
-            secure: false, // true for 465, false for other ports
+            host: config.smtpHost,
+            port: config.smtpPort,
+            secure: config.smtpSecure, // true for 465, false for other ports
             auth: {
-                user: 'support@camel-24.de', // generated ethereal user
-                pass: 'Saganer24?' // generated ethereal password
+                user: config.smtpUser, // generated ethereal user
+                pass: config.smtpPassword // generated ethereal password
             }
         };
     },
