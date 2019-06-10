@@ -34,7 +34,7 @@ module.exports = {
             {
                 firstName: "Camel-24",
                 lastName: "Camel-24",
-                email: "info@Camel-24.de",
+                email: "support@camel-24.de",
                 password: "camel2414000!",
                 firmenName: "Camel-24",
                 adresse: "Wehrweg 3",
@@ -82,10 +82,10 @@ module.exports = {
         let smtpConfig =
             {
                 smtpHost: "mail.camel-24.de",
-                smtpPort: 143,
-                smtpSecure: true,
-                smtpUser: "support@camel24.de",
-                smtpPassword: "Saganer24!"
+                smtpPort: 25,
+                smtpSecure: false,
+                smtpUser: "support@camel-24.de",
+                smtpPassword: "Saganer24?"
 
             };
         let config = new SmtpOptions(smtpConfig);

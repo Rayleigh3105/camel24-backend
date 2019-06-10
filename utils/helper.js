@@ -7,6 +7,7 @@ let {SmtpOptions} = require('./../models/smtpOptions');
 
 
 module.exports = {
+
     /**
      * Returns SMTP Option object
      *
@@ -16,7 +17,6 @@ module.exports = {
         let config = new SmtpOptions();
 
         await SmtpOptions.find().then(configs => config = configs[0]);
-        console.log("hallo" + config)
 
         return {
             host: config.smtpHost,
@@ -25,6 +25,9 @@ module.exports = {
             auth: {
                 user: config.smtpUser, // generated ethereal user
                 pass: config.smtpPassword // generated ethereal password
+            },
+            tls: {
+                rejectUnauthorized:false
             }
         };
     },
