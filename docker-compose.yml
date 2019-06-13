@@ -7,7 +7,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - C:\\Users\\morit\\camel:\\root\\camel
+      - C:\\camel:\\root\\camel
     links:
       - mongo
   camel-frontend:
