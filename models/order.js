@@ -116,7 +116,22 @@ let TerminSchema = mongoose.Schema({
         minlength: 1,
         maxLength: 50,
         unique: false
-    }
+    },
+    isNachnahme: {
+        type: Boolean,
+        required: false,
+        trim: true,
+    },
+    nachNachnahmeWert: {
+        type: Number,
+        required: false,
+        trim: true,
+        min: 1,
+        max: 2500,
+        minlength: 1,
+        maxLength: 4,
+        unique: false
+    },
 
 });
 
@@ -228,7 +243,7 @@ let OrderSchema = new mongoose.Schema({
     },
     kundenNummer: {
         type: String,
-        required: true
+        required: false
     }
 
 });

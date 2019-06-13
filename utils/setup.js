@@ -155,6 +155,8 @@ module.exports = {
                     von: jsonObject.zustellZeitVon,
                     bis: jsonObject.zustellZeitBis,
                     art: jsonObject.zustellArt,
+                    isNachnahme: jsonObject.zustellNachnahme,
+                    nachNachnahmeWert: jsonObject.zustellNachnahmeWert,
                 },
                 sendungsdaten: {
                     gewicht: jsonObject.sendungsdatenGewicht,
@@ -209,6 +211,8 @@ module.exports = {
                     von: jsonObject.zustellZeitVon,
                     bis: jsonObject.zustellZeitBis,
                     art: jsonObject.zustellArt,
+                    isNachnahme: jsonObject.zustellNachnahme,
+                    nachNachnahmeWert: jsonObject.zustellNachnahmeWert,
 
                 },
                 sendungsdaten: {

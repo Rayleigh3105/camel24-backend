@@ -193,23 +193,6 @@ async function generateOrder(req, res, next) {
                 .then(() => {
                     succesfulSentMailAbs = true
                 })
-               .catch(e => {
-                    if (e instanceof ApplicationError) {
-                        console.log(`[${date}] ${e.stack}`);
-                        log.error(e.errorCode + e.stack);
-                        res.status(e.status).send(e);
-                    } else {
-                        console.log(`[${date}] ${e}`);
-                        log.error(e.errorCode + e);
-                        res.status(400).send(e)
-                    }
-                });
-
-            // Sent mail to Empfänger
-            await setup.sentMailEmpf(identificationNumber, order, kndDateCountDir)
-                .then(() => {
-                    succesfulSentMailEmpf = true
-                })
                 .catch(e => {
                     if (e instanceof ApplicationError) {
                         console.log(`[${date}] ${e.stack}`);
@@ -221,11 +204,30 @@ async function generateOrder(req, res, next) {
                         res.status(400).send(e)
                     }
                 });
+
+            if (order._doc.empfaenger.email) {
+                // Sent mail to Empfänger
+                await setup.sentMailEmpf(identificationNumber, order, kndDateCountDir)
+                    .then(() => {
+                        succesfulSentMailEmpf = true
+                    })
+                    .catch(e => {
+                        if (e instanceof ApplicationError) {
+                            console.log(`[${date}] ${e.stack}`);
+                            log.error(e.errorCode + e.stack);
+                            res.status(e.status).send(e);
+                        } else {
+                            console.log(`[${date}] ${e}`);
+                            log.error(e.errorCode + e);
+                            res.status(400).send(e)
+                        }
+                    });
+            }
+
             if (succesfulSentMailEmpf && succesfulSentMailAbs) {
                 res.status(200).send(true);
             } else {
-                // Todo - Error Message
-                res.status(400).send("bruder mus los")
+                res.status(400).send("Auftrag konnte nicht erstellt wegen, da")
             }
         }
     }
@@ -343,7 +345,7 @@ async function getOrdersForKundenNumber(req, res, next) {
     try {
         if (search) {
             await Order.find({
-                $and : [{
+                $and: [{
                     kundenNummer: kundenNummer
                 }, {
                     identificationNumber: {
@@ -361,7 +363,7 @@ async function getOrdersForKundenNumber(req, res, next) {
                 });
         } else {
             await Order.find({
-                 kundenNummer: kundenNummer
+                kundenNummer: kundenNummer
             }).sort({createdAt: -1})
                 .then(orders => {
                     if (orders) {
