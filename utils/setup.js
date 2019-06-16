@@ -487,16 +487,16 @@ module.exports = {
      * @param order
      * @param identificationNumber
      */
-    sentMailAbs: function (identificationNumber, order, pathAttachment) {
+    sentMailAbs: async function (identificationNumber, order, pathAttachment) {
         let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
-        return new Promise(function (resolve, reject) {
+        return new Promise(async function (resolve, reject) {
             try {
-                let smtpOptions = help.getSmtpOptions();
+                let smtpOptions = await help.getSmtpOptions();
                 let transporter = nodemailer.createTransport(smtpOptions);
 
                 let mailOptions = {
-                    from: `"Camel-24 Transportvermittlung & Kurierdienst" <${smtpOptions.user}>`, // sender address
+                    from: `"Camel-24 Transportvermittlung & Kurierdienst" <${smtpOptions.auth.user}>`, // sender address
                     to: order._doc.absender.email, // list of receivers
                     subject: `Ihr Camel-24 Paketlabel`, // Subject line
                     html: `Guten Tag,<br>im Anhang befindet sich Ihr Paketlabel mit dem Sie das Paket direkt selbst abfertigen können.<br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
@@ -542,11 +542,11 @@ module.exports = {
 
         return new Promise(async function (resolve, reject) {
             try {
-                let smtpOptions = help.getSmtpOptions();
+                let smtpOptions = await help.getSmtpOptions();
                 let transporter = nodemailer.createTransport(smtpOptions);
 
                 let mailOptions = {
-                    from: `"Camel-24 Transportvermittlung & Kurierdienst" <${smtpOptions.user}>`, // se/ sender address
+                    from: `"Camel-24 Transportvermittlung & Kurierdienst" <${smtpOptions.auth.user}>`, // se/ sender address
                     to: order._doc.empfaenger.email, // list of receivers
                     subject: `Ihr Paket von ${order._doc.absender.firma}`, // Subject line
                     html: `Guten Tag,<br> Ihre Sendung kommt voraussichtlich am ${formattedDate} zwischen ${order.zustellTermin.von}-${order.zustellTermin.bis} Uhr  an.<br><br><strong>Versandnummer:</strong>${identificationNumber}<br><br>Um zu sehen wo sich Ihre Sendung befindet können Sie über diesen Link einen Sendungsverfolgung tätigen <a href="http://kep-ag.kep-it.de/xtras/track.php">http://kep-ag.kep-it.de/xtras/track.php</a><br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 

@@ -69,8 +69,8 @@ async function generateOrder(req, res, next) {
             });
 
         let convertedJson = setup.convertToCSV(jsonObject);
-
-        let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
+        let smtpOptions = await help.getSmtpOptions();
+        let checkTransport = nodemailer.createTransport(smtpOptions);
         await checkTransport.verify()
             .catch(e => {
                 log.error(e);
