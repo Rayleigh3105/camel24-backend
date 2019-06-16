@@ -40,7 +40,8 @@ async function createUser(req, res, next) {
     let countUser;
     let user;
     try {
-        let checkTransport = nodemailer.createTransport(help.getSmtpOptions());
+        let smtpOption = await help.getSmtpOptions();
+        let checkTransport = nodemailer.createTransport(smtpOption);
         await checkTransport.verify()
             .catch(e => {
                 log.info(e);

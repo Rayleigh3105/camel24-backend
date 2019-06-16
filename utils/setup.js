@@ -82,7 +82,7 @@ module.exports = {
         let smtpConfig =
             {
                 smtpHost: "mail.camel-24.de",
-                smtpPort: 25,
+                smtpPort: 587,
                 smtpSecure: false,
                 smtpUser: "support@camel-24.de",
                 smtpPassword: "Saganer24?"
