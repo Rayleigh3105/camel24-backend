@@ -27,7 +27,7 @@ module.exports = {
                 pass: config.smtpPassword // generated ethereal password
             },
             tls: {
-                rejectUnauthorized:false
+                rejectUnauthorized: false
             }
         };
     },
@@ -267,11 +267,6 @@ module.exports = {
                 let allowedVersicherung = ['Ja','Nein'];
                 let allowedZustellArt = ['standard', 'persoenlich', 'persoenlichIdent'];
 
-                let abholZeitVon = json.abholZeitVon.substring(0, json.abholZeitVon.indexOf(':'));
-                let abholZeitBis = json.abholZeitBis.substring(0, json.abholZeitBis.indexOf(':'));
-                let zustellZeitVon = json.zustellZeitVon.substring(0, json.zustellZeitVon.indexOf(':'));
-                let zustellZeitBis = json.zustellZeitBis.substring(0, json.zustellZeitBis.indexOf(':'));
-
                 // Check if E-Mail is available for absender
                 if (json.absEmail === null || json.absEmail === '') {
                     // Throw error for missing absender email
@@ -335,32 +330,9 @@ module.exports = {
                     throw new ApplicationError("Camel-42", 400, "Abholzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.", json)
                 }
 
-                // Check if AbholZeit and ZustellZeit have timezone of 2 hours && check if von is not bigger than bis
-                if (abholZeitVon > abholZeitBis || !(abholZeitBis - 2 >= abholZeitVon)) {
-                    // Throw error with timzone of 2 hours
-                    throw new ApplicationError("Camel-36", 400, "Abholzeitfenster muss mind. 2 Stunden betragen.", json)
-                }
-
-
-                // Check if von and bis have right format
-                if (abholZeitVon > 16 || abholZeitVon < 8 || abholZeitBis > 16 || abholZeitBis < 8) {
-                    // Throw error Abholzeit muss zwischen 08:00 und 16: Uhr erfolgen
-                    throw new ApplicationError("Camel-40", 400, "Abholung muss zwischen 08:00 und 16:00 Uhr erfolgen.", json)
-                }
 
                 if(!(json.abholZeitVon.match(pattern.vonAndBisPattern)) || !(json.abholZeitBis.match(pattern.vonAndBisPattern))) {
                     throw new ApplicationError("Camel-43", 400, "Zustellzeit 'von' und 'bis' muss Pattern ^[0-9]{2}:[0-9]{2}$ entsprechen.", json)
-                }
-
-                if (zustellZeitVon > zustellZeitBis || !(zustellZeitBis - 2 >= zustellZeitVon)) {
-                    // Throw error with timzone of 2 hours
-                    throw new ApplicationError("Camel-37", 400, "Zustellzeitfenster muss mind. 2 Stunden betragen.", json)
-                }
-
-                // Check if von and bis have right format
-                if (zustellZeitVon > 16 || zustellZeitVon < 8 || zustellZeitBis > 16 || zustellZeitBis < 8) {
-                    // Throw error Abholzeit muss zwischen 08:00 und 16: Uhr erfolgen
-                    throw new ApplicationError("Camel-41", 400, "Zustellung muss zwischen 08:00 und 16:00 Uhr erfolgen.", json)
                 }
 
                 if(!(json.absPlz.match(pattern.plzPattern)) || !(json.empfPlz.match(pattern.plzPattern)) || !(json.rechnungPlz.match(pattern.plzPattern))) {
