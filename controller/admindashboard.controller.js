@@ -5,6 +5,7 @@ const router = express.Router();
 let {User} = require('./../models/user');
 let {Order} = require('./../models/order');
 let {SmtpOptions} = require('./../models/smtpOptions');
+let {PriceOptions} = require('./../models/priceOptions');
 let log = require("./../utils/logger");
 const ApplicationError = require('./../models/error');
 let {authenticateAdmin} = require('./../middleware/authenticate-admin');
@@ -17,8 +18,10 @@ module.exports = router;
  * ROUTES
  */
 router.get('/users', authenticateAdmin, getAllUsers);
-router.get('/configSmtp', getAllSmtpConfigs);
-router.patch('/configSmtp', authenticateAdmin, updateSmtpOptions)
+router.get('/configSmtp', authenticateAdmin, getAllSmtpConfigs);
+router.patch('/configSmtp', updateSmtpOptions);
+router.get('/priceConfig', getAllPriceConfigs);
+router.patch('/priceConfig', authenticateAdmin, updatePriceConfig);
 
 /**
  * ADMIN - ROUTE
@@ -103,7 +106,6 @@ async function updateSmtpOptions(req, res, next) {
     let body = req.body;
 
     try {
-        console.log(body)
         await SmtpOptions.findOneAndUpdate({
             _id: body._id,
         }, {
@@ -126,6 +128,84 @@ async function updateSmtpOptions(req, res, next) {
         }).catch(e => {
             log.error(e);
             throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn Smtp Config geupdated wird).", body)
+        })
+
+    }catch (e) {
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
+    }
+}
+
+
+/**
+ *
+ * Fetches all Price configs
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<void>}
+ */
+async function getAllPriceConfigs(req, res, next) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+
+    try {
+        let config;
+
+        await PriceOptions.find().then(configs => config = configs);
+
+        res.status(200).send(config);
+
+    } catch (e) {
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
+    }
+}
+
+/**
+ * Updates all Price configs
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<void>}
+ */
+async function updatePriceConfig(req, res, next) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let body = req.body;
+
+    try {
+        await PriceOptions.findOneAndUpdate({
+            _id: body._id,
+        }, {
+            $set: {
+                price: body.price
+            }
+        }, {
+            new: true
+        }).then((config) => {
+            if (!config) {
+                throw new ApplicationError("Camel-16", 404, "Zu bearbeitende Preis Einstellung konnte nicht gefunden werden.", body)
+            }
+            log.info(`Config wurde bearbeitet`);
+            console.log(`[${date}] Config wurde bearbeitet`);
+            res.status(200).send(config._doc);
+        }).catch(e => {
+            log.error(e);
+            throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn Preis einstellungen geupdated wird).", body)
         })
 
     }catch (e) {
