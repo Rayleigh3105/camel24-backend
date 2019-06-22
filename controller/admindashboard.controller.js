@@ -22,6 +22,9 @@ router.get('/configSmtp', authenticateAdmin, getAllSmtpConfigs);
 router.patch('/configSmtp', updateSmtpOptions);
 router.get('/priceConfig', getAllPriceConfigs);
 router.patch('/priceConfig', authenticateAdmin, updatePriceConfig);
+router.post('/priceConfig', authenticateAdmin, createPriceConfig);
+router.delete('/priceConfig/:priceId', authenticateAdmin, deletePriceConfig);
+
 
 /**
  * ADMIN - ROUTE
@@ -130,7 +133,7 @@ async function updateSmtpOptions(req, res, next) {
             throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn Smtp Config geupdated wird).", body)
         })
 
-    }catch (e) {
+    } catch (e) {
         if (e instanceof ApplicationError) {
             console.log(`[${date}] ${e.stack}`);
             log.error(e.errorCode + e.stack);
@@ -158,7 +161,7 @@ async function getAllPriceConfigs(req, res, next) {
     try {
         let config;
 
-        await PriceOptions.find().then(configs => config = configs);
+        await PriceOptions.find().sort({ type: 1}).then(configs => config = configs);
 
         res.status(200).send(config);
 
@@ -208,7 +211,7 @@ async function updatePriceConfig(req, res, next) {
             throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn Preis einstellungen geupdated wird).", body)
         })
 
-    }catch (e) {
+    } catch (e) {
         if (e instanceof ApplicationError) {
             console.log(`[${date}] ${e.stack}`);
             log.error(e.errorCode + e.stack);
@@ -219,4 +222,67 @@ async function updatePriceConfig(req, res, next) {
             res.status(400).send(e)
         }
     }
+}
+
+/**
+ * Creates Price Config
+ * @returns {Promise<void>}
+ */
+async function createPriceConfig(req, res, next) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let body = req.body;
+
+    try {
+        let priceConfig = new PriceOptions(body);
+
+        priceConfig = await priceConfig.save()
+            .catch(e => {
+                log.info(e);
+                throw new ApplicationError("Camel-15", 400, help.getDatabaseErrorString())
+            });
+
+        res.status(200).send(priceConfig._doc);
+    } catch (e) {
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
+    }
+}
+
+/**
+ * Delete Price Options.
+ */
+async function deletePriceConfig(req, res, next) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let priceId = req.params.priceId;
+
+    try {
+        PriceOptions.remove({
+            _id: priceId
+        }, async function (err) {
+            if (err) {
+                reject(err)
+            } else {
+                log.info(`Preis : ${priceId} wurde gelöscht.`);
+                res.status(200).send(true);
+            }
+        })
+    } catch (e) {
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
+    }
+
 }
