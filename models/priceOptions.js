@@ -12,7 +12,6 @@ let PriceOptionsSchema = new mongoose.Schema({
     time: {
         type: String,
         trim: true,
-        minlength: 1,
         maxLength: 70,
 
     },

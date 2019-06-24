@@ -113,11 +113,11 @@ module.exports = {
         let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
         let priceOptions = [
-            {type: "abhol", time: "09-17", price: "0"},
+            {type: "abhol", time: "09-17", price: "19"},
             {type: "abhol", time: "08-12", price: "6"},
             {type: "abhol", time: "10-12", price: "15"},
             {type: "abhol", time: "12-17", price: "10"},
-            {type: "zustell", time: "09-17", price: "0"},
+            {type: "zustell", time: "09-17", price: "19"},
             {type: "zustell", time: "08-08", price: "25"},
             {type: "zustell", time: "08-09", price: "20"},
             {type: "zustell", time: "08-10", price: "15"},
@@ -126,13 +126,17 @@ module.exports = {
             {type: "zustell", time: "13-17", price: "25"},
             {type: "zustell", time: "14-17", price: "35"},
             {type: "zustell", time: "samstag", price: "10"},
+            {type: "nachnahme", time: "", price: "10"},
+            {type: "ident", time: "", price: "6"},
+            {type: "versicherung", time: "", price: "2.90"},
+            {type: "fixtermin", time: "", price: "40"},
         ];
 
         PriceOptions.findOne().then((data) => {
             if (!data) {
                 PriceOptions.insertMany(priceOptions, (err, docs) => {
                     if (!err) {
-                        console.log`[${date}] Price Options wurde erstellt.`;
+                        console.log(`[${date}] Price Options wurde erstellt.`);
                         log.info(`Price Options wurde erstellt.`)
                     }
                 })
