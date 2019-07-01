@@ -244,6 +244,10 @@ let OrderSchema = new mongoose.Schema({
     kundenNummer: {
         type: String,
         required: false
+    },
+    price: {
+        type: String,
+        required: true
     }
 
 });

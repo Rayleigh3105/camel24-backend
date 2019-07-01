@@ -35,7 +35,7 @@ let UserSchema = new mongoose.Schema({
     },
     firmenName: {
         type: String,
-        require: true,
+        require: false  ,
     },
     password: {
         type: String,

@@ -161,6 +161,7 @@ module.exports = {
                 kundenNummer,
                 createdAt,
                 identificationNumber,
+                price: jsonObject.price,
                 absender: {
                     firma: jsonObject.absFirma,
                     zusatz: jsonObject.absZusatz,
@@ -216,6 +217,7 @@ module.exports = {
             return new Order({
                 createdAt,
                 identificationNumber,
+                price: jsonObject.price,
                 absender: {
                     firma: jsonObject.absFirma,
                     zusatz: jsonObject.absZusatz,
