@@ -315,10 +315,6 @@ module.exports = {
                 // ZUSTELLDATUM VALIDATION
                 let zustellDatum = new Date(json.zustellDatum);
                 zustellDatum.setHours(0, 0, 0);
-                if (zustellDatum.getDay() === 0 || zustellDatum.getDay() === 6) {
-                    // throw error for date on weekend
-                    throw new ApplicationError("Camel-35", 400, "Zustelldatum muss zwischen Montag und Freitag liegen.", json)
-                }
                 // Check if Zustell Datum os one day after abholdatum and not a weekend day
                 if (!(zustellDatum > abholDatum)) {
                     // throw error for date not bigger than today
