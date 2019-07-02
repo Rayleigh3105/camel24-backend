@@ -129,7 +129,6 @@ module.exports = {
             {type: "nachnahme", time: "", price: "10"},
             {type: "ident", time: "", price: "6"},
             {type: "versicherung", time: "", price: "2.90"},
-            {type: "fixtermin", time: "", price: "40"},
         ];
 
         PriceOptions.findOne().then((data) => {
