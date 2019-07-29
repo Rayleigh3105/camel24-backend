@@ -2,8 +2,8 @@ const winston = require('winston');
 let format = require('winston').format;
 require('winston-daily-rotate-file');
 const path = require('path');
-const homedir = require('os').homedir();
-let baseDir = path.join(homedir, '/camel');
+let windowsRootPath = 'C:/';
+let baseDir = path.join(windowsRootPath, '/camel');
 
 let transport = new (winston.transports.DailyRotateFile)({
     filename: `${baseDir}/logs/camelapi-%DATE%.log`,

@@ -1,10 +1,17 @@
+// Third Party libarys
+let nodemailer = require("nodemailer");
+let moment = require('moment');
+const _ = require('lodash');
+const bwipjs = require('bwip-js');
 const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const {ObjectID} = require('mongodb');
 
-
+// LOCAL
+let windowsRootPath = 'C:/';
+let orderDir = path.join(windowsRootPath, '/camel/auftraege');
 let log = require("./../utils/logger");
 let setup = require('./../utils/setup');
 let help = require('./../utils/helper');
@@ -14,12 +21,6 @@ let {Order} = require('./../models/order');
 let {User} = require('./../models/user');
 
 
-let nodemailer = require("nodemailer");
-let moment = require('moment');
-const _ = require('lodash');
-const bwipjs = require('bwip-js');
-const homedir = require('os').homedir();
-let orderDir = path.join(homedir, '/camel/auftraege');
 
 module.exports = router;
 
@@ -58,17 +59,22 @@ async function generateOrder(req, res, next) {
     let successful = false;
 
     try {
+        // Crate Needed Directorys for creating a File
         setup.createNeededDirectorys();
 
         let jsonObject = req.body;
 
+        // Check if Json is valid
         await setup.checkJsonValid(jsonObject)
             .catch(error => {
                 log.error(error);
                 throw error;
             });
 
+        // Convert data to CSV
         let convertedJson = setup.convertToCSV(jsonObject);
+
+        // Verify if SMTP server is up and running
         let smtpOptions = await help.getSmtpOptions();
         let checkTransport = nodemailer.createTransport(smtpOptions);
         await checkTransport.verify()
@@ -77,6 +83,7 @@ async function generateOrder(req, res, next) {
                 throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
             });
 
+        // Set Response Headers
         res.header("access-control-expose-headers",
             ",x-auth"
             + ",Content-Length"

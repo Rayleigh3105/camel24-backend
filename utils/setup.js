@@ -6,16 +6,15 @@ let ApplicationError = require('./../models/error');
 // MODULES
 let nodemailer = require("nodemailer");
 let help = require('./helper');
-
+let windowsRootPath = 'C:/';
 let fs = require('fs');
 let moment = require('moment');
 let PDFDocument = require('pdfkit');
 let mongoose = require('mongoose');
 const path = require('path');
-const homedir = require('os').homedir();
-let ftpDir = path.join(homedir, '/camel/ftp');
-let baseDir = path.join(homedir, '/camel');
-let orderDir = path.join(homedir, '/camel/auftraege');
+let ftpDir = path.join(windowsRootPath, '/camel/ftp');
+let baseDir = path.join(windowsRootPath, '/camel');
+let orderDir = path.join(windowsRootPath, '/camel/auftraege');
 let Role = require('./../models/role');
 let {SmtpOptions} = require('./../models/smtpOptions');
 let {PriceOptions} = require('./../models/priceOptions');
