@@ -19,8 +19,7 @@ let ApplicationError = require('./../models/error');
 let {authenticate} = require('./../middleware/authenticate');
 let {Order} = require('./../models/order');
 let {User} = require('./../models/user');
-
-
+let {Template} = require('./../models/empfaenger_template');
 
 module.exports = router;
 
@@ -29,6 +28,7 @@ module.exports = router;
  */
 router.post('', generateOrder);
 router.post('/download', authenticate, downloadOrder);
+router.post('/template', authenticate, createTemplate);
 router.get('/:kundenNummer', authenticate, getOrdersForKundenNumber);
 
 /**
@@ -274,6 +274,41 @@ async function downloadOrder(req, res, next) {
         }
     }
 }
+
+/**
+ * PRIVATE ROUTE - downloads specific order
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<void>}
+ */
+async function createTemplate(req, res, next) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let body = req.body;
+
+    try {
+        let template = new Template(body);
+
+        template = await template.save().catch(e => {
+            log.info(e);
+            throw new ApplicationError("Camel-50", 400, help.getDatabaseErrorString())
+        });
+        res.status(201).send(template._doc);
+
+    } catch (e) {
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
+    }
+}
+
 
 /**
  * Generates Barcode

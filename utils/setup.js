@@ -134,8 +134,8 @@ module.exports = {
             if (!data) {
                 PriceOptions.insertMany(priceOptions, (err, docs) => {
                     if (!err) {
-                        console.log(`[${date}] Price Options wurde erstellt.`);
-                        log.info(`Price Options wurde erstellt.`)
+                        console.log(`[${date}] Price Configs wurden erstellt.`);
+                        log.info(`Price Configs wurden erstellt.`)
                     }
                 })
             }
