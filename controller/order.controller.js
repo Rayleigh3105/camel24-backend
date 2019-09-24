@@ -292,6 +292,7 @@ async function createTemplate(req, res, next) {
 
         template = await template.save().catch(e => {
             log.info(e);
+            console.log(e);
             throw new ApplicationError("Camel-50", 400, help.getDatabaseErrorString())
         });
         res.status(201).send(template._doc);
