@@ -10,7 +10,6 @@ let EmpfSchema = mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        minlength: 1,
         maxLength: 70,
         unique: false
     },
@@ -25,7 +24,6 @@ let EmpfSchema = mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        minlength: 1,
         maxLength: 70,
         unique: false
     },
@@ -33,7 +31,6 @@ let EmpfSchema = mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        minlength: 1,
         maxLength: 70,
         unique: false
     },
@@ -41,7 +38,6 @@ let EmpfSchema = mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        minlength: 1,
         maxLength: 20,
         unique: false
     },
@@ -49,7 +45,6 @@ let EmpfSchema = mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        minlength: 5,
         maxLength: 5,
         unique: false
     },
@@ -57,7 +52,6 @@ let EmpfSchema = mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        minlength: 1,
         maxLength: 70,
         unique: false
     },
@@ -65,7 +59,6 @@ let EmpfSchema = mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        minlength: 1,
         maxLength: 20,
         unique: false
     },
@@ -73,7 +66,6 @@ let EmpfSchema = mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        minlength: 1,
         maxLength: 40,
         unique: false,
     },

@@ -31,6 +31,7 @@ router.post('/download', authenticate, downloadOrder);
 router.post('/template', authenticate, createTemplate);
 router.get('/template', authenticate, getTemplates);
 router.delete('/template/:id', authenticate, deleteTemplate);
+router.patch('/template/:id', authenticate, updateTemplate);
 router.get('/:kundenNummer', authenticate, getOrdersForKundenNumber);
 
 /**
@@ -395,6 +396,58 @@ async function deleteTemplate(req, res, next) {
                 log.info(`Vorlage : ${templateId} wurde gelöscht.`);
                 res.status(200).send(true);
             }
+        })
+    } catch (e) {
+        if (e instanceof ApplicationError) {
+            console.log(`[${date}] ${e.stack}`);
+            log.error(e.errorCode + e.stack);
+            res.status(e.status).send(e);
+        } else {
+            console.log(`[${date}] ${e}`);
+            log.error(e.errorCode + e);
+            res.status(400).send(e)
+        }
+    }
+}
+
+/**
+ * Updates template in database
+ *
+ * @param req
+ * @param res
+ * @param next
+ * @returns {Promise<void>}
+ */
+async function updateTemplate(req, res, next) {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    let templateId = req.params.id;
+    let body = req.body;
+
+    try {
+
+        if (!ObjectID.isValid(templateId)) {
+            throw new ApplicationError("Camel-00", 404, "Datenbank Identifikations Nummer für Benutzer ist nicht gültig.", userId)
+        }
+
+        Template.findOneAndUpdate({
+            _id: templateId,
+        }, {
+            $set: {
+                name: body.name,
+                empfaenger: body.empfaenger
+            }
+        }, {
+            new: true
+        }).then((template) => {
+            if (!template) {
+                throw new ApplicationError("Camel-16", 404, "Zu Bearbeitendes Template konnte nicht gefunden werden.", body)
+            }
+            log.info(`Vorlage ${template._doc.name} wurde bearbeitet`);
+            console.log(`[${date}] Vorlage ${template._doc.name} wurde bearbeitet`);
+            res.status(200).send(template._doc);
+        }).catch(e => {
+            log.error(e);
+            throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn Vorlage geupdated wird).", body)
         })
     } catch (e) {
         if (e instanceof ApplicationError) {
