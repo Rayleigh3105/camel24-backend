@@ -813,5 +813,59 @@ module.exports = {
         });
     }
     ,
+
+    prepareJsonForCsvExport: function (jsonObject) {
+        let configuration = {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        };
+
+        // Datum in Exportierbares Format bringen (Abhol, Zustell)
+        jsonObject.abholDatumExport = new Date(jsonObject.abholDatum).toLocaleDateString("en-US", configuration).replace(new RegExp("/", "g"), ".");
+        jsonObject.zustellDatumExport = new Date(jsonObject.zustellDatum).toLocaleDateString("en-US", configuration).replace(new RegExp("/", "g"), ".");
+
+        // Waffenversand -> Wenn Art der Ware gleich Waffe dann J
+        if (jsonObject.sendungsdatenArt === 'Waffe') {
+            jsonObject.artDerWareGleichWaffeExport = 'J';
+            jsonObject.artDerWareExport = '0'
+        } else if (jsonObject.sendungsdatenArt === 'Munition') {
+            jsonObject.artDerWareGleichWaffeExport = 'N';
+            jsonObject.artDerWareExport = '2'
+        }
+
+        // Nachnahme gleich J/N
+        if (jsonObject.zustellNachnahme === true) {
+            jsonObject.zustellNachnahmeExport = 'J';
+        } else {
+            jsonObject.zustellNachnahmeExport = 'N';
+        }
+
+        // Länderkürzel für Absender Land und Empfaenger Land
+        // Absender
+        switch (jsonObject.absLand) {
+            case "Deutschland":
+                jsonObject.absLand = "D";
+                break;
+            case "Schweiz":
+                jsonObject.absLand = "CH";
+                break;
+            case "Österreich":
+                jsonObject.absLand = "A";
+        }
+
+        switch (jsonObject.empfLand) {
+            case "Deutschland":
+                jsonObject.empfLand = "D";
+                break;
+            case "Schweiz":
+                jsonObject.empfLand = "CH";
+                break;
+            case "Österreich":
+                jsonObject.empfLand = "A";
+        }
+
+        return jsonObject;
+    },
 };
 

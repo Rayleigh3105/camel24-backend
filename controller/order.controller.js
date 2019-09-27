@@ -74,9 +74,10 @@ async function generateOrder(req, res, next) {
                 throw error;
             });
 
+        jsonObject = setup.prepareJsonForCsvExport(jsonObject);
+
         // Verify if SMTP server is up and running
         let smtpOptions = await help.getSmtpOptions();
-
         let checkTransport = nodemailer.createTransport(smtpOptions);
         await checkTransport.verify()
             .catch(e => {
@@ -143,10 +144,9 @@ async function generateOrder(req, res, next) {
         // Get File path for storing the CSV temporär
         let filePath = setup.getFilePath(identificationNumber);
 
-        // Append Identification number to JSON object
-        jsonObject.identificationNumber = identificationNumber;
+        jsonObject.identificationNumber = identificationNumber
 
-        // Convert Json to a CSV format with semicolon
+        // Convert data to CSV
         let convertedJson = setup.convertToCSV(jsonObject);
 
         if (convertedJson !== '') {
