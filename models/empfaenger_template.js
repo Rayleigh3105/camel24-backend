@@ -8,7 +8,7 @@ let conn = require('./../db/mongoose').conn;
 let EmpfSchema = mongoose.Schema({
     firma: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 70,
@@ -31,7 +31,7 @@ let EmpfSchema = mongoose.Schema({
     },
     adresse: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 70,
@@ -39,7 +39,7 @@ let EmpfSchema = mongoose.Schema({
     },
     land: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 20,
@@ -47,7 +47,7 @@ let EmpfSchema = mongoose.Schema({
     },
     plz: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 5,
         maxLength: 5,
@@ -55,7 +55,7 @@ let EmpfSchema = mongoose.Schema({
     },
     ort: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 70,
@@ -63,7 +63,7 @@ let EmpfSchema = mongoose.Schema({
     },
     telefon: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 20,
@@ -89,6 +89,10 @@ let EmpfTemplateSchema = mongoose.Schema({
         minlength: 1,
         maxLength: 70,
         unique: true,
+    },
+    _creator: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: false
     },
     empfaenger: EmpfSchema
 

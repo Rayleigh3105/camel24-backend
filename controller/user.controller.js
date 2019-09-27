@@ -218,7 +218,7 @@ async function updateUser(req, res, next) {
                 telefon: body.telefon,
                 firstName: body.firstName,
                 lastName: body.lastName,
-                firmenName: body.firmenName,
+                firmenName: body.firma,
                 ansprechpartner: body.ansprechpartner,
                 zusatz: body.zusatz
             }
