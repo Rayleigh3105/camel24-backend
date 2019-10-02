@@ -283,7 +283,7 @@ module.exports = {
         let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
         if (!fs.existsSync(`${baseDir}/tmp`)) {
-            fs.mkdirSync(`${baseDir}/tmp/csv`);
+            fs.mkdirSync(`${baseDir}/tmp`);
             log.info(`Ordner /tmp wurde erstellt`);
             console.log(`[${date}] Ordner /tmp wurde erstellt`);
         }
