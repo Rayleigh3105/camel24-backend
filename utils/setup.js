@@ -781,9 +781,8 @@ module.exports = {
                     log.info(`Ordner ${ftpDir} wurde erstellt`);
                     console.log(`[${date}] Ordner ${ftpDir} wurde erstellt`);
                 }
-                let dir = path.join(__dirname, "../");
 
-                fs.copyFile(`${dir}tmp/csv/${identificationNumber}.csv`, `${ftpDir}/${identificationNumber}.csv`, (err) => {
+                fs.copyFile(`${baseDir}/tmp/csv/${identificationNumber}.csv`, `${ftpDir}/${identificationNumber}.csv`, (err) => {
                     if (err) reject(err);
 
                     // Delete CSV
