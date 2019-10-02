@@ -339,18 +339,18 @@ module.exports = {
      * @returns {string}
      */
     getFilePath: function (identificationNumber) {
-        if (!fs.existsSync("./tmp")) {
-            fs.mkdirSync('./tmp');
+        if (!fs.existsSync(`${baseDir}/tmp`)) {
+            fs.mkdirSync(`${baseDir}/tmp`);
             log.info(`Ordner /tmp wurde erstellt`);
             console.log(`[${date}] Ordner /tmp wurde erstellt`);
         }
-        if (!fs.existsSync("./tmp/csv")) {
-            fs.mkdirSync('./tmp/csv');
+        if (!fs.existsSync(`${baseDir}/tmp/csv`)) {
+            fs.mkdirSync(`${baseDir}/tmp/csv`);
             log.info(`Ordner /tmp/csv wurde erstellt`);
             console.log(`[${date}] Ordner /tmp/csv wurde erstellt`);
         }
 
-        return "./tmp/csv/" + identificationNumber + ".csv"
+        return `${baseDir}/tmp` + identificationNumber + ".csv"
     }
     ,
 
@@ -394,7 +394,6 @@ module.exports = {
         let pdfFileName = `Paketlabel.pdf`;
         let doc = new PDFDocument;
         let formattedZustellDate = moment(order._doc.zustellTermin.datum).format("DD.MM.YYYY");
-        let formattedMuntionsDate = moment().format('DD.MM.YYYY');
 
         // CREATE PDF
         doc.pipe(fs.createWriteStream(`${pathToSave}/${pdfFileName}`));
@@ -654,7 +653,7 @@ module.exports = {
                                     });
 
                                     // Delete CSV un tmp directory
-                                    fs.unlink("./tmp/csv/" + identificationNumber + ".csv", err => {
+                                    fs.unlink(`${baseDir}/tmp` + identificationNumber + ".csv", err => {
                                         if (err) throw err;
                                         log.info(`${identificationNumber} CSV: ${identificationNumber}.csv wurde gelöscht.`);
                                         resolve();
