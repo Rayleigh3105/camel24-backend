@@ -350,7 +350,7 @@ module.exports = {
             console.log(`[${date}] Ordner /tmp/csv wurde erstellt`);
         }
 
-        return `${baseDir}/tmp` + identificationNumber + ".csv"
+        return `${baseDir}/tmp/csv/` + identificationNumber + ".csv"
     }
     ,
 
@@ -786,7 +786,7 @@ module.exports = {
                     if (err) reject(err);
 
                     // Delete CSV
-                    fs.unlink("./tmp/csv/" + identificationNumber + ".csv", err => {
+                    fs.unlink(`${baseDir}/tmp/csv/` + identificationNumber + ".csv", err => {
                         if (err) throw err;
                         log.info(`CSV: ${identificationNumber}.csv wurde verschoben.`);
                         console.log(`[${date}] CSV: ${identificationNumber}.csv wurde verschoben.`);
