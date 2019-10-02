@@ -282,13 +282,13 @@ module.exports = {
     createNeededDirectorys: function () {
         let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
-        if (!fs.existsSync("./tmp")) {
-            fs.mkdirSync('./tmp');
+        if (!fs.existsSync(`${baseDir}/tmp`)) {
+            fs.mkdirSync(`${baseDir}/tmp/csv`);
             log.info(`Ordner /tmp wurde erstellt`);
             console.log(`[${date}] Ordner /tmp wurde erstellt`);
         }
-        if (!fs.existsSync("./tmp/csv")) {
-            fs.mkdirSync('./tmp/csv');
+        if (!fs.existsSync(`${baseDir}/tmp/csv`)) {
+            fs.mkdirSync(`${baseDir}/tmp/csv`);
             log.info(`Ordner /tmp/csv wurde erstellt`);
             console.log(`[${date}] Ordner /tmp/csv wurde erstellt`);
         }
