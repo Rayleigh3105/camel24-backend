@@ -819,51 +819,105 @@ module.exports = {
             year: "numeric"
         };
 
-        // Datum in Exportierbares Format bringen (Abhol, Zustell)
-        jsonObject.abholDatumExport = new Date(jsonObject.abholDatum).toLocaleDateString("en-US", configuration).replace(new RegExp("/", "g"), ".");
-        jsonObject.zustellDatumExport = new Date(jsonObject.zustellDatum).toLocaleDateString("en-US", configuration).replace(new RegExp("/", "g"), ".");
+        let preparedData = {};
 
-        // Waffenversand -> Wenn Art der Ware gleich Waffe dann J
-        if (jsonObject.sendungsdatenArt === 'Waffe') {
-            jsonObject.artDerWareGleichWaffeExport = 'J';
-            jsonObject.artDerWareExport = '0'
-        } else if (jsonObject.sendungsdatenArt === 'Munition') {
-            jsonObject.artDerWareGleichWaffeExport = 'N';
-            jsonObject.artDerWareExport = '2'
-        }
-
-        // Nachnahme gleich J/N
-        if (jsonObject.zustellNachnahme === true) {
-            jsonObject.zustellNachnahmeExport = 'J';
-        } else {
-            jsonObject.zustellNachnahmeExport = 'N';
-        }
-
-        // Länderkürzel für Absender Land und Empfaenger Land
-        // Absender
+        // 1
+        preparedData.versandscheinnummer = jsonObject.identificationNumber;
+        // 2
+        preparedData.gewicht = jsonObject.sendungsdatenGewicht;
+        // 3
+        preparedData.absName = jsonObject.absFirma;
+        // 4
+        preparedData.absZusatz = jsonObject.absZusatz;
+        // 5
+        preparedData.absAnsprechpartner = jsonObject.absAnsprechpartner;
+        // 6
+        preparedData.absAdresse = jsonObject.absAdresse;
+        // 7
         switch (jsonObject.absLand) {
             case "Deutschland":
-                jsonObject.absLand = "D";
+                preparedData.absLand = "D";
                 break;
             case "Schweiz":
-                jsonObject.absLand = "CH";
+                preparedData.absLand = "CH";
                 break;
             case "Österreich":
-                jsonObject.absLand = "A";
-        }
-
+                preparedData.absLand = "A";
+        }        // 8
+        preparedData.absPlz = jsonObject.absPlz;
+        // 9
+        preparedData.absOrt = jsonObject.absOrt;
+        // 10
+        preparedData.absTelefon = jsonObject.absTel;
+        // 11
+        preparedData.empfName = jsonObject.empfFirma;
+        // 12
+        preparedData.empfZusatz = jsonObject.empfZusatz;
+        // 13
+        preparedData.empfAnsprechpartner = jsonObject.empfAnsprechpartner;
+        // 14
+        preparedData.empfAdresse = jsonObject.empfAdresse;
+        // 15
         switch (jsonObject.empfLand) {
             case "Deutschland":
-                jsonObject.empfLand = "D";
+                preparedData.empfLand = "D";
                 break;
             case "Schweiz":
-                jsonObject.empfLand = "CH";
+                preparedData.empfLand = "CH";
                 break;
             case "Österreich":
-                jsonObject.empfLand = "A";
+                preparedData.empfLand = "A";
+        }        // 16
+        preparedData.empfPlz = jsonObject.empfPlz;
+        // 17
+        preparedData.empfOrt = jsonObject.empfOrt;
+        // 18
+        preparedData.empfTelefon = jsonObject.empfTel;
+        // 19
+        preparedData.zustellDatumExport = moment(new Date(jsonObject.zustellDatum).toLocaleDateString("en-US", configuration).replace(new RegExp("/", "g"), ".")).format("DD.MM.YYYY");
+        // 20
+        preparedData.zustellVon = jsonObject.zustellZeitVon;
+        // 21
+        preparedData.zustellBis = jsonObject.zustellZeitBis;
+        // 22
+        preparedData.abholDatumExport =  moment(new Date(jsonObject.abholDatum).toLocaleDateString("en-US", configuration).replace(new RegExp("/", "g"), ".")).format("DD.MM.YYYY");
+        // 23
+        preparedData.abholVon = jsonObject.abholZeitVon;
+        // 24
+        preparedData.abholBis = jsonObject.abholZeitBis;
+        // 25
+        if (jsonObject.sendungsdatenVers === "Ja") {
+            preparedData.warenWertVersicherung = "J"
+        } else if (jsonObject.sendungsdatenVers === "Nein") {
+            preparedData.warenWertVersicherung = "N"
+        }
+        // 26
+        preparedData.wertVersichung = jsonObject.sendungsdatenWert;
+        // 27
+        if (jsonObject.zustellNachnahme === true) {
+            preparedData.nachnahme = 'J';
+        } else {
+            preparedData.nachnahme = 'N';
+        }
+        // 28
+        preparedData.nachnahmeWert = jsonObject.zustellNachnahmeWert;
+        // 29
+        if (jsonObject.zustellArt === 'standard' || jsonObject.zustellArt === 'persoenlich') {
+            preparedData.zustellArt = '1';
+        } else if (jsonObject.zustellArt === 'persoenlichIdent') {
+            preparedData.zustellArt = '2';
+        }
+        // 30
+        // 31
+        if (jsonObject.sendungsdatenArt === 'Waffe') {
+            preparedData.artDerWareGleichWaffeExport = 'J';
+            preparedData.artDerWareExport = '0'
+        } else if (jsonObject.sendungsdatenArt === 'Munition') {
+            preparedData.artDerWareGleichWaffeExport = 'N';
+            preparedData.artDerWareExport = '2'
         }
 
-        return jsonObject;
+        return preparedData;
     },
 };
 

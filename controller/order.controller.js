@@ -74,8 +74,6 @@ async function generateOrder(req, res, next) {
                 throw error;
             });
 
-        jsonObject = setup.prepareJsonForCsvExport(jsonObject);
-
         // Verify if SMTP server is up and running
         let smtpOptions = await help.getSmtpOptions();
         let checkTransport = nodemailer.createTransport(smtpOptions);
@@ -140,6 +138,11 @@ async function generateOrder(req, res, next) {
             identificationNumber = substringEmail + dateForFile + resultCount;
             order = setup.mapOrder(jsonObject, null, new Date(), identificationNumber, kundenNummer);
         }
+
+        jsonObject.identificationNumber = identificationNumber;
+
+        jsonObject = setup.prepareJsonForCsvExport(jsonObject);
+
 
         // Get File path for storing the CSV temporär
         let filePath = setup.getFilePath(identificationNumber);
