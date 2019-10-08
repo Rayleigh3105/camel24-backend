@@ -27,7 +27,6 @@ let AbsEmpfSchema = mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        minlength: 1,
         maxLength: 70,
         unique: false
     },
@@ -75,7 +74,6 @@ let AbsEmpfSchema = mongoose.Schema({
         type: String,
         required: false,
         trim: true,
-        minlength: 1,
         maxLength: 40,
         unique: false,
     },
