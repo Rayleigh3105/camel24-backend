@@ -822,17 +822,17 @@ module.exports = {
         let preparedData = {};
 
         // 1
-        preparedData.versandscheinnummer = jsonObject.identificationNumber;
+        preparedData.versandscheinnummer = jsonObject.identificationNumber === undefined ? "" : jsonObject.identificationNumber;
         // 2
-        preparedData.gewicht = jsonObject.sendungsdatenGewicht;
+        preparedData.gewicht = jsonObject.sendungsdatenGewicht === undefined ? "" : jsonObject.sendungsdatenGewicht;
         // 3
-        preparedData.absName = jsonObject.absFirma;
+        preparedData.absName = jsonObject.absFirma === undefined ? "" : jsonObject.absFirma;
         // 4
-        preparedData.absZusatz = jsonObject.absZusatz;
+        preparedData.absZusatz = jsonObject.absZusatz === undefined ? "" : jsonObject.absZusatz;
         // 5
-        preparedData.absAnsprechpartner = jsonObject.absAnsprechpartner;
+        preparedData.absAnsprechpartner = jsonObject.absAnsprechpartner === undefined ? "" : jsonObject.absAnsprechpartner;
         // 6
-        preparedData.absAdresse = jsonObject.absAdresse;
+        preparedData.absAdresse = jsonObject.absAdresse === undefined ? "" : jsonObject.absAdresse;
         // 7
         switch (jsonObject.absLand) {
             case "Deutschland":
@@ -844,19 +844,19 @@ module.exports = {
             case "Österreich":
                 preparedData.absLand = "A";
         }        // 8
-        preparedData.absPlz = jsonObject.absPlz;
+        preparedData.absPlz = jsonObject.absPlz === undefined ? "" : jsonObject.absPlz;
         // 9
-        preparedData.absOrt = jsonObject.absOrt;
+        preparedData.absOrt = jsonObject.absOrt === undefined ? "" : jsonObject.absOrt;
         // 10
-        preparedData.absTelefon = jsonObject.absTel;
+        preparedData.absTelefon = jsonObject.absTel === undefined ? "" : jsonObject.absTel;
         // 11
-        preparedData.empfName = jsonObject.empfFirma;
+        preparedData.empfName = jsonObject.empfFirma === undefined ? "" : jsonObject.empfFirma;
         // 12
-        preparedData.empfZusatz = jsonObject.empfZusatz;
+        preparedData.empfZusatz = jsonObject.empfZusatz === undefined ? "" : jsonObject.empfZusatz;
         // 13
-        preparedData.empfAnsprechpartner = jsonObject.empfAnsprechpartner;
+        preparedData.empfAnsprechpartner = jsonObject.empfAnsprechpartner === undefined ? "" : jsonObject.empfAnsprechpartner;
         // 14
-        preparedData.empfAdresse = jsonObject.empfAdresse;
+        preparedData.empfAdresse = jsonObject.empfAdresse === undefined ? "" : jsonObject.empfAdresse;
         // 15
         switch (jsonObject.empfLand) {
             case "Deutschland":
@@ -868,23 +868,23 @@ module.exports = {
             case "Österreich":
                 preparedData.empfLand = "A";
         }        // 16
-        preparedData.empfPlz = jsonObject.empfPlz;
+        preparedData.empfPlz = jsonObject.empfPlz === undefined ? "" : jsonObject.empfPlz;
         // 17
-        preparedData.empfOrt = jsonObject.empfOrt;
+        preparedData.empfOrt = jsonObject.empfOrt === undefined ? "" : jsonObject.empfOrt;
         // 18
-        preparedData.empfTelefon = jsonObject.empfTel;
+        preparedData.empfTelefon = jsonObject.empfTel === undefined ? "" : jsonObject.empfTel;
         // 19
         preparedData.zustellDatumExport = moment(new Date(jsonObject.zustellDatum).toLocaleDateString("en-US", configuration).replace(new RegExp("/", "g"), ".")).format("DD.MM.YYYY");
         // 20
-        preparedData.zustellVon = jsonObject.zustellZeitVon;
+        preparedData.zustellVon = jsonObject.zustellZeitVon === undefined ? "" : jsonObject.zustellZeitVon;
         // 21
-        preparedData.zustellBis = jsonObject.zustellZeitBis;
+        preparedData.zustellBis = jsonObject.zustellZeitBis === undefined ? "" : jsonObject.zustellZeitBis;
         // 22
         preparedData.abholDatumExport =  moment(new Date(jsonObject.abholDatum).toLocaleDateString("en-US", configuration).replace(new RegExp("/", "g"), ".")).format("DD.MM.YYYY");
         // 23
-        preparedData.abholVon = jsonObject.abholZeitVon;
+        preparedData.abholVon = jsonObject.abholZeitVon === undefined ? "" : jsonObject.abholZeitVon;
         // 24
-        preparedData.abholBis = jsonObject.abholZeitBis;
+        preparedData.abholBis = jsonObject.abholZeitBis === undefined ? "" : jsonObject.abholZeitBis;
         // 25
         if (jsonObject.sendungsdatenVers === "Ja") {
             preparedData.warenWertVersicherung = "J"
@@ -892,7 +892,7 @@ module.exports = {
             preparedData.warenWertVersicherung = "N"
         }
         // 26
-        preparedData.wertVersichung = jsonObject.sendungsdatenWert;
+        preparedData.wertVersichung = jsonObject.sendungsdatenWert === undefined ? "" : jsonObject.sendungsdatenWert;
         // 27
         if (jsonObject.zustellNachnahme === true) {
             preparedData.nachnahme = 'J';
@@ -900,7 +900,7 @@ module.exports = {
             preparedData.nachnahme = 'N';
         }
         // 28
-        preparedData.nachnahmeWert = jsonObject.zustellNachnahmeWert;
+        preparedData.nachnahmeWert = jsonObject.zustellNachnahmeWert === undefined ? "" : jsonObject.zustellNachnahmeWert;
         // 29
         if (jsonObject.zustellArt === 'standard' || jsonObject.zustellArt === 'persoenlich') {
             preparedData.zustellArt = '1';
