@@ -5,10 +5,5 @@
  *
  *  camel24-backend can not be copied and/or distributed without the express
  *  permission of Moritz Vogt
- */
+*/
 
-module.exports = {
-    Admin: 'Admin',
-    User: 'User',
-    External: 'SECRET'
-};

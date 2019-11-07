@@ -1,3 +1,12 @@
+/*
+ *  Copyright (C) Moritz Vogt moritz.vogt@vogges.de
+ *
+ *  This file is part of camel24-backend.
+ *
+ *  camel24-backend can not be copied and/or distributed without the express
+ *  permission of Moritz Vogt
+ */
+
 // Third Party libarys
 let nodemailer = require("nodemailer");
 let moment = require('moment');
@@ -12,14 +21,14 @@ const {ObjectID} = require('mongodb');
 // LOCAL
 let windowsRootPath = 'C:/';
 let orderDir = path.join(windowsRootPath, '/camel/auftraege');
-let log = require("./../utils/logger");
-let setup = require('./../utils/setup');
-let help = require('./../utils/helper');
-let ApplicationError = require('./../models/error');
-let {authenticate} = require('./../middleware/authenticate');
-let {Order} = require('./../models/order');
-let {User} = require('./../models/user');
-let {Template} = require('./../models/empfaenger_template');
+let log = require("../../utils/logger");
+let setup = require('../../utils/setup');
+let help = require('../../utils/helper');
+let ApplicationError = require('../../../models/error');
+let {authenticate} = require('../../../middleware/authenticate');
+let {Order} = require('../../../models/order');
+let {User} = require('../../../models/user');
+let {Template} = require('../../../models/empfaenger_template');
 
 module.exports = router;
 

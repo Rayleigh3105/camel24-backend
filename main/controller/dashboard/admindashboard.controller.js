@@ -1,14 +1,23 @@
+/*
+ *  Copyright (C) Moritz Vogt moritz.vogt@vogges.de
+ *
+ *  This file is part of camel24-backend.
+ *
+ *  camel24-backend can not be copied and/or distributed without the express
+ *  permission of Moritz Vogt
+ */
+
 const express = require('express');
 const router = express.Router();
 
 
-let {User} = require('./../models/user');
-let {Order} = require('./../models/order');
-let {SmtpOptions} = require('./../models/smtpOptions');
-let {PriceOptions} = require('./../models/priceOptions');
-let log = require("./../utils/logger");
-const ApplicationError = require('./../models/error');
-let {authenticateAdmin} = require('./../middleware/authenticate-admin');
+let {User} = require('../../../models/user');
+let {Order} = require('../../../models/order');
+let {SmtpOptions} = require('../../../models/smtpOptions');
+let {PriceOptions} = require('../../../models/priceOptions');
+let log = require("../../utils/logger");
+const ApplicationError = require('../../../models/error');
+let {authenticateAdmin} = require('../../../middleware/authenticate-admin');
 
 let moment = require('moment');
 
@@ -19,7 +28,7 @@ module.exports = router;
  */
 router.get('/users', authenticateAdmin, getAllUsers);
 router.get('/configSmtp', authenticateAdmin, getAllSmtpConfigs);
-router.patch('/configSmtp', updateSmtpOptions);
+router.patch('/configSmtp', authenticateAdmin, updateSmtpOptions);
 router.get('/priceConfig', getAllPriceConfigs);
 router.patch('/priceConfig', authenticateAdmin, updatePriceConfig);
 router.post('/priceConfig', authenticateAdmin, createPriceConfig);
@@ -161,7 +170,7 @@ async function getAllPriceConfigs(req, res, next) {
     try {
         let config;
 
-        await PriceOptions.find().sort({ type: 1}).then(configs => config = configs);
+        await PriceOptions.find().sort({type: 1}).then(configs => config = configs);
 
         res.status(200).send(config);
 

@@ -1,15 +1,24 @@
+/*
+ *  Copyright (C) Moritz Vogt moritz.vogt@vogges.de
+ *
+ *  This file is part of camel24-backend.
+ *
+ *  camel24-backend can not be copied and/or distributed without the express
+ *  permission of Moritz Vogt
+ */
+
 const express = require('express');
 const router = express.Router();
 const {ObjectID} = require('mongodb');
 
 
-let {User} = require('./../models/user');
-let log = require("./../utils/logger");
-let setup = require('./../utils/setup');
-let help = require('./../utils/helper');
-const ApplicationError = require('./../models/error');
-let {authenticate} = require('./../middleware/authenticate');
-let Role = require('./../models/role');
+let {User} = require('../../../models/user');
+let log = require("../../utils/logger");
+let setup = require('../../utils/setup');
+let help = require('../../utils/helper');
+const ApplicationError = require('../../../models/error');
+let {authenticate} = require('../../../middleware/authenticate');
+let Role = require('../../../models/role');
 
 const nodemailer = require("nodemailer");
 let moment = require('moment');

@@ -1,8 +1,17 @@
-let log = require("./../utils/logger");
-let {Order} = require('./../models/order');
-let {User} = require('./../models/user');
+/*
+ *  Copyright (C) Moritz Vogt moritz.vogt@vogges.de
+ *
+ *  This file is part of camel24-backend.
+ *
+ *  camel24-backend can not be copied and/or distributed without the express
+ *  permission of Moritz Vogt
+ */
 
-let ApplicationError = require('./../models/error');
+let log = require("./logger");
+let {Order} = require('../../models/order');
+let {User} = require('../../models/user');
+
+let ApplicationError = require('../../models/error');
 // MODULES
 let nodemailer = require("nodemailer");
 let help = require('./helper');
@@ -15,9 +24,9 @@ const path = require('path');
 let ftpDir = path.join(windowsRootPath, '/camel/ftp');
 let baseDir = path.join(windowsRootPath, '/camel');
 let orderDir = path.join(windowsRootPath, '/camel/auftraege');
-let Role = require('./../models/role');
-let {SmtpOptions} = require('./../models/smtpOptions');
-let {PriceOptions} = require('./../models/priceOptions');
+let Role = require('../../models/role');
+let {SmtpOptions} = require('../../models/smtpOptions');
+let {PriceOptions} = require('../../models/priceOptions');
 
 /**
  * This is the SETUP
