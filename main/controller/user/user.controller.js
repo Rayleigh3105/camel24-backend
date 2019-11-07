@@ -7,42 +7,44 @@
  *  permission of Moritz Vogt
  */
 
-const express = require('express');
-const router = express.Router();
-const {ObjectID} = require('mongodb');
+//////////////////////////////////////////////////////
+// MODULE VARIABLES
+//////////////////////////////////////////////////////
 
-
+// INTERNAL
 let {User} = require('../../../models/user');
+let {authenticate} = require('../../../middleware/authenticate');
 let log = require("../../utils/logger");
 let setup = require('../../utils/setup');
 let help = require('../../utils/helper');
-const ApplicationError = require('../../../models/error');
-let {authenticate} = require('../../../middleware/authenticate');
+let ApplicationError = require('../../../models/error');
 let Role = require('../../../models/role');
+let errorHandler = require('../../utils/error/ErrorHandler');
 
+// EXTERNAL
+let router = require('express').Router();
+let {ObjectID} = require('mongodb');
 const nodemailer = require("nodemailer");
 let moment = require('moment');
 const _ = require('lodash');
 
-module.exports = router;
+//////////////////////////////////////////////////////
+// MODULE EXPORT
+//////////////////////////////////////////////////////
 
-/**
- * ROUTES
- */
 router.post('', createUser);
 router.post('/login', loginUser);
 router.get('/me', authenticate, getUserInfo);
 router.patch('/:userId', authenticate, updateUser);
 router.delete('/token', authenticate, logoutUser);
 
-/**
- * PUBLIC ROUTE to create an User:
- * - generates Kundennummer for User
- * - sents email to user
- * - logs process
- *
- * @returns {Promise<void>}
- */
+module.exports = router;
+
+//////////////////////////////////////////////////////
+// METHODS
+//////////////////////////////////////////////////////
+
+
 async function createUser(req, res, next) {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let startGenerationNumber = 14000;
@@ -136,15 +138,8 @@ async function createUser(req, res, next) {
             setup.rollBackUserCreation(user);
         }
 
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
+        errorHandler.handleError(e, res);
+
     }
 }
 

@@ -16,7 +16,7 @@ const cors = require('cors');
 let moment = require('moment/moment');
 let bodyParser = require('body-parser');
 let log = require("./main/utils/logger");
-let setup = require('./main/utils/setup');
+let setup = require("./main/utils/setup");
 // +++ LOCAL +++
 let mongoose = require('./db/mongoose').mongoose;
 let conn = require('./db/mongoose').conn;
@@ -57,4 +57,4 @@ app.listen(port, () => {
     setup.createPriceOptions();
 });
 
-module.exports = { app };
+module.exports = {app};
