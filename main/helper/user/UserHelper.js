@@ -54,6 +54,21 @@ module.exports = {
         return new User(body);
     },
 
+    buildUpdateObject: function (body) {
+        return {
+            adresse: body.adresse,
+            ort: body.ort,
+            plz: body.plz,
+            land: body.land,
+            telefon: body.telefon,
+            firstName: body.firstName,
+            lastName: body.lastName,
+            firmenName: body.firma,
+            ansprechpartner: body.ansprechpartner,
+            zusatz: body.zusatz
+        };
+    }
+
 
     //////////////////////////////////////////////////////
     // PRIVATE METHODS

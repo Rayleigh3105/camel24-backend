@@ -16,11 +16,8 @@ let moment = require('moment');
 let nodemailer = require("nodemailer");
 
 // INTERNAL
-let {SmtpOptions} = require('../../models/smtpOptions');
-let log = require("../../utils/logger");
+let {SmtpOptions} = require('../../../models/smtpOptions');
 let ApplicationError = require('../../../models/error');
-let pattern = require('../../utils/ValidationPatterns');
-let date = moment().format(pattern.momentPattern);
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
