@@ -28,7 +28,7 @@
     "express": "^4.14.0",
     "gridfs-stream": "^1.1.1",
     "jsonwebtoken": "^7.1.9",
-    "lodash": "^4.15.0",
+    "lodash": "^4.17.13",
     "method-override": "^3.0.0",
     "mocha": "^2.3.0",
     "moment": "^2.24.0",
