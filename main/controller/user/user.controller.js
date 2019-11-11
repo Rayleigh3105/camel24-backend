@@ -18,13 +18,12 @@ let log = require("../../utils/logger");
 let setup = require('../../utils/setup');
 let help = require('../../utils/helper');
 let ApplicationError = require('../../../models/error');
-let Role = require('../../../models/role');
 let errorHandler = require('../../utils/error/ErrorHandler');
+let service = require("../../service/user/user.service");
 
 // EXTERNAL
 let router = require('express').Router();
 let {ObjectID} = require('mongodb');
-const nodemailer = require("nodemailer");
 let moment = require('moment');
 const _ = require('lodash');
 
@@ -44,102 +43,21 @@ module.exports = router;
 // METHODS
 //////////////////////////////////////////////////////
 
-
 async function createUser(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let startGenerationNumber = 14000;
-    let countUser;
-    let user;
+    let responseObject;
     try {
-        let smtpOption = await help.getSmtpOptions();
-        let checkTransport = nodemailer.createTransport(smtpOption);
-        await checkTransport.verify()
-            .catch(e => {
-                log.info(e);
-                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
-            });
+        responseObject = await service.createUserAndSentEmail(req);
 
-        res.header("access-control-expose-headers",
-            ",x-auth"
-            + ",Content-Length"
-        );
+        res = setResponseHeader(res);
 
-        // Get´s count of Users stored in database
-        await User.find()
-            .count()
-            .then(count => countUser = count)
-            .catch(e => {
-                log.info(e);
-                throw new ApplicationError("Camel-11", 400, help.getDatabaseErrorString())
-            });
-        let body = req.body;
-        body.kundenNummer = startGenerationNumber + countUser;
-        body.role = Role.User;
-        user = new User(body);
-
-        // Checks if Email is taken
-        let existingEmail = await User.findOne({
-            email: body.email
-        }).catch(e => {
-            log.info(e);
-            throw new ApplicationError("Camel-12", 400, help.getDatabaseErrorString(), body)
-        });
-
-        if (existingEmail) {
-            throw new ApplicationError("Camel-13", 400, "Leider ist diese E-Mail Adresse in unserem System schon vergeben.")
-        }
-
-        // Save User to Database
-        user = await user.save()
-            .catch(() => {
-                throw new ApplicationError("Camel-14", 400, help.getDatabaseErrorString(), user)
-            });
-
-        // Generate Auth Token for created User
-        const token = await user.generateAuthToken()
-            .catch(e => {
-                log.info(e);
-                throw new ApplicationError("Camel-15", 400, help.getDatabaseErrorString())
-            });
-
-        let smtpOptions = await help.getSmtpOptions();
-        console.log("TEST" + smtpOptions);
-
-        let transporter = nodemailer.createTransport(smtpOptions);
-
-        let mailOptions = {
-            from: `"Camel-24 Transportvermittlung & Kurierdienst" <${smtpOptions.auth.user}>`, // se/ sender address
-            to: user.email, // list of receivers
-            subject: `Herzlich Willkommen beim Camel-24 Online Auftragsservice - ${body.kundenNummer}`, // Subject line
-            html: `Guten Tag,<br>Vielen Dank für Ihr Vertrauen!<br><br><strong>Kundennummer:</strong> ${body.kundenNummer}<br><br>Wir freuen uns auf eine gute Zusammenarbeit.<br>Bei Fragen oder Anregungen rufen Sie uns doch bitte an.<br>Sie erreichen uns Montag bis Freitag von 08:00 - 18:00 Uhr unter <strong>0911/400727</strong><br><br> Mit freundlichen Grüßen Ihr Camel-24 Team <br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
-<br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a>`, // html body
-            attachments: [{
-                filename: 'camel_logo.png',
-                path: './assets/img/camel_logo.png',
-                cid: 'camellogo' //same cid value as in the html img src
-            }]
-        };
-
-        // send mail with defined transport object
-        await transporter.sendMail(mailOptions).then(() => {
-            log.info(`${date}: User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
-            console.log(`[${date}] User ${user.firstName} ${user.lastName} mit ID: ${user._id} wurde erfolgreich erstellt.`);
-        }).catch(e => {
-            log.info(e);
-            throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen")
-        });
-
-        res.status(200).send({
-            user: user._doc,
-            token
-        });
+        res.status(200).send(responseObject);
     } catch (e) {
-        if (user) {
-            setup.rollBackUserCreation(user);
+
+        if (responseObject.user) {
+            setup.rollBackUserCreation(responseObject.user);
         }
 
         errorHandler.handleError(e, res);
-
     }
 }
 
@@ -163,7 +81,6 @@ async function loginUser(req, res, next) {
 
         const user = await User.findByCredentials(body.kundenNummer, body.password)
             .catch(e => {
-                log.error(e);
                 throw new ApplicationError("Camel-16", 400, `Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.`, body);
             });
         await user.generateAuthToken().then((token) => {
@@ -175,20 +92,11 @@ async function loginUser(req, res, next) {
             log.info(`${user.kundenNummer} hat sich eingeloggt.`);
             console.log(`[${date}] ${user.kundenNummer} hat sich eingeloggt.`);
         }).catch(e => {
-            log.error(e);
             throw new ApplicationError("Camel-15", 400, help.getDatabaseErrorString(), user);
         });
 
     } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
+        errorHandler.handleError(e, res);
     }
 }
 
@@ -236,19 +144,10 @@ async function updateUser(req, res, next) {
             console.log(`[${date}] Benutzer ${user._doc.kundenNummer} wurde bearbeitet`);
             res.status(200).send(user._doc);
         }).catch(e => {
-            log.error(e);
             throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird).", body)
         })
     } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
+        errorHandler.handleError(e, res);
     }
 }
 
@@ -269,19 +168,10 @@ async function logoutUser(req, res, next) {
             console.log("[" + date + "]" + "User mit Token: " + req.token + " hat sich ausgeloggt.");
             res.status(200).send(true);
         }).catch(e => {
-            log.error(e);
             throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
         });
     } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
+        errorHandler.handleError(e, res);
     }
 }
 
@@ -293,7 +183,6 @@ async function logoutUser(req, res, next) {
  * @returns {Promise<void>}
  */
 async function getUserInfo(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     try {
         // Finds User by Token
         await User.findByToken(req.header('x-auth')).then(user => {
@@ -303,14 +192,14 @@ async function getUserInfo(req, res, next) {
             throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
         });
     } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
+        errorHandler.handleError(e, res);
     }
+}
+
+
+function setResponseHeader(res) {
+    return res.header("access-control-expose-headers",
+        ",x-auth"
+        + ",Content-Length"
+    );
 }
