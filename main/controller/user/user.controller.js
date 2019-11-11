@@ -46,16 +46,12 @@ module.exports = router;
  * @returns Object filled with the user Object and the token
  */
 async function createUser(req, res) {
-    let responseObject;
+    let responseObject = null;
     try {
         responseObject = await service.createUserAndSentEmail(req);
 
         res.status(200).send(responseObject);
     } catch (e) {
-        if (responseObject.user) {
-            setup.rollBackUserCreation(responseObject.user);
-        }
-
         errorHandler.handleError(e, res);
     }
 }

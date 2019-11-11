@@ -20,9 +20,9 @@ let {User} = require('../../../models/user');
 let ApplicationError = require('../../../models/error');
 let help = require('../../utils/helper');
 let mailService = require('./../mail/mail.service');
-let mailHelper = require('./../../helper/mail/MailHelper');
 let userHelper = require('./../../helper/user/UserHelper');
 let utilHelper = require('./../../helper/util/UtilHelper');
+let setup = require('./../../utils/setup');
 let pattern = require('./../../utils/ValidationPatterns');
 let log = require("../../utils/logger");
 
@@ -38,22 +38,32 @@ module.exports = {
     //////////////////////////////////////////////////////
 
     createUserAndSentEmail: async function (request) {
-        // LOGIC
-        await mailHelper.checkConnectionToEmailServer();
-        let user = await this.checkIfUserAlreadyExists(request);
-        let responseUserTokenObject = await this.saveUserAndGenerateToken(user);
-        await mailService.sentSuccessEmail(user);
+        // VARIABLES
+        let user;
 
-        return responseUserTokenObject;
+        // LOGIC
+        try {
+            user = await this.checkIfUserAlreadyExists(request);
+            let responseUserTokenObject = await this.saveUserAndGenerateToken(user);
+            await mailService.sentSuccessEmail(user);
+
+            return responseUserTokenObject;
+        } catch (e) {
+            if (user) {
+                setup.rollBackUserCreation(user);
+            }
+            throw e;
+        }
     },
 
     loginUser: async function (request) {
         // VARIABLES
         let date = moment().format(pattern.momentPattern);
         let body = _.pick(request.body, ['kundenNummer', 'password']);
+        let user = null;
 
         // LOGIC
-        let user = await this.findUserByCredentials(body);
+        await this.findUserByCredentials(body).then(userDatabase => user = userDatabase);
         let token = await this.generateToken(user);
 
         // LOGGING
@@ -97,7 +107,7 @@ module.exports = {
 
     saveUserAndGenerateToken: async function (user) {
         let token;
-        user = this.saveUserToDatabase(user);
+        user = await this.saveUserToDatabase(user);
         token = await this.generateToken(user);
 
         return {
@@ -122,7 +132,7 @@ module.exports = {
     },
 
     findUserByCredentials: async function (body) {
-        await User.findByCredentials(body.kundenNummer, body.password)
+        return await User.findByCredentials(body.kundenNummer, body.password)
             .catch(e => {
                 throw new ApplicationError("Camel-16", 400, `Benutzer (${body.kundenNummer}) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.`, body);
             });
@@ -130,9 +140,10 @@ module.exports = {
 
     updateUserOnDatabase: async function (updateObject, userId) {
         let date = moment().format(pattern.momentPattern);
+        let updatedUser = null;
 
         // Find User with ID and updates it with payload from request
-        let updatedUser = await User.findOneAndUpdate({
+        await User.findOneAndUpdate({
             _id: userId,
         }, {
             $set: updateObject
@@ -143,14 +154,16 @@ module.exports = {
                 throw new ApplicationError("Camel-16", 404, "Zu Bearbeitender Benutzer konnte nicht gefunden werden.", updateObject)
             }
 
+            updatedUser = user._doc;
+
         }).catch(e => {
             throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird).", updateObject)
         });
 
-        log.info(`${updatedUser._doc.kundenNummer} wurde bearbeitet`);
-        console.log(`[${date}] Benutzer ${updatedUser._doc.kundenNummer} wurde bearbeitet`);
+        log.info(`${updatedUser.kundenNummer} wurde bearbeitet`);
+        console.log(`[${date}] Benutzer ${updatedUser.kundenNummer} wurde bearbeitet`);
 
-        return updatedUser._doc;
+        return updatedUser;
     }
 
 

@@ -51,6 +51,7 @@ module.exports = {
         let body = request.body;
         body.kundenNummer = startGenerationNumber + countUserExisting;
         body.role = Role.User;
+        body.firmenName = body.firma;
         return new User(body);
     },
 

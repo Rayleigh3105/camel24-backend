@@ -90,10 +90,10 @@ module.exports = {
 
         let smtpConfig =
             {
-                smtpHost: "mail.camel-24.de",
-                smtpPort: 587,
+                smtpHost: "camel-24.de",
+                smtpPort: 143,
                 smtpSecure: false,
-                smtpUser: "support@camel-24.de",
+                smtpUser: "camel-onlineservice@camel-24.de",
                 smtpPassword: "Saganer24?"
 
             };
@@ -104,8 +104,8 @@ module.exports = {
                 // Save User to Database
                 config.save()
                     .then(() => {
-                        log.info(`SMTP Configs wurden erstellt.`);
-                        console.log(`[${date}] SMTP Configs wurde erstellt.`);
+                        log.info(`IMAP Configs wurden erstellt.`);
+                        console.log(`[${date}] IMAP Configs wurde erstellt.`);
                     })
                     .catch(e => {
                         throw new ApplicationError("Camel-14", 400, help.getDatabaseErrorString(), config)
