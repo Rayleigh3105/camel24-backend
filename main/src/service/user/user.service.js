@@ -16,14 +16,14 @@ let moment = require('moment');
 let _ = require('lodash');
 
 // INTERNAL
-let {User} = require('../../../models/user');
-let ApplicationError = require('../../../models/error');
+let {User} = require('../../../../models/user');
+let ApplicationError = require('../../../../models/error');
 let help = require('../../utils/helper');
-let mailService = require('./../mail/mail.service');
-let mailHelper = require('./../../helper/mail/MailHelper');
-let userHelper = require('./../../helper/user/UserHelper');
-let utilHelper = require('./../../helper/util/UtilHelper');
-let pattern = require('./../../utils/ValidationPatterns');
+let mailService = require('../mail/mail.service');
+let mailHelper = require('../../helper/mail/MailHelper');
+let userHelper = require('../../helper/user/UserHelper');
+let utilHelper = require('../../helper/util/UtilHelper');
+let pattern = require('../../utils/ValidationPatterns');
 let log = require("../../utils/logger");
 
 

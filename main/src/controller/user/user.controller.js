@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////
 
 // INTERNAL
-let {authenticate} = require('../../../middleware/authenticate');
+let {authenticate} = require('../../../../middleware/authenticate');
 let log = require("../../utils/logger");
 let setup = require('../../utils/setup');
 let errorHandler = require('../../utils/error/ErrorHandler');

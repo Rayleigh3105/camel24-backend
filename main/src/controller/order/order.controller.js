@@ -24,11 +24,11 @@ let orderDir = path.join(windowsRootPath, '/camel/auftraege');
 let log = require("../../utils/logger");
 let setup = require('../../utils/setup');
 let help = require('../../utils/helper');
-let ApplicationError = require('../../../models/error');
-let {authenticate} = require('../../../middleware/authenticate');
-let {Order} = require('../../../models/order');
-let {User} = require('../../../models/user');
-let {Template} = require('../../../models/empfaenger_template');
+let ApplicationError = require('../../../../models/error');
+let {authenticate} = require('../../../../middleware/authenticate');
+let {Order} = require('../../../../models/order');
+let {User} = require('../../../../models/user');
+let {Template} = require('../../../../models/empfaenger_template');
 
 module.exports = router;
 

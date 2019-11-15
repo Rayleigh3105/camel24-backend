@@ -15,8 +15,8 @@ let express = require('express');
 const cors = require('cors');
 let moment = require('moment/moment');
 let bodyParser = require('body-parser');
-let log = require("./main/utils/logger");
-let setup = require("./main/utils/setup");
+let log = require("./main/src/utils/logger");
+let setup = require("./main/src/utils/setup");
 // +++ LOCAL +++
 let mongoose = require('./db/mongoose').mongoose;
 let conn = require('./db/mongoose').conn;
@@ -33,17 +33,17 @@ app.use(bodyParser.json(), cors({origin: '*'}));
 /**
  * User routes
  */
-app.use('/user', require('./main/controller/user/user.controller'));
+app.use('/user', require('./main/src/controller/user/user.controller'));
 
 /**
  * Order route
  */
-app.use('/order', require('./main/controller/order/order.controller'));
+app.use('/order', require('./main/src/controller/order/order.controller'));
 
 /**
  * Admin route
  */
-app.use('/admindashboard', require('./main/controller/dashboard/admindashboard.controller'));
+app.use('/admindashboard', require('./main/src/controller/dashboard/admindashboard.controller'));
 
 app.listen(port, () => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");

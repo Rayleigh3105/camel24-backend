@@ -15,9 +15,9 @@
 let moment = require('moment');
 
 // INTERNAL
-let log = require("./../logger");
-let ApplicationError = require('../../../models/error');
-let pattern = require('./../ValidationPatterns');
+let log = require("../logger");
+let ApplicationError = require('../../../../models/error');
+let pattern = require('../ValidationPatterns');
 let date = moment().format(pattern.momentPattern);
 
 //////////////////////////////////////////////////////

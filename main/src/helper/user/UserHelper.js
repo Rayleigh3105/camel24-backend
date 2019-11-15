@@ -15,9 +15,9 @@
 let moment = require('moment');
 
 // INTERNAL
-let {User} = require('../../../models/user');
-let Role = require('../../../models/role');
-let ApplicationError = require('../../../models/error');
+let {User} = require('../../../../models/user');
+let Role = require('../../../../models/role');
+let ApplicationError = require('../../../../models/error');
 let startGenerationNumber = 14000;
 
 

@@ -7,12 +7,12 @@
  *  permission of Moritz Vogt
  */
 
-let ApplicationError = require('../../models/error');
+let ApplicationError = require('../../../models/error');
 // MODULES
 let moment = require('moment');
 let mongoose = require('mongoose');
 let pattern = require('./ValidationPatterns');
-let {SmtpOptions} = require('../../models/smtpOptions');
+let {SmtpOptions} = require('../../../models/smtpOptions');
 
 
 module.exports = {

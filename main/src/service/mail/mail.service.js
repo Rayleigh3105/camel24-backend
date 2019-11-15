@@ -16,9 +16,9 @@ let moment = require('moment');
 let nodemailer = require("nodemailer");
 
 // INTERNAL
-let ApplicationError = require('../../../models/error');
-let mailHelper = require('./../../helper/mail/MailHelper');
-let pattern = require('./../../utils/ValidationPatterns');
+let ApplicationError = require('../../../../models/error');
+let mailHelper = require('../../helper/mail/MailHelper');
+let pattern = require('../../utils/ValidationPatterns');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
