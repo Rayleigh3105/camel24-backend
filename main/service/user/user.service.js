@@ -72,9 +72,31 @@ module.exports = {
         return this.updateUserOnDatabase(updateObject, userId);
     },
 
+    logoutUser: async function (token) {
+        let date = moment().format(pattern.momentPattern);
+
+        // LOGIK
+        this.deleteToken(token);
+
+        // LOGGING
+        log.info(" User mit Token: " + token + " hat sich ausgeloggt.");
+        console.log("[" + date + "]" + "User mit Token: " + token + " hat sich ausgeloggt.");
+    },
+
+    findUserByToken: async function (token) {
+        return await this.fetchUserByToken(token);
+    },
+
     //////////////////////////////////////////////////////
     // PRIVATE METHODS
     //////////////////////////////////////////////////////
+
+    deleteToken: async function (token) {
+        await token.removeToken(token).then(() => {
+        }).catch(e => {
+            throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
+        });
+    },
 
     checkIfUserAlreadyExists: async function (request) {
         let user;
@@ -151,7 +173,20 @@ module.exports = {
         console.log(`[${date}] Benutzer ${updatedUser._doc.kundenNummer} wurde bearbeitet`);
 
         return updatedUser._doc;
-    }
+    },
+
+    fetchUserByToken: async function (token) {
+        let fetchedUser = null;
+        // Finds User by Token
+        await User.findByToken(token).then(user => {
+            fetchedUser = user._doc;
+        }).catch(e => {
+            log.error(e);
+            throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", token)
+        });
+
+        return fetchedUser;
+    },
 
 
 };

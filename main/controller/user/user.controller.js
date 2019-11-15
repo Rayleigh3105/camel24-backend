@@ -12,17 +12,14 @@
 //////////////////////////////////////////////////////
 
 // INTERNAL
-let {User} = require('../../../models/user');
 let {authenticate} = require('../../../middleware/authenticate');
 let log = require("../../utils/logger");
 let setup = require('../../utils/setup');
-let ApplicationError = require('../../../models/error');
 let errorHandler = require('../../utils/error/ErrorHandler');
 let service = require("../../service/user/user.service");
 
 // EXTERNAL
 let router = require('express').Router();
-let moment = require('moment');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -30,7 +27,7 @@ let moment = require('moment');
 
 router.post('', createUser);
 router.post('/login', loginUser);
-router.get('/me', authenticate, getUserInfo);
+router.get('/me', authenticate,  getUserInfo);
 router.patch('/:userId', authenticate, updateUser);
 router.delete('/token', authenticate, logoutUser);
 
@@ -43,7 +40,7 @@ module.exports = router;
 /**
  * Creates a User in the Database and sent´s a E-Mail to the User.
  *
- * @returns Object filled with the user Object and the token
+ * @returns Object filled with the user Object and the token.
  */
 async function createUser(req, res) {
     let responseObject;
@@ -63,7 +60,7 @@ async function createUser(req, res) {
 /**
  * Checks if User is registerd in Database if so token is generated.
  *
- * @returns Object filled with the user Object and the token
+ * @returns Object filled with the user Object and the token.
  */
 async function loginUser(req, res) {
     try {
@@ -95,54 +92,34 @@ async function updateUser(req, res) {
 }
 
 /**
- * PRIVATE ROUTE - Deletes token in database
+ * Removes given Token for User.
  *
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
+ * @return true if all went well.
  */
-async function logoutUser(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+async function logoutUser(req, res) {
     try {
-        // Deletes token for specifc user in database
-        await req.user.removeToken(req.token).then(() => {
-            log.info(" User mit Token: " + req.token + " hat sich ausgeloggt.");
-            console.log("[" + date + "]" + "User mit Token: " + req.token + " hat sich ausgeloggt.");
-            res.status(200).send(true);
-        }).catch(e => {
-            throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
-        });
+
+        await service.logoutUser(req.token);
+
+        res.status(200).send();
+
     } catch (e) {
         errorHandler.handleError(e, res);
     }
 }
 
 /**
- * PRIVATE ROUTE get´s current info of user
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
+ * Fetches User Object from Database with the current Token.
+ *
+ * @return fetched User object.
  */
-async function getUserInfo(req, res, next) {
+async function getUserInfo(req, res) {
     try {
-        // Finds User by Token
-        await User.findByToken(req.header('x-auth')).then(user => {
-            res.status(200).send(user._doc);
-        }).catch(e => {
-            log.error(e);
-            throw new ApplicationError("Camel-17", 404, "Authentifizierungs Token konnte nicht gefunden werden.", req.header('x-auth'))
-        });
+
+        let fetchedUser = await service.findUserByToken(req.header('x-auth'));
+
+        res.status(200).send(fetchedUser);
     } catch (e) {
         errorHandler.handleError(e, res);
     }
-}
-
-
-function setResponseHeader(res) {
-    return res.header("access-control-expose-headers",
-        ",x-auth"
-        + ",Content-Length"
-    );
 }

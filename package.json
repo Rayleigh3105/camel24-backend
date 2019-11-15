@@ -46,6 +46,7 @@
     "winston-daily-rotate-file": "^3.8.0"
   },
   "devDependencies": {
-    "nodemon": "^1.18.10"
+    "nodemon": "^1.18.10",
+    "expect": "^1.20.2"
   }
 }
