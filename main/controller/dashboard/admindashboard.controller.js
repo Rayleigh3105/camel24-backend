@@ -18,6 +18,7 @@ let {PriceOptions} = require('../../../models/priceOptions');
 let log = require("../../utils/logger");
 const ApplicationError = require('../../../models/error');
 let {authenticateAdmin} = require('../../../middleware/authenticate-admin');
+let {logRequest} = require('../../../middleware/RequestLogger');
 
 let moment = require('moment');
 
@@ -29,7 +30,7 @@ module.exports = router;
 router.get('/users', authenticateAdmin, getAllUsers);
 router.get('/configSmtp', authenticateAdmin, getAllSmtpConfigs);
 router.patch('/configSmtp', authenticateAdmin, updateSmtpOptions);
-router.get('/priceConfig', getAllPriceConfigs);
+router.get('/priceConfig', logRequest, getAllPriceConfigs);
 router.patch('/priceConfig', authenticateAdmin, updatePriceConfig);
 router.post('/priceConfig', authenticateAdmin, createPriceConfig);
 router.delete('/priceConfig/:priceId', authenticateAdmin, deletePriceConfig);
