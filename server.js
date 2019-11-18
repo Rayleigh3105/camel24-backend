@@ -17,10 +17,6 @@ let moment = require('moment/moment');
 let bodyParser = require('body-parser');
 let log = require("./main/utils/logger");
 let setup = require("./main/utils/setup");
-let https = require('https');
-let fs = require('fs');
-
-
 // +++ LOCAL +++
 let mongoose = require('./db/mongoose').mongoose;
 let conn = require('./db/mongoose').conn;
@@ -49,22 +45,16 @@ app.use('/order', require('./main/controller/order/order.controller'));
  */
 app.use('/admindashboard', require('./main/controller/dashboard/admindashboard.controller'));
 
-// we will pass our 'app' to 'https' server
-https.createServer({
-    key: fs.readFileSync('./key.pem'),
-    cert: fs.readFileSync('./cert.pem'),
-    passphrase: 'Saganer24?'
-}, app)
-    .listen(3000);
+app.listen(port, () => {
+    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
-let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+    log.info(`Server ist hochgefahren - Port: ${port}`);
+    console.log(`[${date}] Server ist hochgefahren - Port: ${port}`);
 
-log.info(`Server ist hochgefahren - Port: ${port}`);
-console.log(`[${date}] Server ist hochgefahren - Port: ${port}`);
-
-setup.createNeededDirectorys();
-setup.createAdminUser();
-setup.createSmtpOptions();
-setup.createPriceOptions();
+    setup.createNeededDirectorys();
+    setup.createAdminUser();
+    setup.createSmtpOptions();
+    setup.createPriceOptions();
+});
 
 module.exports = {app};
