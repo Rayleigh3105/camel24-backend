@@ -25,7 +25,7 @@ let conn = require('./db/mongoose').conn;
 let app = express();
 
 // Declare Port for deployment or local
-const port = process.env.PORT || 3000;
+const port = 443;
 
 // Setup Middleware
 app.use(bodyParser.json(), cors({origin: '*'}));
