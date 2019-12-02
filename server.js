@@ -24,7 +24,7 @@ let conn = require('./db/mongoose').conn;
 // +++ VARIABLES +++
 let app = express();
 
-// Declare Port for deployment or local
+// Declare Port for deployment or local 1
 const port = process.env.PORT || 3000;
 
 // Setup Middleware
