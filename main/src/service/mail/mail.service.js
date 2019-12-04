@@ -19,6 +19,7 @@ let nodemailer = require("nodemailer");
 let ApplicationError = require('../../../../models/error');
 let mailHelper = require('../../helper/mail/MailHelper');
 let pattern = require('../../utils/ValidationPatterns');
+let log = require('./../../utils/logger');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -31,6 +32,7 @@ module.exports = {
     //////////////////////////////////////////////////////
 
     sentSuccessEmail: async function (user) {
+        await mailHelper.checkConnectionToEmailServer();
         let smtpOptions = await mailHelper.getSmtpOptions();
         let transporter = nodemailer.createTransport(smtpOptions);
         let mailOptions = this.getMailOptions(user._doc, smtpOptions);
@@ -41,7 +43,7 @@ module.exports = {
     // PRIVATE METHODS
     //////////////////////////////////////////////////////
 
-    getMailOptions: async function (user, smtpOptions) {
+    getMailOptions: function (user, smtpOptions) {
         return {
             from: `"Camel-24 Transportvermittlung & Kurierdienst" <${smtpOptions.auth.user}>`, // se/ sender address
             to: user.email, // list of receivers
@@ -50,7 +52,7 @@ module.exports = {
 <br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a>`, // html body
             attachments: [{
                 filename: 'camel_logo.png',
-                path: '../../../assets/img/camel_logo.png',
+                path: './assets/img/camel_logo.png',
                 cid: 'camellogo' //same cid value as in the html img src
             }]
         };
