@@ -36,6 +36,11 @@ app.use(bodyParser.json(), cors({origin: '*'}));
 app.use('/user', require('./main/src/controller/user/user.controller'));
 
 /**
+ * User Template routes
+ */
+app.use('/user/template', require('./main/src/controller/user/template/template.controller'));
+
+/**
  * Order route
  */
 app.use('/order', require('./main/src/controller/order/order.controller'));

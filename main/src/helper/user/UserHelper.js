@@ -67,8 +67,26 @@ module.exports = {
             ansprechpartner: body.ansprechpartner,
             zusatz: body.zusatz
         };
-    }
+    },
 
+    getUserByKundenNummer: async function (kundenNummer) {
+        let user = await User.findByKundenNummer(kundenNummer)
+            .catch(e => {
+                log.error(e);
+                throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
+            });
+
+        // Check if User was found
+        if (!user) {
+            throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
+        }
+
+        return user;
+    },
+
+    extractKundenNummer: function (request) {
+        return request.getHeader("x-kundenNummer");
+    }
 
     //////////////////////////////////////////////////////
     // PRIVATE METHODS
