@@ -28,7 +28,7 @@ module.exports = {
     // PUBLIC METHODS
     //////////////////////////////////////////////////////
 
-    buildUser: async function () {
+    buildUser: function () {
         let user = new User();
 
         user.firstName = "Max";

@@ -16,6 +16,7 @@ let service = require("../../../src/service/user/user.service");
 let userBuilder = require("../../builder/user/user.builder");
 const {app} = require("../../../../server");
 let {User} = require("../../../../models/user");
+let rootUrl = "/user/";
 
 // EXTERNAL
 const expect = require('expect');
@@ -24,13 +25,14 @@ const {ObjectID} = require('mongodb');
 
 
 describe('POST /users', () => {
+
     it('should create a user ', (done) => {
 
         let userObject = userBuilder.buildUser();
 
         request(app)
-            .post('/user')
-            .send(userObject)
+            .post(rootUrl + "register")
+            .send(userObject._doc)
             .expect(200)
             .expect((res) => {
                 expect(res.body).toExist();

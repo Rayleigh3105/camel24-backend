@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////
 
 // EXTERNAL
-import {Template} from "../../../../../models/empfaenger_template";
+let {Template} = require("../../../../../models/empfaenger_template");
 
 let moment = require('moment');
 let _ = require('lodash');

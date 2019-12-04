@@ -140,7 +140,7 @@ module.exports = {
 
     saveUserToDatabase: async function (user) {
         return await user.save()
-            .catch(() => {
+            .catch((e) => {
                 throw new ApplicationError("Camel-14", 400, help.getDatabaseErrorString(), user)
             });
 
