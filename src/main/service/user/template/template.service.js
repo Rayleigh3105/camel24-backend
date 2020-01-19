@@ -61,6 +61,4 @@ module.exports = {
             throw new ApplicationError("Camel-50", 400, help.getDatabaseErrorString())
         })._doc;
     }
-
-
 };

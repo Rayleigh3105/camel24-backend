@@ -11,10 +11,14 @@ let mongoose = require('mongoose');
 
 // Mongoose uses now Promises
 mongoose.Promise = global.Promise;
-
+let conn = null;
 // Connect to Database
-let conn = mongoose.createConnection(process.env.MONGODB_URI || 'mongodb://localhost:27017/Camel24');
+if (process.env.MONGODB_URI === undefined) {
+    conn = mongoose.createConnection('mongodb://localhost:27017/Camel24Test');
+} else{
+    conn = mongoose.createConnection(process.env.MONGODB_URI);
+}
 
-module.exports = { mongoose, conn };
+module.exports = {mongoose, conn};
 
 

@@ -33,9 +33,23 @@ module.exports = {
 
         user.firstName = "Max";
         user.lastName = "Mustermann";
-        user.firmenNamen = "Modev";
-        user.email = "test.test@tes.de";
+        user.firma = "Modev";
+        user.email = "test.testt@test.de";
         user.password = "testpass";
+
+        return user;
+    },
+
+    buildWholeUser: function () {
+        let user = this.buildUser();
+        user.firmenName = "Firmenname 1";
+        user.ort = "Nürnberg";
+        user.plz = "91757";
+        user.adresse = "Test adresse 1";
+        user.land = "Deutschland";
+        user.telefon = "0171 345564456";
+        user.zusatz = "Zusatz String";
+        user.ansprechpartner = "Anpsprechpartner String";
 
         return user;
     }

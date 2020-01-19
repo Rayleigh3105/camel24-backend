@@ -16,11 +16,8 @@ const cors = require('cors');
 let moment = require('moment/moment');
 let bodyParser = require('body-parser');
 let log = require("./src/main/utils/logger");
-let setup = require("./src/main/utils/setup");
 
-// +++ LOCAL +++
-let mongoose = require('./db/mongoose').mongoose;
-let conn = require('./db/mongoose').conn;
+let setup = require("./src/main/utils/setup");
 
 // +++ VARIABLES +++
 let app = express();
