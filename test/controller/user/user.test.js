@@ -11,21 +11,21 @@
 // MODULE VARIABLES
 //////////////////////////////////////////////////////
 
+process.env.NODE_ENV = 'test';
+const {app} = require("../../../server");
+
 // INTERNAL
-let service = require("../../../src/service/user/user.service");
+let service = require("../../../src/main/service/user/user.service");
 let userBuilder = require("../../builder/user/user.builder");
-const {app} = require("../../../../server");
-let {User} = require("../../../../models/user");
+let {User} = require("../../../models/user");
 let rootUrl = "/user/";
+let cleaner = require("./../../../db/clearScript");
 
 // EXTERNAL
 const expect = require('expect');
 const request = require('supertest');
-const {ObjectID} = require('mongodb');
-
 
 describe('POST /users', () => {
-
     it('should create a user ', (done) => {
 
         let userObject = userBuilder.buildUser();

@@ -4,7 +4,7 @@
   "description": "NodeJs Backend with JWT User authentication and Object operations",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --timeout 10000",
+    "test": "mocha --recursive --timeout 10000",
     "start": "SET NODE_ENV=development node server.js",
     "debug": "node --inspect server.js",
     "dev": "nodemon server.js"

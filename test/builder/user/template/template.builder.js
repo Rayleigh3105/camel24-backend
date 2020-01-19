@@ -12,11 +12,11 @@
 //////////////////////////////////////////////////////
 
 // INTERNAL
-let {User} = require("../../../../models/user");
+let {Template} = require("../../../../models/empfaenger_template");
+let userBuilder = require("../user.builder");
 
 // EXTERNAL
 let {ObjectID} = require('mongodb');
-let jwt = require('jsonwebtoken');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -28,16 +28,16 @@ module.exports = {
     // PUBLIC METHODS
     //////////////////////////////////////////////////////
 
-    buildUser: function () {
-        let user = new User();
+    buildUser: async function (templateName) {
+        let template = new Template();
+        template.name = templateName;
 
-        user.firstName = "Max";
-        user.lastName = "Mustermann";
-        user.firmenNamen = "Modev";
-        user.email = "test.test@tes.de";
-        user.password = "testpass";
+        template.firstName = "Max";
+        template.lastName = "Mustermann";
+        template.firmenNamen = "Modev";
+        template.email = "test.test@tes.de";
 
-        return user;
+        return template;
     }
 
     //////////////////////////////////////////////////////

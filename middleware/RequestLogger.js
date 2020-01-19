@@ -13,8 +13,8 @@
 //////////////////////////////////////////////////////
 
 // Internal
-let log = require("../main/src/utils/logger");
-let pattern = require('../main/src/utils/ValidationPatterns');
+let log = require("../src/main/utils/logger");
+let pattern = require('../src/main/utils/ValidationPatterns');
 
 // External
 let moment = require('moment');

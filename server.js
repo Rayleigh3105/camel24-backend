@@ -15,8 +15,9 @@ let express = require('express');
 const cors = require('cors');
 let moment = require('moment/moment');
 let bodyParser = require('body-parser');
-let log = require("./main/src/utils/logger");
-let setup = require("./main/src/utils/setup");
+let log = require("./src/main/utils/logger");
+let setup = require("./src/main/utils/setup");
+
 // +++ LOCAL +++
 let mongoose = require('./db/mongoose').mongoose;
 let conn = require('./db/mongoose').conn;
@@ -33,22 +34,22 @@ app.use(bodyParser.json(), cors({origin: '*'}));
 /**
  * User routes
  */
-app.use('/user', require('./main/src/controller/user/user.controller'));
+app.use('/user', require('./src/main/controller/user/user.controller'));
 
 /**
  * User Template routes
  */
-app.use('/user/template', require('./main/src/controller/user/template/template.controller'));
+app.use('/user/template', require('./src/main/controller/user/template/template.controller'));
 
 /**
  * Order route
  */
-app.use('/order', require('./main/src/controller/order/order.controller'));
+app.use('/order', require('./src/main/controller/order/order.controller'));
 
 /**
  * Admin route
  */
-app.use('/admindashboard', require('./main/src/controller/dashboard/admindashboard.controller'));
+app.use('/admindashboard', require('./src/main/controller/dashboard/admindashboard.controller'));
 
 app.listen(port, () => {
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
