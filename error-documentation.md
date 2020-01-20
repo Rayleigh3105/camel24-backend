@@ -17,6 +17,8 @@
 - **Camel-18** -> Authentifzierunstoken konnte nicht gelöscht werden.
 - **Camel-19** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird)
 - **Camel-111** -> Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird)
+- **Camel-112** -> Validierung des Benutzer Objekts fehlgeschlagen.
+
 
 
 #### 404

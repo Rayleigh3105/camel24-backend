@@ -11,6 +11,9 @@
 // MODULE VARIABLES
 //////////////////////////////////////////////////////
 
+// INTERNAL
+const {User} = require('../../../models/user');
+
 // EXTERNAL
 const expect = require('chai').expect;
 
@@ -57,6 +60,29 @@ module.exports = {
         expect(savedUser.land).to.equal(userObject.land);
         expect(savedUser.telefon).to.equal(userObject.telefon);
         expect(savedUser.adresse).to.equal(userObject.adresse);
+
+    },
+
+    //////////////////////////////////////////////////////
+    // DATABASE ASSERTION
+    //////////////////////////////////////////////////////
+
+    checkIfUserDeletedFromDatabase: function (user) {
+        User.findOne({
+            'firstName': user.firstName
+        }).then((user) => {
+            expect(user).to.equal(null);
+        })
+    },
+
+    checkException:function (errorCode, status, message, body) {
+        expect(body).to.contain.property('message');
+        expect(body).to.contain.property('status');
+        expect(body).to.contain.property('errorCode');
+        expect(body.message).to.equal(message);
+        expect(body.status).to.equal(status);
+        expect(body.errorCode).to.equal(errorCode);
+
 
     }
 

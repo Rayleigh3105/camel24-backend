@@ -129,6 +129,7 @@ module.exports = {
 
     saveUserAndGenerateToken: async function (user) {
         let token;
+        this.validateUserObject(user._doc);
         user = await this.saveUserToDatabase(user);
         token = await this.generateToken(user);
 
@@ -201,5 +202,9 @@ module.exports = {
         return fetchedUser;
     },
 
-
+    validateUserObject: function (user) {
+        if (user.firstName === undefined || user.lastName === undefined || user.email === undefined || user.password === undefined) {
+            throw new ApplicationError('Camel-112', 400, "Validierung des Benutzer Objekts fehlgeschlagen.", user)
+        }
+    },
 };

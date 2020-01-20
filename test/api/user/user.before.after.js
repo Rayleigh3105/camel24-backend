@@ -29,6 +29,7 @@ beforeEach((done) => {
 before((done) => {
     sinon.stub(mailHelper, 'checkConnectionToEmailServer');
     sinon.stub(mailService, 'sentEmail');
+
     done()
 });
 
@@ -40,3 +41,14 @@ after((done) => {
         .then(() => done())
         .catch((err) => done(err));
 });
+
+module.exports = {
+
+    unstupCheckConnection: function () {
+        sinon.restore();
+    },
+
+    stupCheckConneciton: function () {
+        sinon.stub(mailHelper, 'checkConnectionToEmailServer');
+    }
+};
