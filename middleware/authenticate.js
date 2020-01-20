@@ -9,7 +9,9 @@
 
 let { User } = require('./../models/user');
 
-
+/**
+ * Authenticates the user with the given Token.
+ */
 let authenticate = ( req, res, next) => {
     let token = req.header('x-auth');
 

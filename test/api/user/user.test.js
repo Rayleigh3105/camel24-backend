@@ -13,6 +13,9 @@
 // INTERNAL
 let userBuilder = require("../../builder/user/user.builder");
 let rootUrl = "/user/";
+let registerUrl = rootUrl + "register";
+let loginUrl = rootUrl + "login";
+let getUserInfo = rootUrl + "me";
 let {app} = require("../../../server");
 let userAssert = require('./user.assert');
 let {User} = require('../../../models/user');
@@ -21,21 +24,23 @@ let {User} = require('../../../models/user');
 const request = require('supertest');
 const expect = require('chai').expect;
 
-
 let beforeAfter = require('./user.before.after');
+
+//////////////////////////////////////////////////////
+// Register
+//////////////////////////////////////////////////////
 
 describe('POST /users', () => {
 
     //////////////////////////////////////////////////////
-    // POSITIVE
+    // Positive
     //////////////////////////////////////////////////////
-
 
     it('OK, should create a user ', (done) => {
         let userObject = userBuilder.buildUser();
 
         request(app)
-            .post(rootUrl + "register")
+            .post(registerUrl)
             .send(userObject._doc)
             .then((res) => {
                 let user = res.body.user;
@@ -50,7 +55,7 @@ describe('POST /users', () => {
         let userObject = userBuilder.buildWholeUser();
 
         request(app)
-            .post(rootUrl + "register")
+            .post(registerUrl)
             .send(userObject._doc)
             .then((res) => {
                 let user = res.body.user;
@@ -66,7 +71,7 @@ describe('POST /users', () => {
         let userObject = userBuilder.buildWholeUser();
 
         await request(app)
-            .post(rootUrl + "register")
+            .post(registerUrl)
             .send(userObject._doc)
             .then((res) => {
                 let user = res.body.user;
@@ -88,7 +93,7 @@ describe('POST /users', () => {
     });
 
     //////////////////////////////////////////////////////
-    // NEGATIVE
+    // Negative
     //////////////////////////////////////////////////////
 
     it('NOT OK, should not create user when there is no basic information', (done) => {
@@ -98,7 +103,7 @@ describe('POST /users', () => {
         };
 
         request(app)
-            .post(rootUrl + "register")
+            .post(registerUrl)
             .send(userObject)
             .then((res) => {
                 let body = res.body;
@@ -121,7 +126,7 @@ describe('POST /users', () => {
         };
 
         request(app)
-            .post(rootUrl + "register")
+            .post(registerUrl)
             .send(userObject)
             .then((res) => {
                 let body = res.body;
@@ -142,11 +147,11 @@ describe('POST /users', () => {
         let userObject = userBuilder.buildUser();
 
         await request(app)
-            .post(rootUrl + "register")
+            .post(registerUrl)
             .send(userObject._doc);
 
         request(app)
-            .post(rootUrl + "register")
+            .post(registerUrl)
             .send(userObject._doc)
             .then((res) => {
                 let body = res.body;
@@ -170,7 +175,7 @@ describe('POST /users', () => {
         let userObject = userBuilder.buildUser();
 
         request(app)
-            .post(rootUrl + "register")
+            .post(registerUrl)
             .send(userObject._doc)
             .then((res) => {
                 let body = res.body;
@@ -194,7 +199,7 @@ describe('POST /users', () => {
         let userObject = userBuilder.buildUser();
 
         request(app)
-            .post(rootUrl + "register")
+            .post(registerUrl)
             .send(userObject._doc)
             .then((res) => {
                 let body = res.body;
@@ -204,4 +209,105 @@ describe('POST /users', () => {
                 done();
             })
     });
+});
+
+//////////////////////////////////////////////////////
+// Login
+//////////////////////////////////////////////////////
+describe('POST /login', () => {
+
+    //////////////////////////////////////////////////////
+    // Positive
+    //////////////////////////////////////////////////////
+
+    it('OK, should login with Admin User', async (done) => {
+        // Create User
+        let loginUser = null;
+        let kundenNummer = 14001;
+        await userBuilder.saveUser(kundenNummer)
+            .then((user) => loginUser = user);
+
+        request(app)
+            .post(loginUrl)
+            .send({
+                kundenNummer: kundenNummer,
+                password: 'testpass'
+            })
+            .then((res) => {
+                let user = res.body.user;
+
+                userAssert.assertWholeUser(user);
+                expect(user).to.contain.property('tokens');
+
+                done();
+            })
+    });
+
+    //////////////////////////////////////////////////////
+    // Negative
+    //////////////////////////////////////////////////////
+
+    it('NOT OK, login with wrong Password', async (done) => {
+        // Create User
+        let loginUser = null;
+        let kundenNummer = 14001;
+        await userBuilder.saveUser(kundenNummer)
+            .then((user) => loginUser = user);
+
+        request(app)
+            .post(loginUrl)
+            .send({
+                kundenNummer: kundenNummer,
+                password: 'invalidPassword'
+            })
+            .then((res) => {
+                let body = res.body;
+
+                userAssert.checkException("Camel-16", 400, "Benutzer (14001) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.", body);
+
+                done();
+            })
+    });
+
+    it('NOT OK, login with wrong kundenNummer', async (done) => {
+        // Create User
+        let loginUser = null;
+        let kundenNummer = 14001;
+        await userBuilder.saveUser(kundenNummer)
+            .then((user) => loginUser = user);
+
+        request(app)
+            .post(loginUrl)
+            .send({
+                kundenNummer: 14002,
+                password: 'testpass'
+            })
+            .then((res) => {
+                let body = res.body;
+
+                userAssert.checkException("Camel-16", 400, "Benutzer (14002) konnte nicht gefunden werden, oder es wurde ein nicht gültiges Passwort eingegeben.", body);
+
+                done();
+            })
+    })
+});
+
+describe('GET /me', async () => {
+
+    it('OK, should get user info when logged in', async (done) => {
+        let kundenNummer = 14001;
+        await userBuilder.saveUser(kundenNummer);
+        let xauth = await userBuilder.loginUser(kundenNummer);
+
+        await request(app)
+            .get(getUserInfo)
+            .set('x-auth', xauth)
+            .then((res) => {
+                let user = res.body;
+
+                userAssert.assertWholeUser(user);
+
+                done()
+            })
+    })
 });
