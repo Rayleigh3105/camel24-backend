@@ -292,11 +292,21 @@ describe('POST /login', () => {
     })
 });
 
-describe('GET /me', async () => {
+//////////////////////////////////////////////////////
+// Get user object.
+//////////////////////////////////////////////////////
+
+describe('GET /me', () => {
+
+    //////////////////////////////////////////////////////
+    // Positive
+    //////////////////////////////////////////////////////
 
     it('OK, should get user info when logged in', async (done) => {
         let kundenNummer = 14001;
+        // Create user
         await userBuilder.saveUser(kundenNummer);
+        // Login created User
         let xauth = await userBuilder.loginUser(kundenNummer);
 
         await request(app)
@@ -308,6 +318,110 @@ describe('GET /me', async () => {
                 userAssert.assertWholeUser(user);
 
                 done()
+            })
+    });
+
+    //////////////////////////////////////////////////////
+    // Negative
+    //////////////////////////////////////////////////////
+
+    it('NOT OK, dont get user info when user is not authenticated.', async (done) => {
+        let xauth = "invalid";
+
+        await request(app)
+            .get(getUserInfo)
+            .set('x-auth', xauth)
+            .then((res) => {
+                expect(res.status).to.equal(401);
+
+                done()
+            })
+    })
+});
+
+describe('PATCH /:userId', () => {
+
+    //////////////////////////////////////////////////////
+    // Positive
+    //////////////////////////////////////////////////////
+
+    it('OK, should update user on database', async (done) => {
+        let kundenNummer = 14001;
+        // Create user
+        let user = await userBuilder.saveUser(kundenNummer);
+        // Login created User
+        let xauth = await userBuilder.loginUser(kundenNummer);
+
+        user._doc.firstName = "changedFirstName";
+        user._doc.lastName = "changedLastName";
+
+        let url = userBuilder.buildUpdateUserUrl(user._id);
+
+        await request(app)
+            .patch(url)
+            .send(user._doc)
+            .set('x-auth', xauth)
+            .then((res) => {
+                let savedUser = res.body;
+
+                userAssert.assertWholeUser(savedUser);
+                userAssert.assertEqualWholeUser(user._doc, savedUser);
+
+                done();
+            })
+    });
+
+    //////////////////////////////////////////////////////
+    //  Negative
+    //////////////////////////////////////////////////////
+
+    it('NOT OK, should not update User when userID is invalid', async (done) => {
+        let kundenNummer = 14001;
+        // Create user
+        let user = await userBuilder.saveUser(kundenNummer);
+        // Login created User
+        let xauth = await userBuilder.loginUser(kundenNummer);
+
+        user._doc.firstName = "changedFirstName";
+        user._doc.lastName = "changedLastName";
+
+        let url = userBuilder.buildUpdateUserUrl("invalid");
+
+        await request(app)
+            .patch(url)
+            .send(user._doc)
+            .set('x-auth', xauth)
+            .then((res) => {
+                let body = res.body;
+
+                userAssert.checkException("Camel-00", 404, "Datenbank Identifikations Nummer für Benutzer ist nicht gültig.", body);
+
+                done();
+            })
+    });
+
+    it('NOT OK, should not update User when userId is wrong', async (done) => {
+        let kundenNummer = 14001;
+        // Create user
+        let user = await userBuilder.saveUser(kundenNummer);
+        // Login created User
+        let xauth = await userBuilder.loginUser(kundenNummer);
+
+        user._doc.firstName = "changedFirstName";
+        user._doc.lastName = "changedLastName";
+
+        let url = userBuilder.buildUpdateUserUrl("5e26a45ed5b9f723d69ff1c7");
+
+        await request(app)
+            .patch(url)
+            .send(user._doc)
+            .set('x-auth', xauth)
+            .then((res) => {
+                let body = res.body;
+
+                userAssert.checkException("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn User geupdated wird).", body);
+
+                done();
             })
     })
 });

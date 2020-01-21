@@ -13,7 +13,6 @@
 
 // INTERNAL
 let {authenticate} = require('../../../../middleware/authenticate');
-let setup = require('../../utils/setup');
 let errorHandler = require('../../utils/error/ErrorHandler');
 let service = require("../../service/user/user.service");
 

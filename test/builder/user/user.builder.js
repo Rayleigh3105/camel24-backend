@@ -81,6 +81,10 @@ module.exports = {
             });
 
         return xauth;
+    },
+
+    buildUpdateUserUrl: function (userId) {
+        return rootUrl + userId;
     }
 
 

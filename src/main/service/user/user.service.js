@@ -104,7 +104,7 @@ module.exports = {
     deleteToken: async function (token) {
         await token.removeToken(token).then(() => {
         }).catch(e => {
-            throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", req.user)
+            throw new ApplicationError("Camel-18", 400, "Authentifzierunstoken konnte nicht gelöscht werden.", token)
         });
     },
 
@@ -117,7 +117,7 @@ module.exports = {
         let existingEmail = await User.findOne({
             email: user.email
         }).catch(e => {
-            throw new ApplicationError("Camel-12", 400, help.getDatabaseErrorString(), body)
+            throw new ApplicationError("Camel-12", 400, help.getDatabaseErrorString(), user)
         });
 
         if (existingEmail) {
