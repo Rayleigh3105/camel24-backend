@@ -19,7 +19,7 @@ let {User} = require('../../../../models/user');
 let Role = require('../../../../models/role');
 let ApplicationError = require('../../../../models/error');
 let startGenerationNumber = 14000;
-
+let log = require('../../utils/logger');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -86,7 +86,7 @@ module.exports = {
     },
 
     extractKundenNummer: function (request) {
-        return request.getHeader("x-kundenNummer");
+        return request.header("x-kundenNummer");
     }
 
     //////////////////////////////////////////////////////

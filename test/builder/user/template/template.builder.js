@@ -12,8 +12,7 @@
 //////////////////////////////////////////////////////
 
 // INTERNAL
-let {Template} = require("../../../../models/empfaenger_template");
-let userBuilder = require("../user.builder");
+let {Template, Empfeanger} = require("../../../../models/empfaenger_template");
 
 // EXTERNAL
 let {ObjectID} = require('mongodb');
@@ -28,16 +27,22 @@ module.exports = {
     // PUBLIC METHODS
     //////////////////////////////////////////////////////
 
-    buildUser: async function (templateName) {
+    buildTemplate: function (templateName) {
         let template = new Template();
-        template.name = templateName;
+        template._doc.name = templateName;
 
-        template.firstName = "Max";
-        template.lastName = "Mustermann";
-        template.firmenNamen = "Modev";
-        template.email = "test.test@tes.de";
+        template._doc.empfaenger = new Empfeanger();
+        template._doc.empfaenger.firma = "Modev";
+        template._doc.empfaenger.zusatz = "Modev Zusatz";
+        template._doc.empfaenger.ansprechpartner = "Modev Ansprechpartner";
+        template._doc.empfaenger.adresse = "Musteradresse 19";
+        template._doc.empfaenger.land = "Schweiz";
+        template._doc.empfaenger.plz = "91757";
+        template._doc.empfaenger.ort = "Treuchtlingen";
+        template._doc.empfaenger.telefon = "023483265482";
+        template._doc.empfaenger.email = "test.test@tes.de";
 
-        return template;
+        return template._doc;
     }
 
     //////////////////////////////////////////////////////

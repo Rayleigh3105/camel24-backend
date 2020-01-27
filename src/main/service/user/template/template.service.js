@@ -35,8 +35,9 @@ module.exports = {
     //////////////////////////////////////////////////////
 
     createTemplate: async function (request) {
-        let template = this.buildTemplate(request);
-        return this.saveTemplate(template);
+        let template = await this.buildTemplate(request);
+        template = await this.saveTemplate(template);
+        return template._doc;
     },
 
 
@@ -45,20 +46,21 @@ module.exports = {
     //////////////////////////////////////////////////////
 
     buildTemplate: async function (request) {
-        let kundenNummer = userHelper.extractKundenNummer("x-kundenNummer");
-        let user = userHelper.getUserByKundenNummer(kundenNummer);
+        let kundenNummer = userHelper.extractKundenNummer(request);
+        let user = await userHelper.getUserByKundenNummer(kundenNummer);
 
         let template = new Template(request.body);
-        template._creator = user;
+        template._doc._creator = user;
 
         return template;
     },
 
     saveTemplate: async function (template) {
-        return await template.save().catch(e => {
-            log.info(e);
-            console.log(e);
-            throw new ApplicationError("Camel-50", 400, help.getDatabaseErrorString())
-        })._doc;
+        return await template.save()
+            .catch(e => {
+                log.info(e);
+                console.log(e);
+                throw new ApplicationError("Camel-50", 400, help.getDatabaseErrorString())
+            });
     }
 };

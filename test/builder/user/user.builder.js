@@ -13,14 +13,7 @@
 
 // INTERNAL
 let {User} = require("../../../models/user");
-let userAssert = require("./../../api/user/user.assert");
 let rootUrl = "/user/";
-let loginUrl = rootUrl + "login";
-let {app} = require("../../../server");
-
-// EXTERNAL
-const request = require('supertest');
-const expect = require('chai').expect;
 
 module.exports = {
 
@@ -62,26 +55,7 @@ module.exports = {
         return user.save(user);
     },
 
-    loginUser: async function (kundenNummer) {
-        let xauth = null;
 
-        // Login User to get x-auth
-        await request(app)
-            .post(loginUrl)
-            .send({
-                kundenNummer: kundenNummer,
-                password: 'testpass'
-            })
-            .then((res) => {
-                let user = res.body.user;
-
-                userAssert.assertWholeUser(user);
-                expect(user).to.contain.property('tokens');
-                xauth = user.tokens[0].token;
-            });
-
-        return xauth;
-    },
 
     buildUpdateUserUrl: function (userId) {
         return rootUrl + userId;

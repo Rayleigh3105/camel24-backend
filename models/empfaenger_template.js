@@ -101,5 +101,6 @@ let EmpfTemplateSchema = mongoose.Schema({
 });
 
 let Template = conn.model('Template', EmpfTemplateSchema);
+let Empfeanger = conn.model('Empfeanger', EmpfSchema);
 
-module.exports = {Template};
+module.exports = {Template, Empfeanger};

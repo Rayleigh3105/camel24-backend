@@ -23,6 +23,12 @@ beforeEach((done) => {
         .catch((err) => done(err));
 });
 
+afterEach((done) => {
+    User.deleteMany({})
+        .then(() => done())
+        .catch((err) => done(err));
+});
+
 /**
  * Mocks functions which has to do with the Mail Server
  */
@@ -40,7 +46,10 @@ after((done) => {
     User.deleteMany({})
         .then(() => done())
         .catch((err) => done(err));
+
 });
+
+
 
 module.exports = {
 

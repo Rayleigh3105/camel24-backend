@@ -307,7 +307,7 @@ describe('GET /me', () => {
         // Create user
         await userBuilder.saveUser(kundenNummer);
         // Login created User
-        let xauth = await userBuilder.loginUser(kundenNummer);
+        let xauth = await loginUser(kundenNummer);
 
         await request(app)
             .get(getUserInfo)
@@ -350,7 +350,7 @@ describe('PATCH /:userId', () => {
         // Create user
         let user = await userBuilder.saveUser(kundenNummer);
         // Login created User
-        let xauth = await userBuilder.loginUser(kundenNummer);
+        let xauth = await loginUser(kundenNummer);
 
         user._doc.firstName = "changedFirstName";
         user._doc.lastName = "changedLastName";
@@ -380,7 +380,7 @@ describe('PATCH /:userId', () => {
         // Create user
         let user = await userBuilder.saveUser(kundenNummer);
         // Login created User
-        let xauth = await userBuilder.loginUser(kundenNummer);
+        let xauth = await loginUser(kundenNummer);
 
         user._doc.firstName = "changedFirstName";
         user._doc.lastName = "changedLastName";
@@ -405,7 +405,7 @@ describe('PATCH /:userId', () => {
         // Create user
         let user = await userBuilder.saveUser(kundenNummer);
         // Login created User
-        let xauth = await userBuilder.loginUser(kundenNummer);
+        let xauth = await loginUser(kundenNummer);
 
         user._doc.firstName = "changedFirstName";
         user._doc.lastName = "changedLastName";
@@ -425,3 +425,24 @@ describe('PATCH /:userId', () => {
             })
     })
 });
+
+
+async function loginUser(kundenNummer) {
+    let xauth = null;
+
+    // Login User to get x-auth
+    await request(app)
+        .post("/user/login")
+        .send({
+            kundenNummer: kundenNummer,
+            password: 'testpass'
+        })
+        .then((res) => {
+            let user = res.body.user;
+
+            expect(user).to.contain.property('tokens');
+            xauth = user.tokens[0].token;
+        });
+
+    return xauth;
+}

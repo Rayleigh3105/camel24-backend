@@ -43,12 +43,22 @@ module.exports = router;
 async function createTemplate(req, res) {
     try {
 
-        let createdTemplate = service.createTemplate(req);
+        let createdTemplate = await service.createTemplate(req);
 
 
         res.status(201).send(createdTemplate);
 
     } catch (e) {
         errorHandler.handleError(e, res);
+    }
+}
+
+async function getTemplates(req, res) {
+    try {
+        let createdTemplates = await service.getTemplates(req);
+
+        res.status(200).send(createdTemplates);
+    } catch (e) {
+        errorHandler.handleError(e, res)
     }
 }
