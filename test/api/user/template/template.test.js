@@ -80,7 +80,87 @@ describe('POST /user/template', () => {
                 done();
             })
     });
+});
 
+
+describe('OK, gets all created Templates', () => {
+
+    //////////////////////////////////////////////////////
+    // Positive
+    //////////////////////////////////////////////////////
+
+    it('OK, should get all templates for user', async (done) => {
+        let kundenNummer = 14001;
+        // Create user
+        let user = await userBuilder.saveUser(kundenNummer);
+        await templateBuilder.saveTemplate(user, "Template 1");
+        await templateBuilder.saveTemplate(user, "Template 2");
+        await templateBuilder.saveTemplate(user, "Template 3");
+
+        let xauth = await loginUser(kundenNummer);
+
+        await request(app)
+            .get(rootUrl)
+            .set('x-kundenNummer', kundenNummer)
+            .set('x-auth', xauth)
+            .then((res) => {
+                let template = res.body;
+
+                expect(res.status).to.equal(200);
+                expect(template).to.be.an('array');
+                expect(template.length).to.equal(3);
+                done();
+            })
+    });
+
+    it('OK, should get all templates for specific useruser', async (done) => {
+        let kundenNummer = 14001;
+        // Create user
+        let user = await userBuilder.saveUser(kundenNummer);
+        let user1 = await userBuilder.saveUser(14002, "max.mustermann@test.de");
+        await templateBuilder.saveTemplate(user, "Template 1");
+        await templateBuilder.saveTemplate(user1, "Template 2");
+        await templateBuilder.saveTemplate(user1, "Template 3");
+
+        let xauth = await loginUser(kundenNummer);
+
+        await request(app)
+            .get(rootUrl)
+            .set('x-kundenNummer', kundenNummer)
+            .set('x-auth', xauth)
+            .then((res) => {
+                let template = res.body;
+
+                expect(res.status).to.equal(200);
+                expect(template).to.be.an('array');
+                expect(template.length).to.equal(1);
+                done();
+            })
+    });
+
+    //////////////////////////////////////////////////////
+    // Negative
+    //////////////////////////////////////////////////////
+
+    it('NOT OK, should throw exception when wrong kundenNummer when getting templates for user ', async (done) => {
+        let kundenNummer = 14001;
+        let templateToCreate = templateBuilder.buildTemplate("Template 1");
+        // Create user
+        await userBuilder.saveUser(kundenNummer);
+
+        let xauth = await loginUser(kundenNummer);
+
+        await request(app)
+            .get(rootUrl)
+            .set('x-kundenNummer', 1234)
+            .set('x-auth', xauth)
+            .then((res) => {
+                let body = res.body;
+
+                templateAssert.checkException("Camel-16", 404, "Benutzer (1234) konnte nicht gefunden werden.", body);
+                done();
+            })
+    });
 });
 
 async function loginUser(kundenNummer) {

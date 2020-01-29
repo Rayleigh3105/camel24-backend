@@ -7,32 +7,27 @@
  *  permission of Moritz Vogt
  */
 
-let { User } = require('./../models/user');
+let {User} = require('./../models/user');
 
 /**
  * Authenticates the user with the given Token.
  */
-let authenticate = ( req, res, next) => {
+let authenticate = (req, res, next) => {
     let token = req.header('x-auth');
 
-    User.findByToken( token ).then( ( user ) => {
-        if ( !user ) {
+    User.findByToken(token).then((user) => {
+        if (!user) {
             return Promise.reject()
         }
 
-        if (user.role === 'Admin' || user.role === 'User') {
-            req.user = user;
-            req.token = token;
+        req.user = user;
+        req.token = token;
 
-            next();
-        }else {
-            return Promise.reject()
-        }
+        next();
 
-    }).catch( ( e ) =>
-    {
-        res.status( 401 ).send( )
+    }).catch((e) => {
+        res.status(401).send()
     });
 };
 
-module.exports = { authenticate };
+module.exports = {authenticate};

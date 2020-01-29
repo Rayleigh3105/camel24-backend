@@ -15,7 +15,7 @@
 let {Template, Empfeanger} = require("../../../../models/empfaenger_template");
 
 // EXTERNAL
-let {ObjectID} = require('mongodb');
+let rootUrl = "/user/templates";
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -27,23 +27,33 @@ module.exports = {
     // PUBLIC METHODS
     //////////////////////////////////////////////////////
 
-    buildTemplate: function (templateName) {
+    buildTemplate: function (templateName, creator) {
         let template = new Template();
-        template._doc.name = templateName;
+        template.name = templateName;
 
-        template._doc.empfaenger = new Empfeanger();
-        template._doc.empfaenger.firma = "Modev";
-        template._doc.empfaenger.zusatz = "Modev Zusatz";
-        template._doc.empfaenger.ansprechpartner = "Modev Ansprechpartner";
-        template._doc.empfaenger.adresse = "Musteradresse 19";
-        template._doc.empfaenger.land = "Schweiz";
-        template._doc.empfaenger.plz = "91757";
-        template._doc.empfaenger.ort = "Treuchtlingen";
-        template._doc.empfaenger.telefon = "023483265482";
-        template._doc.empfaenger.email = "test.test@tes.de";
+        template.empfaenger = new Empfeanger();
+        template.empfaenger.firma = "Modev";
+        template.empfaenger.zusatz = "Modev Zusatz";
+        template.empfaenger.ansprechpartner = "Modev Ansprechpartner";
+        template.empfaenger.adresse = "Musteradresse 19";
+        template.empfaenger.land = "Schweiz";
+        template.empfaenger.plz = "91757";
+        template.empfaenger.ort = "Treuchtlingen";
+        template.empfaenger.telefon = "023483265482";
+        template.empfaenger.email = "test.test@tes.de";
 
-        return template._doc;
-    }
+        if (creator) {
+            template._creator = creator
+        }
+
+        return template;
+    },
+
+    saveTemplate: function (creator, templateName) {
+        let template = this.buildTemplate(templateName, creator);
+
+        return template.save(template);
+    },
 
     //////////////////////////////////////////////////////
     // PRIVATE METHODS

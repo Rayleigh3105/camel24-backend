@@ -24,8 +24,7 @@ let router = require('express').Router();
 //////////////////////////////////////////////////////
 
 router.post('', authenticate, createTemplate);
-
-//router.get('', authenticate,  );
+router.get('', authenticate, getTemplates);
 //router.patch('/:templateId', authenticate, );
 //router.delete('/:templateId', authenticate, );
 
@@ -53,6 +52,11 @@ async function createTemplate(req, res) {
     }
 }
 
+/**
+ * Gets creted Templates from the Database.
+ *
+ * @returns Created Templates
+ */
 async function getTemplates(req, res) {
     try {
         let createdTemplates = await service.getTemplates(req);

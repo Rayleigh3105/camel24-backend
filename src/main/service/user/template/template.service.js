@@ -40,6 +40,19 @@ module.exports = {
         return template._doc;
     },
 
+    getTemplates: async function (request) {
+        let kundenNummer = userHelper.extractKundenNummer(request);
+        let user = await userHelper.getUserByKundenNummer(kundenNummer);
+
+        let foundTemplates = null;
+        await Template.find({_creator: user})
+            .sort({createdAt: -1})
+            .then(templates => {
+                foundTemplates = templates
+            });
+
+        return foundTemplates;
+    },
 
     //////////////////////////////////////////////////////
     // PRIVATE METHODS

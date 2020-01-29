@@ -21,20 +21,25 @@ module.exports = {
     // PUBLIC METHODS
     //////////////////////////////////////////////////////
 
-    buildUser: function () {
+    buildUser: function (email) {
         let user = new User();
 
         user.firstName = "Max";
         user.lastName = "Mustermann";
         user.firma = "Modev";
-        user.email = "test.testt@test.de";
+        if (email) {
+            user.email = email;
+
+        } else {
+            user.email = "test.testt@test.de";
+        }
         user.password = "testpass";
 
         return user;
     },
 
-    buildWholeUser: function () {
-        let user = this.buildUser();
+    buildWholeUser: function (email) {
+        let user = this.buildUser(email);
         user.firmenName = "Firmenname 1";
         user.ort = "Nürnberg";
         user.plz = "91757";
@@ -48,13 +53,17 @@ module.exports = {
         return user;
     },
 
-    saveUser: function (kundenNummer) {
-        let user = this.buildWholeUser();
+    saveUser: function (kundenNummer, email) {
+        let user = null;
+        if (email) {
+            user = this.buildWholeUser(email);
+        } else {
+            user = this.buildUser();
+        }
         user._doc.kundenNummer = kundenNummer;
 
         return user.save(user);
     },
-
 
 
     buildUpdateUserUrl: function (userId) {
