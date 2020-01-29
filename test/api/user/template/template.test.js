@@ -16,6 +16,7 @@ let templateAssert = require("./template.assert");
 let userBuilder = require("./../../../builder/user/user.builder");
 let rootUrl = "/user/template";
 let {app} = require("../../../../server");
+let {Template} = require("../../../../models/empfaenger_template");
 
 // EXTERNAL
 const request = require('supertest');
@@ -83,7 +84,7 @@ describe('POST /user/template', () => {
 });
 
 
-describe('OK, gets all created Templates', () => {
+describe('GET /user/template', () => {
 
     //////////////////////////////////////////////////////
     // Positive
@@ -144,7 +145,7 @@ describe('OK, gets all created Templates', () => {
 
     it('NOT OK, should throw exception when wrong kundenNummer when getting templates for user ', async (done) => {
         let kundenNummer = 14001;
-        let templateToCreate = templateBuilder.buildTemplate("Template 1");
+        templateBuilder.buildTemplate("Template 1");
         // Create user
         await userBuilder.saveUser(kundenNummer);
 
@@ -161,6 +162,104 @@ describe('OK, gets all created Templates', () => {
                 done();
             })
     });
+});
+
+describe('DELETE /user/template/:templateId', () => {
+
+    //////////////////////////////////////////////////////
+    // Positive
+    //////////////////////////////////////////////////////
+
+    it('OK, should delete Template', async (done) => {
+        let kundenNummer = 14001;
+        templateBuilder.buildTemplate("Template 1");
+        // Create user
+        let user = await userBuilder.saveUser(kundenNummer);
+        let templateToDelete = await templateBuilder.saveTemplate(user, "Template 1");
+
+        let xauth = await loginUser(kundenNummer);
+
+        await request(app)
+            .delete(rootUrl + "/" + templateToDelete._id.toString())
+            .set('x-kundenNummer', kundenNummer)
+            .set('x-auth', xauth)
+            .then(async (res) => {
+                expect(res.status).to.equal(200);
+
+                await Template.find({
+                    kundenNummer: kundenNummer
+                }).then(foundTemplates => {
+                    expect(foundTemplates).to.be.an('array');
+                    expect(foundTemplates.length).to.equal(0)
+                });
+                done();
+            })
+    });
+
+    //////////////////////////////////////////////////////
+    // Negative
+    //////////////////////////////////////////////////////
+
+    it('NOT OK, should throw Exception when wrong ObjectID.', async (done) => {
+        let kundenNummer = 14001;
+        templateBuilder.buildTemplate("Template 1");
+        // Create user
+        await userBuilder.saveUser(kundenNummer);
+
+        let xauth = await loginUser(kundenNummer);
+
+        await request(app)
+            .delete(rootUrl + "/5b31f1a32d138a34e741053a")
+            .set('x-kundenNummer', kundenNummer)
+            .set('x-auth', xauth)
+            .then(async (res) => {
+                let body = res.body;
+
+                templateAssert.checkException("Camel-52", 404, "Die zu löscheende Vorlage konnte nicht gefunden werden.", body);
+
+                done();
+            })
+    });
+
+    it('NOT OK, should throw Exception when invalid ObjectID.', async (done) => {
+        let kundenNummer = 14001;
+        templateBuilder.buildTemplate("Template 1");
+        // Create user
+        await userBuilder.saveUser(kundenNummer);
+
+        let xauth = await loginUser(kundenNummer);
+
+        await request(app)
+            .delete(rootUrl + "/2050932485034805")
+            .set('x-kundenNummer', kundenNummer)
+            .set('x-auth', xauth)
+            .then(async (res) => {
+                let body = res.body;
+
+                templateAssert.checkException("Camel-00", 404, "Datenbank Identifikations Nummer für Benutzer ist nicht gültig.", body);
+
+                done();
+            })
+    });
+
+    it('NOT OK, should not delete Template when User is not authenticated', async (done) => {
+        let kundenNummer = 14001;
+        templateBuilder.buildTemplate("Template 1");
+        // Create user
+        let user = await userBuilder.saveUser(kundenNummer);
+        let templateToDelete = await templateBuilder.saveTemplate(user, "Template 1");
+
+        await request(app)
+            .delete(rootUrl + "/" + templateToDelete._id.toString())
+            .set('x-kundenNummer', kundenNummer)
+            .set('x-auth', "dksfhaksjhf")
+            .then(async (res) => {
+
+                expect(res.status).to.equal(401);
+
+                done();
+            })
+    })
 });
 
 async function loginUser(kundenNummer) {

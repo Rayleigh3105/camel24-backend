@@ -14,9 +14,6 @@
 // INTERNAL
 let {Template, Empfeanger} = require("../../../../models/empfaenger_template");
 
-// EXTERNAL
-let rootUrl = "/user/templates";
-
 //////////////////////////////////////////////////////
 // MODULE EXPORT
 //////////////////////////////////////////////////////

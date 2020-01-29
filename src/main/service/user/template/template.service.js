@@ -22,6 +22,7 @@ let ApplicationError = require('../../../../../models/error');
 let help = require('../../../utils/helper');
 let userHelper = require('../../../helper/user/UserHelper');
 let log = require("../../../utils/logger");
+let utilHelper = require("../../../helper/util/UtilHelper");
 
 
 //////////////////////////////////////////////////////
@@ -54,9 +55,24 @@ module.exports = {
         return foundTemplates;
     },
 
+    deleteTemplate: async function (templateId) {
+        utilHelper.checkIfIdIsValid(templateId);
+        await this.checkIfTemplateIsAvailable(templateId);
+        await this.removeTemplateById(templateId);
+    },
+
     //////////////////////////////////////////////////////
     // PRIVATE METHODS
     //////////////////////////////////////////////////////
+
+    checkIfTemplateIsAvailable: async function (templateId) {
+        await Template.find({_id: templateId})
+            .then(foundTemplate => {
+                if (foundTemplate.length === 0) {
+                    throw new ApplicationError("Camel-52", 404, "Die zu löscheende Vorlage konnte nicht gefunden werden.")
+                }
+            })
+    },
 
     buildTemplate: async function (request) {
         let kundenNummer = userHelper.extractKundenNummer(request);
@@ -75,5 +91,15 @@ module.exports = {
                 console.log(e);
                 throw new ApplicationError("Camel-50", 400, help.getDatabaseErrorString())
             });
-    }
+    },
+
+    removeTemplateById: async function (templateId) {
+        Template.remove({
+            _id: templateId
+        }, (err) => {
+            if (err) {
+                throw new ApplicationError("Camel-51", 400, "Beim Löschen der Vorlage ist etwas schiefgelaufen.")
+            }
+        })
+    },
 };

@@ -26,7 +26,7 @@ let router = require('express').Router();
 router.post('', authenticate, createTemplate);
 router.get('', authenticate, getTemplates);
 //router.patch('/:templateId', authenticate, );
-//router.delete('/:templateId', authenticate, );
+router.delete('/:templateId', authenticate, deleteTemplate);
 
 module.exports = router;
 
@@ -62,6 +62,21 @@ async function getTemplates(req, res) {
         let createdTemplates = await service.getTemplates(req);
 
         res.status(200).send(createdTemplates);
+    } catch (e) {
+        errorHandler.handleError(e, res)
+    }
+}
+
+/**
+ * Deletes a specific Template.
+ */
+async function deleteTemplate(req, res) {
+    try {
+        let templateId = req.params.templateId;
+
+        await service.deleteTemplate(templateId);
+
+        res.status(200).send();
     } catch (e) {
         errorHandler.handleError(e, res)
     }

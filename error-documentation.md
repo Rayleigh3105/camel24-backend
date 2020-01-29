@@ -52,5 +52,8 @@
 - **Camel-48** -> Zustellart darf nur standard | persoenlich | persoenlichIdent sein.
 - **Camel-49** -> Gewicht darf 30 Kilogramm nicht überschreiten.
 
+### Camel-3 = Template Operationen
+- **Camel-50** -> Beim Speichern vom Template.
+- **Camel-51** -> Beim Löschen vom einer Vorlage.
 
 raml2html -t nunjucks/template.nunjucks -i camel-api-documentation.raml -o camel-api-documentation.html
