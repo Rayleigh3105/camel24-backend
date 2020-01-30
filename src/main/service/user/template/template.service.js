@@ -55,6 +55,12 @@ module.exports = {
         return foundTemplates;
     },
 
+    updateTemplate: async function (templateId, request) {
+        utilHelper.checkIfIdIsValid(templateId);
+        await this.checkIfTemplateIsAvailable(templateId);
+        return await this.updateTemplateOnDatabase(templateId, request.body);
+    },
+
     deleteTemplate: async function (templateId) {
         utilHelper.checkIfIdIsValid(templateId);
         await this.checkIfTemplateIsAvailable(templateId);
@@ -69,7 +75,7 @@ module.exports = {
         await Template.find({_id: templateId})
             .then(foundTemplate => {
                 if (foundTemplate.length === 0) {
-                    throw new ApplicationError("Camel-52", 404, "Die zu löscheende Vorlage konnte nicht gefunden werden.")
+                    throw new ApplicationError("Camel-52", 404, "Die Vorlage konnte nicht gefunden werden.")
                 }
             })
     },
@@ -101,5 +107,30 @@ module.exports = {
                 throw new ApplicationError("Camel-51", 400, "Beim Löschen der Vorlage ist etwas schiefgelaufen.")
             }
         })
+    },
+
+    updateTemplateOnDatabase: async function (templateId, body) {
+        let updatedTemplate = null;
+        await Template.findOneAndUpdate({
+            _id: templateId,
+        }, {
+            $set: {
+                name: body.name,
+                empfaenger: body.empfaenger
+            }
+        }, {
+            new: true
+        }).then((template) => {
+            if (!template) {
+                throw new ApplicationError("Camel-16", 404, "Zu Bearbeitendes Template konnte nicht gefunden werden.", body)
+            }
+            updatedTemplate = template;
+        }).catch(e => {
+            throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn Vorlage geupdated wird).", body)
+        });
+
+        log.info(`Vorlage ${updatedTemplate._doc.name} wurde bearbeitet`);
+
+        return updatedTemplate._doc
     },
 };

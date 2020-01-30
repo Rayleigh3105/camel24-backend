@@ -28,7 +28,7 @@ module.exports = {
     //////////////////////////////////////////////////////
     checkIfIdIsValid: function(id) {
         if (!ObjectID.isValid(id)) {
-            throw new ApplicationError("Camel-00", 404, "Datenbank Identifikations Nummer für Benutzer ist nicht gültig.", id)
+            throw new ApplicationError("Camel-00", 404, "Datenbank Identifikations Nummer ist nicht gültig.", id)
         }
     }
 

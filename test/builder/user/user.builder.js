@@ -58,7 +58,7 @@ module.exports = {
         if (email) {
             user = this.buildWholeUser(email);
         } else {
-            user = this.buildUser();
+            user = this.buildWholeUser();
         }
         user._doc.kundenNummer = kundenNummer;
 

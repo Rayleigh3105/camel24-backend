@@ -220,7 +220,7 @@ describe('POST /login', () => {
     // Positive
     //////////////////////////////////////////////////////
 
-    it('OK, should login with Admin User', async (done) => {
+    it('OK, should login with normal User', async (done) => {
         // Create User
         let loginUser = null;
         let kundenNummer = 14001;

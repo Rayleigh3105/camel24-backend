@@ -25,7 +25,7 @@ let router = require('express').Router();
 
 router.post('', authenticate, createTemplate);
 router.get('', authenticate, getTemplates);
-//router.patch('/:templateId', authenticate, );
+router.patch('/:templateId', authenticate, updateTemplate);
 router.delete('/:templateId', authenticate, deleteTemplate);
 
 module.exports = router;
@@ -62,6 +62,23 @@ async function getTemplates(req, res) {
         let createdTemplates = await service.getTemplates(req);
 
         res.status(200).send(createdTemplates);
+    } catch (e) {
+        errorHandler.handleError(e, res)
+    }
+}
+
+/**
+ * Updates a Template on the Database
+ *
+ * @return The updated Template
+ */
+async function updateTemplate(req, res) {
+    try {
+        let templateId = req.params.templateId;
+
+        let updatedTemplate = await service.updateTemplate(templateId, req);
+
+        res.status(200).send(updatedTemplate)
     } catch (e) {
         errorHandler.handleError(e, res)
     }

@@ -172,7 +172,6 @@ describe('DELETE /user/template/:templateId', () => {
 
     it('OK, should delete Template', async (done) => {
         let kundenNummer = 14001;
-        templateBuilder.buildTemplate("Template 1");
         // Create user
         let user = await userBuilder.saveUser(kundenNummer);
         let templateToDelete = await templateBuilder.saveTemplate(user, "Template 1");
@@ -215,7 +214,7 @@ describe('DELETE /user/template/:templateId', () => {
             .then(async (res) => {
                 let body = res.body;
 
-                templateAssert.checkException("Camel-52", 404, "Die zu löscheende Vorlage konnte nicht gefunden werden.", body);
+                templateAssert.checkException("Camel-52", 404, "Die Vorlage konnte nicht gefunden werden.", body);
 
                 done();
             })
@@ -251,6 +250,110 @@ describe('DELETE /user/template/:templateId', () => {
 
         await request(app)
             .delete(rootUrl + "/" + templateToDelete._id.toString())
+            .set('x-kundenNummer', kundenNummer)
+            .set('x-auth', "dksfhaksjhf")
+            .then(async (res) => {
+
+                expect(res.status).to.equal(401);
+
+                done();
+            })
+    })
+});
+
+
+describe('PATCH /user/template/:templateId', () => {
+
+    //////////////////////////////////////////////////////
+    // Positive
+    //////////////////////////////////////////////////////
+
+    it('OK, should update Template', async (done) => {
+        let kundenNummer = 14001;
+        // Create user
+        let user = await userBuilder.saveUser(kundenNummer);
+        let xauth = await loginUser(kundenNummer);
+        // Template
+        let templateToUpdate = await templateBuilder.saveTemplate(user, "Template 1");
+        templateToUpdate._doc.name = "Updated Name";
+
+        await request(app)
+            .patch(rootUrl + "/" + templateToUpdate._id.toString())
+            .send(templateToUpdate)
+            .set('x-kundenNummer', kundenNummer)
+            .set('x-auth', xauth)
+            .then(async (res) => {
+                let body = res.body;
+                expect(res.status).to.equal(200);
+                templateAssert.assertTemplate(body);
+                templateAssert.assertEqualTemplate(templateToUpdate, body)
+                done();
+            })
+    });
+
+    //////////////////////////////////////////////////////
+    // Negative
+    //////////////////////////////////////////////////////
+
+    it('NOT OK, should throw Exception on update when wrong ObjectID.', async (done) => {
+        let kundenNummer = 14001;
+        templateBuilder.buildTemplate("Template 1");
+        // Create user
+        let user = await userBuilder.saveUser(kundenNummer);
+        let xauth = await loginUser(kundenNummer);
+        // Template
+        let templateToUpdate = await templateBuilder.saveTemplate(user, "Template 1");
+        templateToUpdate._doc.name = "Updated Name";
+
+        await request(app)
+            .patch(rootUrl + "/5b31f1a32d138a34e741053a")
+            .send(templateToUpdate)
+            .set('x-kundenNummer', kundenNummer)
+            .set('x-auth', xauth)
+            .then(async (res) => {
+                let body = res.body;
+
+                templateAssert.checkException("Camel-52", 404, "Die Vorlage konnte nicht gefunden werden.", body);
+
+                done();
+            })
+    });
+
+    it('NOT OK, should throw Exception on update when invalid ObjectID.', async (done) => {
+        let kundenNummer = 14001;
+        templateBuilder.buildTemplate("Template 1");
+        // Create user
+        let user = await userBuilder.saveUser(kundenNummer);
+        let xauth = await loginUser(kundenNummer);
+        // Template
+        let templateToUpdate = await templateBuilder.saveTemplate(user, "Template 1");
+        templateToUpdate._doc.name = "Updated Name";
+
+        await request(app)
+            .patch(rootUrl + "/2050932485034805")
+            .send(templateToUpdate)
+            .set('x-kundenNummer', kundenNummer)
+            .set('x-auth', xauth)
+            .then(async (res) => {
+                let body = res.body;
+
+                templateAssert.checkException("Camel-00", 404, "Datenbank Identifikations Nummer ist nicht gültig.", body);
+
+                done();
+            })
+    });
+
+    it('NOT OK, should not update Template when User is not authenticated', async (done) => {
+        let kundenNummer = 14001;
+        templateBuilder.buildTemplate("Template 1");
+        // Create user
+        let user = await userBuilder.saveUser(kundenNummer);
+        // Template
+        let templateToUpdate = await templateBuilder.saveTemplate(user, "Template 1");
+        templateToUpdate._doc.name = "Updated Name";
+
+        await request(app)
+            .patch(rootUrl + "/" + templateToUpdate._id.toString())
             .set('x-kundenNummer', kundenNummer)
             .set('x-auth', "dksfhaksjhf")
             .then(async (res) => {
