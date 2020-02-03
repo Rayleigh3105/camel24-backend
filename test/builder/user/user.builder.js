@@ -27,6 +27,8 @@ module.exports = {
         user.firstName = "Max";
         user.lastName = "Mustermann";
         user.firma = "Modev";
+        user.role = "Admin";
+
         if (email) {
             user.email = email;
 

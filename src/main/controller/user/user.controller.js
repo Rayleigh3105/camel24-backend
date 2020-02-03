@@ -15,6 +15,7 @@
 let {authenticate} = require('../../../../middleware/authenticate');
 let errorHandler = require('../../utils/error/ErrorHandler');
 let service = require("../../service/user/user.service");
+let {logRequest} = require("../../../../middleware/RequestLogger");
 
 // EXTERNAL
 let router = require('express').Router();
@@ -23,8 +24,8 @@ let router = require('express').Router();
 // MODULE EXPORT
 //////////////////////////////////////////////////////
 
-router.post('/register', createUser);
-router.post('/login', loginUser);
+router.post('/register', logRequest, createUser);
+router.post('/login', logRequest, loginUser);
 router.get('/me', authenticate,  getUserInfo);
 router.patch('/:userId', authenticate, updateUser);
 router.delete('/token', authenticate, logoutUser);

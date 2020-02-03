@@ -17,9 +17,11 @@ let nodemailer = require("nodemailer");
 
 // INTERNAL
 let ApplicationError = require('../../../../models/error');
+let utilHelper = require('../../helper/util/UtilHelper');
 let mailHelper = require('../../helper/mail/MailHelper');
 let pattern = require('../../utils/ValidationPatterns');
 let log = require('./../../utils/logger');
+let {SmtpOptions} = require('../../../../models/smtpOptions');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -39,9 +41,64 @@ module.exports = {
         await this.sentEmail(transporter, mailOptions, user._doc);
     },
 
+    getDatabaseMailOptions: async function () {
+        let config = new SmtpOptions();
+
+        await SmtpOptions.find().then(configs => config = configs);
+
+        return config;
+    },
+
+    updateDatabaseMailOptions: async function (request) {
+        let smtpOptionsToUpdate = request.body;
+        let mailId = smtpOptionsToUpdate._id;
+
+        // Validation
+        utilHelper.checkIfIdIsValid(mailId);
+        await this.checkIfMailOptionIsAvailable(mailId);
+
+        return await this.updateOnDatabase(smtpOptionsToUpdate);
+    },
+
     //////////////////////////////////////////////////////
     // PRIVATE METHODS
     //////////////////////////////////////////////////////
+
+    checkIfMailOptionIsAvailable: async function(mailId) {
+        await SmtpOptions.find({_id: mailId})
+            .then(foundMail  => {
+                if (foundMail.length === 0) {
+                    throw new ApplicationError("Camel-53", 400, "Die E-Mail Option konnte nicht gefunden werden.")
+                }
+            })
+    },
+
+    updateOnDatabase: async function(smtpOptionsToUpdate) {
+        let updatedOptions = null;
+
+        await SmtpOptions.findOneAndUpdate({
+            _id: smtpOptionsToUpdate._id,
+        }, {
+            $set: {
+                smtpHost: smtpOptionsToUpdate.smtpHost,
+                smtpPort: smtpOptionsToUpdate.smtpPort,
+                smtpSecure: smtpOptionsToUpdate.smtpSecure,
+                smtpUser: smtpOptionsToUpdate.smtpUser,
+                smtpPassword: smtpOptionsToUpdate.smtpPassword,
+            }
+        }, {
+            new: true
+        }).then((config) => {
+            if (!config) {
+                throw new ApplicationError("Camel-16", 404, "Zu bearbeitende Smtp Config konnte nicht gefunden werden.", body)
+            }
+
+            updatedOptions = config;
+        });
+        log.info(`Config wurde bearbeitet`);
+
+        return updatedOptions._doc
+    },
 
     getMailOptions: function (user, smtpOptions) {
         return {
@@ -58,7 +115,7 @@ module.exports = {
         };
     },
 
-    sentEmail: async function(transporter, mailOptions, user) {
+    sentEmail: async function (transporter, mailOptions, user) {
         let date = moment().format(pattern.momentPattern);
 
         await transporter.sendMail(mailOptions).then(() => {

@@ -7,10 +7,11 @@
  *  permission of Moritz Vogt
  */
 
-const express = require('express');
-const router = express.Router();
+//////////////////////////////////////////////////////
+// MODULE VARIABLES
+//////////////////////////////////////////////////////
 
-
+// INTERNAL
 let {User} = require('../../../../models/user');
 let {Order} = require('../../../../models/order');
 let {SmtpOptions} = require('../../../../models/smtpOptions');
@@ -19,280 +20,139 @@ let log = require("../../utils/logger");
 const ApplicationError = require('../../../../models/error');
 let {authenticateAdmin} = require('../../../../middleware/authenticate-admin');
 let {logRequest} = require('../../../../middleware/RequestLogger');
+let errorHandler = require('../../utils/error/ErrorHandler');
 
+// Service
+let userService = require("../../service/user/user.service");
+let mailService = require("../../service/mail/mail.service");
+let dashboardService = require("../../service/dashboard/dashboard.service");
+
+
+// EXTERNAL
+const express = require('express');
+const router = express.Router();
 let moment = require('moment');
 
-module.exports = router;
+//////////////////////////////////////////////////////
+// MODULE EXPORT
+//////////////////////////////////////////////////////
 
-/**
- * ROUTES
- */
 router.get('/users', authenticateAdmin, getAllUsers);
+
 router.get('/configSmtp', authenticateAdmin, getAllSmtpConfigs);
 router.patch('/configSmtp', authenticateAdmin, updateSmtpOptions);
+
 router.get('/priceConfig', logRequest, getAllPriceConfigs);
+
 router.patch('/priceConfig', authenticateAdmin, updatePriceConfig);
 router.post('/priceConfig', authenticateAdmin, createPriceConfig);
 router.delete('/priceConfig/:priceId', authenticateAdmin, deletePriceConfig);
 
+module.exports = router;
+
+//////////////////////////////////////////////////////
+// METHODS
+//////////////////////////////////////////////////////
 
 /**
- * ADMIN - ROUTE
- *
- * Get´s all Users except Admin User
- * - counts Order per User
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
+ * Get´s all User in Database, can also queried with Search.
  */
-async function getAllUsers(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let search = req.header('search');
-
+async function getAllUsers(req, res) {
     try {
-        let userArray = [];
-        let resultArray = [];
-        await User.findAll(search).then(user => userArray = user);
-        for (let userObject of userArray) {
-            await Order.countOrderForUser(userObject.kundenNummer)
-                .then(count => {
-                    userObject.orderCount = count;
-                    resultArray.push(userObject)
-                })
-        }
-        res.status(200).send(resultArray);
+        let allUsers = await userService.findAll(req);
+
+        res.status(200).send(allUsers);
     } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
+        errorHandler.handleError(e, res)
     }
 }
 
 /**
- *
- * Fetches all SMTP configs
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
+ * Get´´s all Mail Configs from the Database.
  */
-async function getAllSmtpConfigs(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+async function getAllSmtpConfigs(req, res) {
 
     try {
-        let config = new SmtpOptions();
-
-        await SmtpOptions.find().then(configs => config = configs);
+        let config = await mailService.getDatabaseMailOptions();
 
         res.status(200).send(config[0]);
 
     } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
+        errorHandler.handleError(e, res)
     }
 }
 
 /**
- * Updates all SMTP configs
- *
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
+ * Updates Mail Config on Database
  */
-async function updateSmtpOptions(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let body = req.body;
+async function updateSmtpOptions(req, res) {
 
     try {
-        await SmtpOptions.findOneAndUpdate({
-            _id: body._id,
-        }, {
-            $set: {
-                smtpHost: body.smtpHost,
-                smtpPort: body.smtpPort,
-                smtpSecure: body.smtpSecure,
-                smtpUser: body.smtpUser,
-                smtpPassword: body.smtpPassword,
-            }
-        }, {
-            new: true
-        }).then((config) => {
-            if (!config) {
-                throw new ApplicationError("Camel-16", 404, "Zu bearbeitende Smtp Config konnte nicht gefunden werden.", body)
-            }
-            log.info(`Config wurde bearbeitet`);
-            console.log(`[${date}] Config wurde bearbeitet`);
-            res.status(200).send(config._doc);
-        }).catch(e => {
-            log.error(e);
-            throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn Smtp Config geupdated wird).", body)
-        })
+        let updatedMailOptions = await mailService.updateDatabaseMailOptions(req);
 
+        res.status(200).send(updatedMailOptions)
     } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
-    }
-}
-
-
-/**
- *
- * Fetches all Price configs
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
- */
-async function getAllPriceConfigs(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-
-    try {
-        let config;
-
-        await PriceOptions.find().sort({type: 1}).then(configs => config = configs);
-
-        res.status(200).send(config);
-
-    } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
+        errorHandler.handleError(e, res);
     }
 }
 
 /**
- * Updates all Price configs
- *
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
+ * Get´s all Price Configs
  */
-async function updatePriceConfig(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let body = req.body;
-
+async function getAllPriceConfigs(req, res) {
     try {
-        await PriceOptions.findOneAndUpdate({
-            _id: body._id,
-        }, {
-            $set: {
-                price: body.price
-            }
-        }, {
-            new: true
-        }).then((config) => {
-            if (!config) {
-                throw new ApplicationError("Camel-16", 404, "Zu bearbeitende Preis Einstellung konnte nicht gefunden werden.", body)
-            }
-            log.info(`Config wurde bearbeitet`);
-            console.log(`[${date}] Config wurde bearbeitet`);
-            res.status(200).send(config._doc);
-        }).catch(e => {
-            log.error(e);
-            throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn Preis einstellungen geupdated wird).", body)
-        })
+        let configs = await dashboardService.getAllPriceConfigs();
+
+        res.status(200).send(configs);
 
     } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
+        errorHandler.handleError(e, res);
+
     }
 }
 
 /**
- * Creates Price Config
- * @returns {Promise<void>}
+ * Updates one Priceconfig on database.
  */
-async function createPriceConfig(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let body = req.body;
+async function updatePriceConfig(req, res) {
 
     try {
-        let priceConfig = new PriceOptions(body);
+        let updatedPrice = dashboardService.udpatePriceConfig(req);
 
-        priceConfig = await priceConfig.save()
-            .catch(e => {
-                log.info(e);
-                throw new ApplicationError("Camel-15", 400, help.getDatabaseErrorString())
-            });
+        res.status(200).send(updatedPrice);
 
-        res.status(200).send(priceConfig._doc);
     } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
+        errorHandler.handleError(e, res);
     }
 }
 
 /**
- * Delete Price Options.
+ * Creates Price Config on the database.
  */
-async function deletePriceConfig(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let priceId = req.params.priceId;
+async function createPriceConfig(req, res) {
 
     try {
-        PriceOptions.remove({
-            _id: priceId
-        }, async function (err) {
-            if (err) {
-                reject(err)
-            } else {
-                log.info(`Preis : ${priceId} wurde gelöscht.`);
-                res.status(200).send(true);
-            }
-        })
+        let createdPriceConfig = dashboardService.createPriceConfig(req);
+
+        res.status(200).send(createdPriceConfig);
     } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
+        errorHandler.handleError(e, res);
+
+    }
+}
+
+/**
+ * Delete Price Options on the database.
+ */
+async function deletePriceConfig(req, res) {
+
+    try {
+        await dashboardService.deletePriceConfig(req);
+
+        res.status(200).send(true);
+
+    } catch (e) {
+        errorHandler.handleError(e, res);
     }
 
 }

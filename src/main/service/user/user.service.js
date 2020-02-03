@@ -97,6 +97,12 @@ module.exports = {
         return await this.fetchUserByToken(token);
     },
 
+    findAll: async function (request) {
+        let search = request.header('search');
+        let userArray = await this.getAllUsers(search);
+        return await this.fetchCountOrderCountForUser(userArray);
+    },
+
     //////////////////////////////////////////////////////
     // PRIVATE METHODS
     //////////////////////////////////////////////////////
@@ -207,4 +213,25 @@ module.exports = {
             throw new ApplicationError('Camel-112', 400, "Validierung des Benutzer Objekts fehlgeschlagen.", user)
         }
     },
+
+    getAllUsers: async function (search) {
+        let userArray = [];
+        await User.findAll(search).then(user => userArray = user);
+        return userArray;
+
+    },
+
+    fetchCountOrderCountForUser: async function (userArray) {
+        let resultArray = [];
+
+        for (let userObject of userArray) {
+            await Order.countOrderForUser(userObject.kundenNummer)
+                .then(count => {
+                    userObject.orderCount = count;
+                    resultArray.push(userObject)
+                })
+        }
+
+        return resultArray;
+    }
 };
