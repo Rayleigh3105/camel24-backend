@@ -187,7 +187,7 @@ describe('Admindashboard', () => {
                 .send(createdMail)
                 .then((res) => {
                     expect(res.status).to.equal(404);
-                    mailAssert.checkException("Camel-00", 404, "Datenbank Identifikations Nummer ist nicht gültig.", res);
+                    mailAssert.checkException("Camel-00", 404, "Datenbank Identifikations Nummer ist nicht gültig.", res.body);
                     done();
                 })
         });
@@ -276,7 +276,7 @@ describe('Admindashboard', () => {
 
         });
 
-    })
+    });
 
     describe('PATCH /admindashboard/priceOption', () => {
 
@@ -302,7 +302,7 @@ describe('Admindashboard', () => {
                 .then((res) => {
                     let price = res.body;
 
-                    expect(res.status).to.equal(201);
+                    expect(res.status).to.equal(200);
 
                     priceAssert.assertPrice(price);
                     priceAssert.assertEqualPrice(price, priceCreated);

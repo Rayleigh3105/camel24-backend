@@ -16,7 +16,7 @@ let moment = require('moment');
 
 // INTERNAL
 let help = require('../../utils/helper');
-let log = require()
+let log = require('../../utils/logger');
 let utilHelper = require("../../helper/util/UtilHelper");
 let ApplicationError = require('../../../../models/error');
 let {PriceOptions} = require('../../../../models/priceOptions');
