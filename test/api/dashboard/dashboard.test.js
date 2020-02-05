@@ -311,6 +311,120 @@ describe('Admindashboard', () => {
 
         });
 
+        //////////////////////////////////////////////////////
+        // Negative
+        //////////////////////////////////////////////////////
+
+        it('NOT OK, should throw exception when ID is invalid.', async (done) => {
+            let kundenNummer = 14001;
+            // Create User
+            await userBuilder.saveUser(kundenNummer);
+            // Login User
+            let xauth = await loginUser(kundenNummer);
+            // Create Price Options
+            let priceCreated = await priceBuilder.savePrice();
+            priceCreated._doc._id = "invalid";
+
+            request(app)
+                .patch(priceOptionUrl)
+                .set("x-auth", xauth)
+                .send(priceCreated)
+                .then((res) => {
+                    expect(res.status).to.equal(404);
+                    priceAssert.checkException("Camel-00", 404, "Datenbank Identifikations Nummer ist nicht gültig.", res.body);
+                    done();
+                })
+        });
+
+        it('NOT OK, should throw exception when Price Option is not available.', async (done) => {
+            let kundenNummer = 14001;
+            // Create User
+            await userBuilder.saveUser(kundenNummer);
+            // Login User
+            let xauth = await loginUser(kundenNummer);
+            // Create Price Options
+            let priceCreated = await priceBuilder.savePrice();
+            priceCreated._doc._id = "5e3a6a33b2cabb3c3b8cd33A";
+
+            request(app)
+                .patch(priceOptionUrl)
+                .set("x-auth", xauth)
+                .send(priceCreated)
+                .then((res) => {
+                    expect(res.status).to.equal(400);
+                    priceAssert.checkException("Camel-54", 400, "Der Preis kann nicht gefunden werden.", res.body);
+                    done();
+                })
+        });
+    });
+
+    describe('DELETE /admindashboard/priceOption/:priceId', () => {
+
+        //////////////////////////////////////////////////////
+        // Positive
+        //////////////////////////////////////////////////////
+
+        it('OK, should delete price option', async (done) => {
+            let kundenNummer = 14001;
+            // Create User
+            await userBuilder.saveUser(kundenNummer);
+            // Login User
+            let xauth = await loginUser(kundenNummer);
+            // Create Price Options
+            let priceCreated = await priceBuilder.savePrice();
+
+            request(app)
+                .delete(priceBuilder.buildDeletePriceUrl(priceCreated._doc._id.toString()))
+                .set('x-auth', xauth)
+                .then(async (res) => {
+                    expect(res.status).to.equal(200);
+                    done();
+                })
+        });
+
+        //////////////////////////////////////////////////////
+        // Negative
+        //////////////////////////////////////////////////////
+
+        it('NOT OK, should throw exception when Price Option is not available.', async (done) => {
+            let kundenNummer = 14001;
+            // Create User
+            await userBuilder.saveUser(kundenNummer);
+            // Login User
+            let xauth = await loginUser(kundenNummer);
+            // Create Price Options
+            let priceCreated = await priceBuilder.savePrice();
+            priceCreated._doc._id = "invalid";
+
+            request(app)
+                .delete(priceBuilder.buildDeletePriceUrl(priceCreated._doc._id.toString()))
+                .set('x-auth', xauth)
+                .then(async (res) => {
+                    expect(res.status).to.equal(404);
+                    priceAssert.checkException("Camel-00", 404, "Datenbank Identifikations Nummer ist nicht gültig.", res.body);
+                    done();
+                })
+        });
+
+        it('NOT OK, should throw exception when Price Option is not available.', async (done) => {
+            let kundenNummer = 14001;
+            // Create User
+            await userBuilder.saveUser(kundenNummer);
+            // Login User
+            let xauth = await loginUser(kundenNummer);
+            // Create Price Options
+            let priceCreated = await priceBuilder.savePrice();
+            priceCreated._doc._id = "5e3a6a33b2cabb3c3b8cd33A";
+
+            request(app)
+                .delete(priceBuilder.buildDeletePriceUrl(priceCreated._doc._id.toString()))
+                .set('x-auth', xauth)
+                .then(async (res) => {
+                    expect(res.status).to.equal(400);
+                    priceAssert.checkException("Camel-54", 400, "Der Preis kann nicht gefunden werden.", res.body);
+                    done();
+                })
+        });
     })
 });
 

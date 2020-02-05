@@ -65,9 +65,13 @@ module.exports = {
     udpatePriceConfig: async function (request) {
         let body = request.body;
         let updatedConfig = null;
+        let priceId = body._id;
+
+        utilHelper.checkIfIdIsValid(priceId);
+        await this.checkIfPriceConfigIsAvailable(priceId);
 
         await PriceOptions.findOneAndUpdate({
-            _id: body._id,
+            _id: priceId,
         }, {
             $set: {
                 price: body.price
@@ -84,7 +88,7 @@ module.exports = {
             throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn Preis einstellungen geupdated wird).", body)
         });
 
-        log.info(`Config wurde bearbeitet`);
+        log.info(`Config wurde bearbeitet.`);
 
         return updatedConfig._doc;
 

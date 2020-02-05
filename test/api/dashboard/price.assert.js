@@ -10,6 +10,10 @@
 //////////////////////////////////////////////////////
 // MODULE VARIABLES
 //////////////////////////////////////////////////////
+
+// INTERNAL
+const {PriceOptions} = require('../../../models/priceOptions');
+
 // EXTERNAL
 const expect = require('chai').expect;
 
@@ -32,15 +36,14 @@ module.exports = {
         expect(savedPrice.time).to.equal(priceObject.time);
     },
 
-    checkException:function (errorCode, status, message, body) {
+    checkException: function (errorCode, status, message, body) {
         expect(body).to.contain.property('message');
         expect(body).to.contain.property('status');
         expect(body).to.contain.property('errorCode');
         expect(body.message).to.equal(message);
         expect(body.status).to.equal(status);
         expect(body.errorCode).to.equal(errorCode);
-    }
-
+    },
 };
 
 

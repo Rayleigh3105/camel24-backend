@@ -34,5 +34,9 @@ module.exports = {
         return price.save(price);
     },
 
+    buildDeletePriceUrl: function (priceId) {
+        return "/admindashboard/priceOption/" + priceId;
+    }
+
 };
 
