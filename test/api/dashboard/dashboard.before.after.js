@@ -18,9 +18,6 @@ beforeEach((done) => {
     PriceOptions.deleteMany({})
         .catch((err) => done(err));
 
-    SmtpOptions.deleteMany({})
-        .catch((err) => done(err));
-
     User.deleteMany({})
         .then(() => done())
         .catch((err) => done(err));
@@ -28,9 +25,6 @@ beforeEach((done) => {
 
 afterEach((done) => {
     PriceOptions.deleteMany({})
-        .catch((err) => done(err));
-
-    SmtpOptions.deleteMany({})
         .catch((err) => done(err));
 
     User.deleteMany({})

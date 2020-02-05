@@ -404,7 +404,6 @@ describe('USER', () => {
 });
 
 
-
 async function loginUser(kundenNummer) {
     let xauth = null;
 

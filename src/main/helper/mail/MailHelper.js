@@ -48,18 +48,24 @@ module.exports = {
 
         await SmtpOptions.find().then(configs => config = configs[0]);
 
-        return {
-            host: config.smtpHost,
-            port: config.smtpPort,
-            secure: config.smtpSecure, // true for 465, false for other ports
-            auth: {
-                user: config.smtpUser, // generated ethereal user
-                pass: config.smtpPassword // generated ethereal password
-            },
-            tls: {
-                rejectUnauthorized: false
-            }
-        };
+        if (config) {
+            return {
+                host: config.smtpHost,
+                port: config.smtpPort,
+                secure: config.smtpSecure, // true for 465, false for other ports
+                auth: {
+                    user: config.smtpUser, // generated ethereal user
+                    pass: config.smtpPassword // generated ethereal password
+                },
+                tls: {
+                    rejectUnauthorized: false
+                }
+            };
+        }
+
+        return null;
+
+
     },
 
     //////////////////////////////////////////////////////

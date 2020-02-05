@@ -49,10 +49,7 @@ after((done) => {
 
 });
 
-
-
 module.exports = {
-
     unstupCheckConnection: function () {
         sinon.restore();
     },
