@@ -17,6 +17,7 @@ let _ = require('lodash');
 
 // INTERNAL
 let {User} = require('../../../../models/user');
+let {Order} = require('../../../../models/order');
 let ApplicationError = require('../../../../models/error');
 let help = require('../../utils/helper');
 let mailService = require('./../mail/mail.service');
@@ -98,8 +99,7 @@ module.exports = {
     },
 
     findAll: async function (request) {
-        let search = request.header('search');
-        let userArray = await this.getAllUsers(search);
+        let userArray = await this.getAllUsers();
         return await this.fetchCountOrderCountForUser(userArray);
     },
 
@@ -214,9 +214,9 @@ module.exports = {
         }
     },
 
-    getAllUsers: async function (search) {
+    getAllUsers: async function () {
         let userArray = [];
-        await User.findAll(search).then(user => userArray = user);
+        await User.find().then(user => userArray = user);
         return userArray;
 
     },

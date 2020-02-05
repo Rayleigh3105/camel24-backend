@@ -16,6 +16,7 @@ let moment = require('moment');
 
 // INTERNAL
 let help = require('../../utils/helper');
+let log = require()
 let utilHelper = require("../../helper/util/UtilHelper");
 let ApplicationError = require('../../../../models/error');
 let {PriceOptions} = require('../../../../models/priceOptions');
@@ -42,7 +43,8 @@ module.exports = {
         let body = request.body;
         let priceConfig = new PriceOptions(body);
 
-        priceConfig = await priceConfig.save()
+        await priceConfig.save()
+            .then(priceOptionDatabase => priceConfig = priceOptionDatabase)
             .catch(e => {
                 log.info(e);
                 throw new ApplicationError("Camel-15", 400, help.getDatabaseErrorString())
@@ -79,7 +81,6 @@ module.exports = {
 
             updatedConfig = config;
         }).catch(e => {
-            log.error(e);
             throw new ApplicationError("Camel-19", 400, "Bei der Datenbankoperation ist etwas schiefgelaufen. (Wenn Preis einstellungen geupdated wird).", body)
         });
 

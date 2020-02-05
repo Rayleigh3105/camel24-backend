@@ -12,12 +12,6 @@
 //////////////////////////////////////////////////////
 
 // INTERNAL
-let {User} = require('../../../../models/user');
-let {Order} = require('../../../../models/order');
-let {SmtpOptions} = require('../../../../models/smtpOptions');
-let {PriceOptions} = require('../../../../models/priceOptions');
-let log = require("../../utils/logger");
-const ApplicationError = require('../../../../models/error');
 let {authenticateAdmin} = require('../../../../middleware/authenticate-admin');
 let {logRequest} = require('../../../../middleware/RequestLogger');
 let errorHandler = require('../../utils/error/ErrorHandler');
@@ -31,7 +25,6 @@ let dashboardService = require("../../service/dashboard/dashboard.service");
 // EXTERNAL
 const express = require('express');
 const router = express.Router();
-let moment = require('moment');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -39,14 +32,14 @@ let moment = require('moment');
 
 router.get('/users', authenticateAdmin, getAllUsers);
 
-router.get('/configSmtp', authenticateAdmin, getAllSmtpConfigs);
-router.patch('/configSmtp', authenticateAdmin, updateSmtpOptions);
+router.get('/configMail', authenticateAdmin, getAllSmtpConfigs);
+router.patch('/configMail', authenticateAdmin, updateSmtpOptions);
 
-router.get('/priceConfig', logRequest, getAllPriceConfigs);
+router.get('/priceOption', logRequest, getAllPriceConfigs);
 
-router.patch('/priceConfig', authenticateAdmin, updatePriceConfig);
-router.post('/priceConfig', authenticateAdmin, createPriceConfig);
-router.delete('/priceConfig/:priceId', authenticateAdmin, deletePriceConfig);
+router.patch('/priceOption', authenticateAdmin, updatePriceConfig);
+router.post('/priceOption', authenticateAdmin, createPriceConfig);
+router.delete('/priceOption/:priceId', authenticateAdmin, deletePriceConfig);
 
 module.exports = router;
 
@@ -117,7 +110,7 @@ async function getAllPriceConfigs(req, res) {
 async function updatePriceConfig(req, res) {
 
     try {
-        let updatedPrice = dashboardService.udpatePriceConfig(req);
+        let updatedPrice = await dashboardService.udpatePriceConfig(req);
 
         res.status(200).send(updatedPrice);
 
@@ -132,9 +125,9 @@ async function updatePriceConfig(req, res) {
 async function createPriceConfig(req, res) {
 
     try {
-        let createdPriceConfig = dashboardService.createPriceConfig(req);
+        let createdPriceConfig = await dashboardService.createPriceConfig(req);
 
-        res.status(200).send(createdPriceConfig);
+        res.status(201).send(createdPriceConfig);
     } catch (e) {
         errorHandler.handleError(e, res);
 
