@@ -82,8 +82,6 @@ module.exports = {
         expect(body.message).to.equal(message);
         expect(body.status).to.equal(status);
         expect(body.errorCode).to.equal(errorCode);
-
-
     }
 
 };

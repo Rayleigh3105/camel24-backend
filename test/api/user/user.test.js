@@ -108,14 +108,7 @@ describe('USER', () => {
                 .send(userObject)
                 .then((res) => {
                     let body = res.body;
-
-                    expect(body).to.contain.property('message');
-                    expect(body).to.contain.property('status');
-                    expect(body).to.contain.property('errorCode');
-                    expect(body.message).to.equal('Validierung des Benutzer Objekts fehlgeschlagen.');
-                    expect(body.status).to.equal(400);
-                    expect(body.errorCode).to.equal('Camel-112');
-
+                    userAssert.checkException('Camel-112', 400, 'Validierung des Benutzer Objekts fehlgeschlagen.', body);
                     done();
                 })
         });
@@ -132,13 +125,7 @@ describe('USER', () => {
                 .then((res) => {
                     let body = res.body;
 
-                    expect(body).to.contain.property('message');
-                    expect(body).to.contain.property('status');
-                    expect(body).to.contain.property('errorCode');
-                    expect(body.message).to.equal('Validierung des Benutzer Objekts fehlgeschlagen.');
-                    expect(body.status).to.equal(400);
-                    expect(body.errorCode).to.equal('Camel-112');
-
+                    userAssert.checkException('Camel-112', 400, 'Validierung des Benutzer Objekts fehlgeschlagen.', body);
                     userAssert.checkIfUserDeletedFromDatabase(userObject);
                     done();
                 })
@@ -157,13 +144,7 @@ describe('USER', () => {
                 .then((res) => {
                     let body = res.body;
 
-                    expect(body).to.contain.property('message');
-                    expect(body).to.contain.property('status');
-                    expect(body).to.contain.property('errorCode');
-                    expect(body.message).to.equal('Leider ist diese E-Mail Adresse in unserem System schon vergeben.');
-                    expect(body.status).to.equal(400);
-                    expect(body.errorCode).to.equal('Camel-13');
-
+                    userAssert.checkException('Camel-13', 400, 'Leider ist diese E-Mail Adresse in unserem System schon vergeben.', body);
                     userAssert.checkIfUserDeletedFromDatabase(userObject);
                     done();
                 })
@@ -181,13 +162,7 @@ describe('USER', () => {
                 .then((res) => {
                     let body = res.body;
 
-                    expect(body).to.contain.property('message');
-                    expect(body).to.contain.property('status');
-                    expect(body).to.contain.property('errorCode');
-                    expect(body.message).to.equal('Es konnte keine Verbindung zum E-Mail Client hergestellt werden.');
-                    expect(body.status).to.equal(400);
-                    expect(body.errorCode).to.equal('Camel-01');
-
+                    userAssert.checkException('Camel-01', 400, 'Es konnte keine Verbindung zum E-Mail Client hergestellt werden.', body);
                     userAssert.checkIfUserDeletedFromDatabase(userObject);
                     done();
                 })
