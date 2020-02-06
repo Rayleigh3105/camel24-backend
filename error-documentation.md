@@ -51,6 +51,7 @@
 - **Camel-47** -> Sendungsdaten Versicherung muss entweder Ja|Nein sein.
 - **Camel-48** -> Zustellart darf nur standard | persoenlich | persoenlichIdent sein.
 - **Camel-49** -> Gewicht darf 30 Kilogramm nicht überschreiten.
+- **Camel-56** -> Auftrag kann nicht gefunden werden.
 
 ### Camel-5 = Template Operationen und Mail Operationen und Price Config
 - **Camel-50** -> Beim Speichern vom Template.

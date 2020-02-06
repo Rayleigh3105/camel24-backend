@@ -19,7 +19,7 @@ let errorHandler = require('../../utils/error/ErrorHandler');
 // Service
 let userService = require("../../service/user/user.service");
 let mailService = require("../../service/mail/mail.service");
-let dashboardService = require("../../service/dashboard/dashboard.service");
+let dashboardService = require("../../service/price/price.service");
 
 
 // EXTERNAL

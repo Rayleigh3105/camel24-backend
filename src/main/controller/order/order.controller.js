@@ -7,7 +7,11 @@
  *  permission of Moritz Vogt
  */
 
-// Third Party libarys
+//////////////////////////////////////////////////////
+// MODULE VARIABLES
+//////////////////////////////////////////////////////
+
+// EXTERNAL
 let nodemailer = require("nodemailer");
 let moment = require('moment');
 const _ = require('lodash');
@@ -18,7 +22,7 @@ const path = require('path');
 const fs = require('fs');
 const {ObjectID} = require('mongodb');
 
-// LOCAL
+// INTERNAL
 let windowsRootPath = 'C:/';
 let orderDir = path.join(windowsRootPath, '/camel/auftraege');
 let log = require("../../utils/logger");
@@ -28,30 +32,71 @@ let ApplicationError = require('../../../../models/error');
 let {authenticate} = require('../../../../middleware/authenticate');
 let {Order} = require('../../../../models/order');
 let {User} = require('../../../../models/user');
+let {logRequest} = require('../../../../middleware/RequestLogger');
+let priceService = require('../../service/price/price.service');
+let orderService = require('../../service/order/order.service');
+let errorHandler = require('../../utils/error/ErrorHandler');
 
-module.exports = router;
+//////////////////////////////////////////////////////
+// MODULE EXPORT
+//////////////////////////////////////////////////////
 
-/**
- * ROUTES
- */
 router.post('', generateOrder);
 router.post('/download', authenticate, downloadOrder);
 router.get('/:kundenNummer', authenticate, getOrdersForKundenNumber);
+router.get('/priceOption', logRequest, getAllPriceConfigs);
+
+module.exports = router;
+
+
+//////////////////////////////////////////////////////
+// METHODS
+//////////////////////////////////////////////////////
 
 /**
- * PUBLIC ROUTE
- * Generates CSV file and lays it down in an FTP directory.
- * Generates Identifikation number for package.
- * Generates Barcode out of the Identifikation number of the packacke.
- * Generates PDF based on the sent data and the barcode which was above generated.
- * Saves order into Database. Sents E-Mail to 'Absender' and 'Empfänger' with generated PDF.
- *
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
+ * Get´s all Price Configs
  */
-async function generateOrder(req, res, next) {
+async function getAllPriceConfigs(req, res) {
+    try {
+        let configs = await priceService.getAllPriceConfigs();
+
+        res.status(200).send(configs);
+    } catch (e) {
+        errorHandler.handleError(e, res);
+
+    }
+}
+
+/**
+ * Downloads specific Order.
+ */
+async function downloadOrder(req, res) {
+    try {
+        let file = await orderService.downloadOrder(req);
+
+        res.sendFile(file);
+    } catch (e) {
+        errorHandler.handleError(e, res);
+    }
+}
+
+/**
+ * Get´s Orders for specific kundennummer.
+ */
+async function getOrdersForKundenNumber(req, res) {
+
+    try {
+        let foundOrders = await orderService.getOrderForKnd(req);
+
+        res.status(200).send(foundOrders)
+
+    } catch (e) {
+        errorHandler.handleError(e, res);
+    }
+}
+
+
+async function generateOrder(req, res) {
     // VARIABLES
     let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
     let dateDir = moment().format("DDMMYYYY");
@@ -216,15 +261,7 @@ async function generateOrder(req, res, next) {
                     succesfulSentMailAbs = true
                 })
                 .catch(e => {
-                    if (e instanceof ApplicationError) {
-                        console.log(`[${date}] ${e.stack}`);
-                        log.error(e.errorCode + e.stack);
-                        res.status(e.status).send(e);
-                    } else {
-                        console.log(`[${date}] ${e}`);
-                        log.error(e.errorCode + e);
-                        res.status(400).send(e)
-                    }
+                    errorHandler.handleError(e, res);
                 });
 
             if (order._doc.empfaenger.email) {
@@ -251,36 +288,6 @@ async function generateOrder(req, res, next) {
             } else {
                 res.status(400).send("Auftrag konnte nicht erstellt wegen, da")
             }
-        }
-    }
-}
-
-/**
- * PRIVATE ROUTE - downloads specific order
- *
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
- */
-async function downloadOrder(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    try {
-        await setup.getPdfFilePath(req.body.identificationNumber)
-            .then(file => {
-                res.sendFile(file)
-            }).catch((e) => {
-                throw e;
-            });
-    } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
         }
     }
 }
@@ -350,59 +357,4 @@ async function generatePDF(identificationNumber, order, pathToSave) {
             reject(e)
         }
     })
-}
-
-/**
- *  ADMIN/PRIVATE ROUTE - Get´s all orders for specific Kundennummer
- * @param req
- * @param res
- * @param next
- * @returns {Promise<void>}
- */
-async function getOrdersForKundenNumber(req, res, next) {
-    let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-    let kundenNummer = req.params.kundenNummer;
-    let search = req.header('search');
-
-    try {
-        if (search) {
-            await Order.find({
-                $and: [{
-                    kundenNummer: kundenNummer
-                }, {
-                    identificationNumber: {
-                        '$regex': search,
-                        '$options': 'i'
-                    }
-                }
-                ]
-
-            }).sort({createdAt: -1})
-                .then(orders => {
-                    if (orders) {
-                        res.status(200).send(orders);
-                    }
-                });
-        } else {
-            await Order.find({
-                kundenNummer: kundenNummer
-            }).sort({createdAt: -1})
-                .then(orders => {
-                    if (orders) {
-                        res.status(200).send(orders);
-                    }
-                });
-        }
-
-    } catch (e) {
-        if (e instanceof ApplicationError) {
-            console.log(`[${date}] ${e.stack}`);
-            log.error(e.errorCode + e.stack);
-            res.status(e.status).send(e);
-        } else {
-            console.log(`[${date}] ${e}`);
-            log.error(e.errorCode + e);
-            res.status(400).send(e)
-        }
-    }
 }
