@@ -41,13 +41,12 @@ let errorHandler = require('../../utils/error/ErrorHandler');
 // MODULE EXPORT
 //////////////////////////////////////////////////////
 
-router.post('', generateOrder);
+router.get('/price', logRequest, getAllPriceConfigs);
 router.post('/download', authenticate, downloadOrder);
 router.get('/:kundenNummer', authenticate, getOrdersForKundenNumber);
-router.get('/priceOption', logRequest, getAllPriceConfigs);
+router.post('', logRequest, generateOrder);
 
 module.exports = router;
-
 
 //////////////////////////////////////////////////////
 // METHODS
@@ -84,7 +83,6 @@ async function downloadOrder(req, res) {
  * Get´s Orders for specific kundennummer.
  */
 async function getOrdersForKundenNumber(req, res) {
-
     try {
         let foundOrders = await orderService.getOrderForKnd(req);
 
@@ -92,6 +90,16 @@ async function getOrdersForKundenNumber(req, res) {
 
     } catch (e) {
         errorHandler.handleError(e, res);
+    }
+}
+
+async function generateOrder(req, res) {
+    try {
+        await orderService.generateOrder(req);
+
+        res.status(200).send(true);
+    } catch (e) {
+        errorHandler.handleError(e, res)
     }
 }
 
@@ -111,66 +119,13 @@ async function generateOrder(req, res) {
     let successful = false;
 
     try {
-        // Crate Needed Directorys for creating a File
-        setup.createNeededDirectorys();
-
         let jsonObject = req.body;
-
-        // Check if Json is valid
-        await setup.checkJsonValid(jsonObject)
-            .catch(error => {
-                log.error(error);
-                throw error;
-            });
-
-        // Verify if SMTP server is up and running
-        let smtpOptions = await help.getSmtpOptions();
-        let checkTransport = nodemailer.createTransport(smtpOptions);
-        await checkTransport.verify()
-            .catch(e => {
-                log.error(e);
-                throw new ApplicationError("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.")
-            });
 
         // Set Response Headers
         res.header("access-control-expose-headers",
             ",x-auth"
             + ",Content-Length"
         );
-        // Dont create Order when Kundennummer or email is missing
-        if (help.checkIfValuesAreAvailable(kundenNummer, req.body.absEmail)) {
-            throw new ApplicationError("Camel-00", 400, "Kundennummer oder E-Mail konnte nicht gelesen werden.");
-        }
-
-        // Map json Object to order so it can be saved
-        let kndDir;
-        if (isLoggedIn) {
-            user = await User.findByKundenNummer(kundenNummer)
-                .catch(e => {
-                    log.error(e);
-                    throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
-                });
-
-            // Check if User was found
-            if (!user) {
-                throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
-            }
-
-            // Check KundenNummer and create directory with Kundennummer
-            if (kundenNummer) {
-                kndDir = `${orderDir}/${kundenNummer}`;
-            }
-        } else {
-            // Create director with E-Mail of Order
-            kndDir = `${orderDir}/${jsonObject.auftragbestEmail}`;
-        }
-
-        let kndDateDir = `${kndDir}/${dateDir}`;
-
-        await setup.createKndDirectorys(kndDir, kndDateDir)
-            .catch(e => {
-                throw e
-            });
 
         // Count directorys
         resultCount = await setup.countFilesInDirectory(kndDateDir)
@@ -195,8 +150,6 @@ async function generateOrder(req, res) {
 
         // Get File path for storing the CSV temporär
         let filePath = setup.getFilePath(identificationNumber);
-
-        jsonObject.identificationNumber = identificationNumber
 
         // Convert data to CSV
         let convertedJson = setup.convertToCSV(jsonObject);

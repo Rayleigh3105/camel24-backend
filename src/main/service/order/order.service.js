@@ -19,8 +19,10 @@ let help = require('../../utils/helper');
 let setup = require('../../utils/setup');
 let log = require('../../utils/logger');
 let utilHelper = require("../../helper/util/UtilHelper");
+let directoryHelper = require("../../helper/directory/directory.helper");
 let ApplicationError = require('../../../../models/error');
 let {Order} = require('../../../../models/order');
+let orderValidationService = require('./order.validation.service');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -42,15 +44,24 @@ module.exports = {
     getOrderForKnd: async function (req) {
         let kundenNummer = req.params.kundenNummer;
         let search = req.header('search');
-        let foundOrders = null;
+        let foundOrders;
         if (search) {
             foundOrders = await this.findOrdersWithSearch(kundenNummer, search)
-
         } else {
             foundOrders = await this.findOrders(kundenNummer);
         }
 
         return foundOrders
+    },
+
+    generateOrder: async function (req) {
+        await orderValidationService.doPreperationsForOrderGeneration(req);
+        let kndDateDir = await directoryHelper.createDirectoryForOrder(req)
+        if (checkIfUserAvailable(req)) {
+
+        } else {
+
+        }
     },
 
     //////////////////////////////////////////////////////

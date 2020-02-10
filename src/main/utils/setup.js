@@ -740,42 +740,6 @@ module.exports = {
     ,
 
     /**
-     * Creates Directorys for :
-     * - tmp/kundenIdent
-     * - tmo/kundenIdent/date
-     *
-     * @param kndDir
-     * @param kndDateDir
-     * @returns {Promise<any>}
-     */
-    createKndDirectorys: function (kndDir, kndDateDir) {
-        let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
-
-        return new Promise((resolve, reject) => {
-            try {
-                this.createNeededDirectorys();
-                // Creates ./tmp/kundenNummer
-                if (!fs.existsSync(kndDir)) {
-                    fs.mkdirSync(kndDir);
-                    log.info(`Ordner ${kndDir} wurde erstellt`);
-                    console.log(`[${date}] Ordner ${kndDir} wurde erstellt`);
-                }
-
-                // Creates ./tmp/kundenNummer/date
-                if (!fs.existsSync(kndDateDir)) {
-                    fs.mkdirSync(kndDateDir);
-                    log.info(`Ordner ${kndDateDir} wurde erstellt`);
-                    console.log(`[${date}] Ordner ${kndDateDir} wurde erstellt`);
-                }
-                resolve();
-            } catch (e) {
-                reject(e);
-            }
-        })
-    }
-    ,
-
-    /**
      * Copys csv file into FTP directory and deletes temp csv file.
      *
      * @param identificationNumber
