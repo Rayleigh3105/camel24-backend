@@ -129,6 +129,27 @@ module.exports = {
 
     },
 
+    /**
+     * Get´s Path for laying down file in FTP directory
+     * @param identificationNumber
+     * @returns {string}
+     */
+    getFilePath: function (identificationNumber) {
+        if (!fs.existsSync(`${baseDir}/tmp`)) {
+            fs.mkdirSync(`${baseDir}/tmp`);
+            log.info(`Ordner /tmp wurde erstellt`);
+            console.log(`[${date}] Ordner /tmp wurde erstellt`);
+        }
+        if (!fs.existsSync(`${baseDir}/tmp/csv`)) {
+            fs.mkdirSync(`${baseDir}/tmp/csv`);
+            log.info(`Ordner /tmp/csv wurde erstellt`);
+            console.log(`[${date}] Ordner /tmp/csv wurde erstellt`);
+        }
+
+        return `${baseDir}/tmp/csv/` + identificationNumber + ".csv"
+    },
+
+
     //////////////////////////////////////////////////////
     // PRIVATE METHODS
     //////////////////////////////////////////////////////

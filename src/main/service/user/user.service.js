@@ -103,6 +103,16 @@ module.exports = {
         return await this.fetchCountOrderCountForUser(userArray);
     },
 
+    checkIfUserAvailable: async function(request) {
+        let kundenNummer = request.header('x-kundenNummer');
+
+        return await User.findByKundenNummer(kundenNummer)
+            .catch(e => {
+                log.error(e);
+                throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
+            });
+    },
+
     //////////////////////////////////////////////////////
     // PRIVATE METHODS
     //////////////////////////////////////////////////////

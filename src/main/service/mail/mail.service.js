@@ -60,20 +60,53 @@ module.exports = {
         return await this.updateOnDatabase(smtpOptionsToUpdate);
     },
 
+    sentMailAbs: async function (identificationNumber, order, pathAttachment) {
+        let date = moment().format(pattern.momentPattern);
+
+        let smtpOptions = await this.getMailOptions();
+        let transporter = nodemailer.createTransport(smtpOptions);
+        let mailOptions = this.buildMailOptionsAbs(smtpOptions, pathAttachment);
+
+        await transporter.sendMail(mailOptions)
+            .then(() => {
+                console.log(`[${date}] EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender : ${order._doc.absender.email}`);
+                log.info(`EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender : ${order._doc.absender.email}`);
+            })
+            .catch(e => throw e);
+    },
+
+    sentMailEmpf: async function (identificationNumber, order) {
+        let date = moment().format(pattern.momentPattern);
+
+        let smtpOptions = await this.getMailOptions();
+        let transporter = nodemailer.createTransport(smtpOptions);
+
+        let mailOptions = this.buildMailOptionsEmpf(smtpOptions, order);
+
+        // send mail with defined transport object
+        await transporter.sendMail(mailOptions)
+            .then(() => {
+                console.log(`[${date}] EMAIL-EMPFÄNGER: E-Mail wurde erfolgreich an Empfänger : ${order._doc.empfaenger.email}`);
+                log.info(`EMAIL-EMPFÄNGER: E-Mail wurde erfolgreich an Empfänger : ${order._doc.empfaenger.email}`);
+            })
+            .catch(e => throw e);
+    },
+
+
     //////////////////////////////////////////////////////
     // PRIVATE METHODS
     //////////////////////////////////////////////////////
 
-    checkIfMailOptionIsAvailable: async function(mailId) {
+    checkIfMailOptionIsAvailable: async function (mailId) {
         await SmtpOptions.find({_id: mailId})
-            .then(foundMail  => {
+            .then(foundMail => {
                 if (foundMail.length === 0) {
                     throw new ApplicationError("Camel-53", 400, "Die E-Mail Option konnte nicht gefunden werden.")
                 }
             })
     },
 
-    updateOnDatabase: async function(smtpOptionsToUpdate) {
+    updateOnDatabase: async function (smtpOptionsToUpdate) {
         let updatedOptions = null;
 
         await SmtpOptions.findOneAndUpdate({
@@ -124,7 +157,40 @@ module.exports = {
         }).catch(e => {
             throw new ApplicationError("Camel-02", 400, "Beim Versenden der Regestrierungs E-Mail ist etwas schiefgelaufen.")
         });
-    }
+    },
 
+    buildMailOptionsAbs: async function (smtpOptions, pathAttachment) {
+        return {
+            from: `"Camel-24 Transportvermittlung & Kurierdienst" <${smtpOptions.auth.user}>`, // sender address
+            to: order._doc.absender.email, // list of receivers
+            subject: `Ihr Camel-24 Paketlabel`, // Subject line
+            html: `Guten Tag,<br>im Anhang befindet sich Ihr Paketlabel mit dem Sie das Paket direkt selbst abfertigen können.<br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
+<br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a> `, // html body
+            attachments: [{
+                filename: 'Paketlabel.pdf',
+                path: pathAttachment + "/Paketlabel.pdf",
+                contentType: 'application/pdf'
+            }, {
+                filename: 'camel_logo.png',
+                path: './assets/img/camel_logo.png',
+                cid: 'camellogo' //same cid value as in the html img src
+            }]
+        };
+    },
+
+    buildMailOptionsEmpf: async function (smtpOptions) {
+        return {
+            from: `"Camel-24 Transportvermittlung & Kurierdienst" <${smtpOptions.auth.user}>`, // se/ sender address
+            to: order._doc.empfaenger.email, // list of receivers
+            subject: `Ihr Paket von ${order._doc.absender.firma}`, // Subject line
+            html: `Guten Tag,<br> Ihre Sendung kommt voraussichtlich am ${formattedDate} zwischen ${order.zustellTermin.von}-${order.zustellTermin.bis} Uhr  an.<br><br><strong>Versandnummer: </strong>${identificationNumber}<br><br>Um zu sehen wo sich Ihre Sendung befindet können Sie über diesen Link einen Sendungsverfolgung tätigen <a href="http://kep-ag.kep-it.de/xtras/track.php">http://kep-ag.kep-it.de/xtras/track.php</a><br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
+<br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a> `, // html body
+            attachments: {
+                filename: 'camel_logo.png',
+                path: './assets/img/camel_logo.png',
+                cid: 'camellogo' //same cid value as in the html img src
+            }
+        };
+    },
 
 };
