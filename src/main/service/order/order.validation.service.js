@@ -15,14 +15,10 @@
 let moment = require('moment');
 
 // INTERNAL
-let mailService = require('../../service/mail/mail.service');
-let help = require('../../utils/helper');
-let setup = require('../../utils/setup');
-let log = require('../../utils/logger');
 let mailHelper = require("../../helper/mail/MailHelper");
 let directoryHelper = require("../../helper/directory/directory.helper");
 let ApplicationError = require('../../../../models/error');
-let {Order} = require('../../../../models/order');
+let pattern = require('../../utils/ValidationPatterns');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -52,7 +48,7 @@ module.exports = {
         let allowedVersicherung = ['Ja', 'Nein'];
         let allowedZustellArt = ['standard', 'persoenlich', 'persoenlichIdent'];
 
-        if (this.checkIfValuesAreAvailable(kundenNummer, json.absMail)) {
+        if (this.checkIfValuesAreAvailable(kundenNummer, json.absEmail)) {
             throw new ApplicationError("Camel-00", 400, "Kundennummer oder E-Mail konnte nicht gelesen werden.");
         }
 

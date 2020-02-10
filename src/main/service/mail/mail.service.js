@@ -72,7 +72,6 @@ module.exports = {
                 console.log(`[${date}] EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender : ${order._doc.absender.email}`);
                 log.info(`EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender : ${order._doc.absender.email}`);
             })
-            .catch(e => throw e);
     },
 
     sentMailEmpf: async function (identificationNumber, order) {
@@ -89,7 +88,6 @@ module.exports = {
                 console.log(`[${date}] EMAIL-EMPFÄNGER: E-Mail wurde erfolgreich an Empfänger : ${order._doc.empfaenger.email}`);
                 log.info(`EMAIL-EMPFÄNGER: E-Mail wurde erfolgreich an Empfänger : ${order._doc.empfaenger.email}`);
             })
-            .catch(e => throw e);
     },
 
 
