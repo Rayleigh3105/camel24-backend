@@ -12,29 +12,25 @@
 //////////////////////////////////////////////////////
 
 // INTERNAL
-let {SmtpOptions} = require("../../../models/smtpOptions");
+
+// EXTERNAL
+const expect = require('chai').expect;
 
 module.exports = {
 
     //////////////////////////////////////////////////////
-    // PUBLIC METHODS
+    // EQUAL
     //////////////////////////////////////////////////////
 
-    buildMail: function () {
-        let mail = new SmtpOptions();
-        mail.smtpHost = "camel-24.de";
-        mail.smtpPort = 143;
-        mail.smtpSecure = false;
-        mail.smtpUser = "camel-onlineservice@camel-24.de";
-        mail.smtpPassword = "Saganer24?";
 
-        return mail;
+    checkException: function (errorCode, status, message, body) {
+        expect(body).to.contain.property('message');
+        expect(body).to.contain.property('status');
+        expect(body).to.contain.property('errorCode');
+        expect(body.message).to.equal(message);
+        expect(body.status).to.equal(status);
+        expect(body.errorCode).to.equal(errorCode);
     },
-
-    saveMail: function () {
-        let mail = this.buildMail();
-        return mail.save(mail);
-    },
-
 };
+
 

@@ -129,7 +129,7 @@ let TerminSchema = mongoose.Schema({
         required: false,
         trim: true,
     },
-    nachNachnahmeWert: {
+    nachnahmeWert: {
         type: Number,
         required: false,
         trim: true,
@@ -194,7 +194,6 @@ let RechnungsDatenSchema = mongoose.Schema({
         maxLength: 20,
     },
     name: {
-
         type: String,
         required: true,
         trim: true,
@@ -234,7 +233,7 @@ let OrderSchema = new mongoose.Schema({
     empfaenger: AbsEmpfSchema,
     abholTermin: TerminSchema,
     zustellTermin: TerminSchema,
-    sendungsdaten: SendungsDatenSchema,
+    sendungsDaten: SendungsDatenSchema,
     rechnungsDaten: RechnungsDatenSchema,
     _creator: {
         type: mongoose.Schema.Types.ObjectId,
