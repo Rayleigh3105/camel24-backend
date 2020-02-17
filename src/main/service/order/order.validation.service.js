@@ -31,10 +31,9 @@ module.exports = {
     // PUBLIC METHODS
     //////////////////////////////////////////////////////
 
-    doPreperationsForOrderGeneration: async function (req) {
-        let jsonObject = req.body;
+    doPreperationsForOrderGeneration: async function (req, order) {
         let kundenNummer = req.header('x-kundenNummer');
-        await this.checkRequiredDefaultData(jsonObject, kundenNummer);
+        await this.checkRequiredDefaultData(order, kundenNummer);
         await directoryHelper.createNeededDirectorys();
         await mailHelper.checkConnectionToEmailServer();
     },
@@ -46,7 +45,6 @@ module.exports = {
     checkRequiredDefaultData: async function (json, kundenNummer) {
         let allowedCountrys = ['Deutschland', 'Schweiz', 'Österreich'];
         let allowedType = ['Waffe', 'Munition', 'Sonstiges'];
-        let allowedVersicherung = ['Ja', 'Nein'];
         let allowedZustellArt = ['standard', 'persoenlich', 'persoenlichIdent'];
 
         let order = new Order(json);

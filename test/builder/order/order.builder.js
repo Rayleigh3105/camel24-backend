@@ -7,6 +7,11 @@
  *  permission of Moritz Vogt
  */
 
+// Variables
+let absenderEmail = "moritz.vogt@test.de";
+let zustellArt = "persoenlich";
+let ansprechpartner = "Moritz";
+
 let {Order} = require("../../../models/order");
 
 class OrderBuilder {
@@ -308,6 +313,28 @@ class OrderBuilder {
             kundenNummer: this.kundenNummer,
             price: this.price
         }
+    }
+
+    buildValidUser() {
+        return new OrderBuilder()
+            .withAbsenderEmail(absenderEmail)
+            .withAbsenderPlz("91757")
+            .withAbsenderLand("Deutschland")
+            .withZustellArt(zustellArt)
+            .withEmpfeangerPlz("91757")
+            .withEmpfeangerLand("Schweiz")
+            .withEmpfeangerAnsprechpartner(ansprechpartner)
+            .withArt("Waffe")
+            .withAbholDatum(new Date("February 20, 2020 00:00:00"))
+            .withAbholDatumVon("18:00")
+            .withAbholDatumBis("18:00")
+            .withZustellDatum(new Date("February 21, 2020 00:00:00"))
+            .withZustellDatumVon("18:00")
+            .withZustellDatumBis("18:00")
+            .withRechPlz("34323")
+            .withRechEmail("moritz.vogt@test.de")
+            .withGewicht(29)
+            .build();
     }
 }
 

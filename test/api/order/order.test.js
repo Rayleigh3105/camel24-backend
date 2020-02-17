@@ -14,12 +14,10 @@
 let rootUrl = "/order/";
 let priceUrl = rootUrl + "price";
 let {app} = require("../../../server");
-let {Order} = require('../../../models/order');
 let userBuilder = require('../../builder/user/user.builder');
 let priceBuilder = require('../../builder/priceOption/priceOption.builder');
 let OrderBuilder = require('../../builder/order/order.builder');
 let orderAssert = require('./order.assert');
-let priceAssert = require('../dashboard/price.assert');
 
 let absenderEmail = "moritz.vogt@test.de";
 let zustellArt = "persoenlich";
@@ -275,8 +273,8 @@ describe('ORDER ', () => {
                 .withZustellArt(zustellArt)
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 17, 2020 00:00:00"))
-                .withZustellDatum(new Date("February 17, 2020 00:00:00"))
+                .withAbholDatum(new Date("February 20, 2020 00:00:00"))
+                .withZustellDatum(new Date("February 20, 2020 00:00:00"))
                 .build();
 
             request(app)
@@ -300,10 +298,10 @@ describe('ORDER ', () => {
                 .withZustellArt(zustellArt)
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 17, 2020 00:00:00"))
+                .withAbholDatum(new Date("February 20, 2020 00:00:00"))
                 .withAbholDatumVon("22")
                 .withAbholDatumBis("22")
-                .withZustellDatum(new Date("February 18, 2020 00:00:00"))
+                .withZustellDatum(new Date("February 21, 2020 00:00:00"))
                 .build();
 
             request(app)
@@ -327,10 +325,10 @@ describe('ORDER ', () => {
                 .withZustellArt(zustellArt)
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 17, 2020 00:00:00"))
+                .withAbholDatum(new Date("February 20, 2020 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 18, 2020 00:00:00"))
+                .withZustellDatum(new Date("February 21, 2020 00:00:00"))
                 .withZustellDatumVon("22")
                 .withZustellDatumBis("43")
                 .build();
@@ -357,10 +355,10 @@ describe('ORDER ', () => {
                 .withZustellArt(zustellArt)
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 17, 2020 00:00:00"))
+                .withAbholDatum(new Date("February 20, 2020 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 18, 2020 00:00:00"))
+                .withZustellDatum(new Date("February 21, 2020 00:00:00"))
                 .withZustellDatumVon("18:00")
                 .withZustellDatumBis("18:00")
                 .build();
@@ -388,10 +386,10 @@ describe('ORDER ', () => {
                 .withEmpfeangerPlz("849489458")
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 17, 2020 00:00:00"))
+                .withAbholDatum(new Date("February 20, 2020 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 18, 2020 00:00:00"))
+                .withZustellDatum(new Date("February 21, 2020 00:00:00"))
                 .withZustellDatumVon("18:00")
                 .withZustellDatumBis("18:00")
                 .build();
@@ -418,10 +416,10 @@ describe('ORDER ', () => {
                 .withEmpfeangerPlz("849489458")
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 17, 2020 00:00:00"))
+                .withAbholDatum(new Date("February 20, 2020 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 18, 2020 00:00:00"))
+                .withZustellDatum(new Date("February 21, 2020 00:00:00"))
                 .withZustellDatumVon("18:00")
                 .withRechPlz("324523432")
                 .withZustellDatumBis("18:00")
@@ -451,10 +449,10 @@ describe('ORDER ', () => {
                 .withEmpfeangerPlz("91757")
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 17, 2020 00:00:00"))
+                .withAbholDatum(new Date("February 20, 2020 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 18, 2020 00:00:00"))
+                .withZustellDatum(new Date("February 21, 2020 00:00:00"))
                 .withZustellDatumVon("18:00")
                 .withZustellDatumBis("18:00")
                 .withRechPlz("34323")
@@ -485,10 +483,10 @@ describe('ORDER ', () => {
                 .withEmpfeangerLand("invalid")
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 17, 2020 00:00:00"))
+                .withAbholDatum(new Date("February 20, 2020 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 18, 2020 00:00:00"))
+                .withZustellDatum(new Date("February 21, 2020 00:00:00"))
                 .withZustellDatumVon("18:00")
                 .withZustellDatumBis("18:00")
                 .withRechPlz("34323")
@@ -519,10 +517,10 @@ describe('ORDER ', () => {
                 .withEmpfeangerLand("Schweiz")
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 17, 2020 00:00:00"))
+                .withAbholDatum(new Date("February 20, 2020 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 18, 2020 00:00:00"))
+                .withZustellDatum(new Date("February 21, 2020 00:00:00"))
                 .withZustellDatumVon("18:00")
                 .withZustellDatumBis("18:00")
                 .withRechPlz("34323")
@@ -539,6 +537,48 @@ describe('ORDER ', () => {
                     done()
                 })
         });
+
+        /////////////////////////////////////////
+        // Mail
+        /////////////////////////////////////////
+
+        it('NOT OK, Mailservice not available', async (done) => {
+            let kundenNummer = 14001;
+            // Create User
+            await userBuilder.saveUser(kundenNummer);
+
+            let order = new OrderBuilder().buildValidUser();
+
+            request(app)
+                .post(rootUrl)
+                .send(order)
+                .set("x-kundenNummer", kundenNummer)
+                .then(res => {
+                    let body = res.body;
+                    orderAssert.checkException("Camel-01", 400, "Es konnte keine Verbindung zum E-Mail Client hergestellt werden.", body);
+                    done()
+                })
+        });
+
+        it('NOT OK, when sending absender mail can not be sent', async (done) => {
+            beforeAfter.stupCheckConneciton();
+            let kundenNummer = 14001;
+            // Create User
+            await userBuilder.saveUser(kundenNummer);
+
+            let order = new OrderBuilder().buildValidUser();
+
+            request(app)
+                .post(rootUrl)
+                .send(order)
+                .set("x-kundenNummer", kundenNummer)
+                .then(res => {
+                    let body = res.body;
+                    orderAssert.checkException("Camel-70", 400, "Beim senden der E-Mail an den Absender ist etwas schiefgelaufen.", body);
+                    done()
+                })
+        });
+
     })
 });
 

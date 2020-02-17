@@ -10,6 +10,12 @@
 let {Order} = require("../../../models/order");
 let {User} = require("../../../models/user");
 let {PriceOptions} = require("../../../models/priceOptions");
+const mailHelper = require('../../../src/main/helper/mail/MailHelper');
+const mailService = require('../../../src/main/service/mail/mail.service');
+
+// EXTERNAL
+const sinon = require('sinon');
+
 
 /**
  * Deletes all Users before each test.
@@ -17,7 +23,6 @@ let {PriceOptions} = require("../../../models/priceOptions");
 beforeEach((done) => {
     PriceOptions.deleteMany({})
         .catch((err) => done(err));
-
     User.deleteMany({})
         .catch((err) => done(err));
     Order.deleteMany({})
@@ -35,3 +40,17 @@ afterEach((done) => {
         .then(() => done())
         .catch((err) => done(err));
 });
+
+module.exports = {
+    stupCheckConneciton: function () {
+        sinon.stub(mailHelper, 'checkConnectionToEmailServer');
+    },
+
+    stupSentMailAbs: function () {
+        sinon.stub(mailService, 'sentMailAbs');
+    },
+
+    stupSentMailEmpf: function () {
+        sinon.stub(mailService, 'sentMailAbs');
+    }
+};

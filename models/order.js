@@ -19,7 +19,7 @@ let conn = require('../db/mongoose').conn;
 let AbsEmpfSchema = mongoose.Schema({
     firma: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 70,
@@ -41,7 +41,7 @@ let AbsEmpfSchema = mongoose.Schema({
     },
     adresse: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 70,
@@ -49,7 +49,7 @@ let AbsEmpfSchema = mongoose.Schema({
     },
     land: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 20,
@@ -57,7 +57,7 @@ let AbsEmpfSchema = mongoose.Schema({
     },
     plz: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 5,
         maxLength: 5,
@@ -65,7 +65,7 @@ let AbsEmpfSchema = mongoose.Schema({
     },
     ort: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 70,
@@ -73,7 +73,7 @@ let AbsEmpfSchema = mongoose.Schema({
     },
     telefon: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 20,
@@ -94,7 +94,7 @@ let AbsEmpfSchema = mongoose.Schema({
 let TerminSchema = mongoose.Schema({
     datum: {
         type: Date,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 30,
@@ -102,7 +102,7 @@ let TerminSchema = mongoose.Schema({
     },
     von: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 5,
@@ -110,7 +110,7 @@ let TerminSchema = mongoose.Schema({
     },
     bis: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 5,
@@ -148,7 +148,7 @@ let TerminSchema = mongoose.Schema({
 let SendungsDatenSchema = mongoose.Schema({
     gewicht: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 5,
@@ -156,7 +156,7 @@ let SendungsDatenSchema = mongoose.Schema({
     },
     art: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 70,
@@ -170,7 +170,7 @@ let SendungsDatenSchema = mongoose.Schema({
     },
     transportVers: {
         type: Boolean,
-        required: true,
+        required: false,
     },
 });
 
@@ -180,14 +180,14 @@ let SendungsDatenSchema = mongoose.Schema({
 let RechnungsDatenSchema = mongoose.Schema({
     email: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 70,
     },
     telefon: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         unique: false,
         minlength: 1,
@@ -195,7 +195,7 @@ let RechnungsDatenSchema = mongoose.Schema({
     },
     name: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 70,
@@ -203,7 +203,7 @@ let RechnungsDatenSchema = mongoose.Schema({
     },
     adresse: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 70,
@@ -211,7 +211,7 @@ let RechnungsDatenSchema = mongoose.Schema({
     },
     plz: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 5,
@@ -219,7 +219,7 @@ let RechnungsDatenSchema = mongoose.Schema({
     },
     ort: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         minlength: 1,
         maxLength: 70,
@@ -245,7 +245,7 @@ let OrderSchema = new mongoose.Schema({
     },
     identificationNumber: {
         type: String,
-        required: true
+        required: false
     },
     kundenNummer: {
         type: String,
@@ -253,7 +253,7 @@ let OrderSchema = new mongoose.Schema({
     },
     price: {
         type: String,
-        required: true
+        required: false
     }
 
 });

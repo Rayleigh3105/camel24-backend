@@ -149,138 +149,19 @@ module.exports = {
     },
 
 
-    /**
-     * Maps JsonObject to Schema
-     *
-     * @param jsonObject object that is going to be mapped
-     * @param userId - id of the user
-     * @param createdAt - timestamp of creation
-     * @param identificationNumber of order
-     * @returns {@link Order}
-     */
-    mapOrder: function (jsonObject, userId, createdAt, identificationNumber, kundenNummer) {
+    mapOrder: function (order, userId, createdAt, identificationNumber, kundenNummer) {
         if (userId) {
-            return new Order({
-                _creator: userId,
-                kundenNummer,
-                createdAt,
-                identificationNumber,
-                price: jsonObject.price,
-                absender: {
-                    firma: jsonObject.absFirma,
-                    zusatz: jsonObject.absZusatz,
-                    ansprechpartner: jsonObject.absAnsprechpartner,
-                    adresse: jsonObject.absAdresse,
-                    land: jsonObject.absLand,
-                    plz: jsonObject.absPlz,
-                    ort: jsonObject.absOrt,
-                    telefon: jsonObject.absTel,
-                    email: jsonObject.absEmail,
-                },
-                empfaenger: {
-                    firma: jsonObject.empfFirma,
-                    zusatz: jsonObject.empfZusatz,
-                    ansprechpartner: jsonObject.empfAnsprechpartner,
-                    adresse: jsonObject.empfAdresse,
-                    land: jsonObject.empfLand,
-                    plz: jsonObject.empfPlz,
-                    ort: jsonObject.empfOrt,
-                    telefon: jsonObject.empfTel,
-                    email: jsonObject.empfEmail,
-
-                },
-                abholTermin: {
-                    datum: jsonObject.abholDatum,
-                    von: jsonObject.abholZeitVon,
-                    bis: jsonObject.abholZeitBis,
-                },
-                zustellTermin: {
-                    datum: jsonObject.zustellDatum,
-                    von: jsonObject.zustellZeitVon,
-                    bis: jsonObject.zustellZeitBis,
-                    art: jsonObject.zustellArt,
-                    isNachnahme: jsonObject.zustellNachnahme,
-                    nachNachnahmeWert: jsonObject.zustellNachnahmeWert,
-                },
-                sendungsdaten: {
-                    gewicht: jsonObject.sendungsdatenGewicht,
-                    wert: jsonObject.sendungsdatenWert,
-                    art: jsonObject.sendungsdatenArt,
-                    transportVers: jsonObject.sendungsdatenVers,
-                },
-                rechnungsDaten: {
-                    email: jsonObject.auftragbestEmail,
-                    telefon: jsonObject.auftragbestTelefon,
-                    adresse: jsonObject.rechnungAdresse,
-                    name: jsonObject.rechnungName,
-                    ort: jsonObject.rechnungOrt,
-                    plz: jsonObject.rechnungPlz,
-                }
-            })
+            order._creator = userId;
+            order.kundenNummer = kundenNummer;
+            order.createdAt = createdAt;
+            order.identificationNumber = identificationNumber;
+            return order
         } else {
-            return new Order({
-                createdAt,
-                identificationNumber,
-                price: jsonObject.price,
-                absender: {
-                    firma: jsonObject.absFirma,
-                    zusatz: jsonObject.absZusatz,
-                    ansprechpartner: jsonObject.absAnsprechpartner,
-                    adresse: jsonObject.absAdresse,
-                    land: jsonObject.absLand,
-                    plz: jsonObject.absPlz,
-                    ort: jsonObject.absOrt,
-                    telefon: jsonObject.absTel,
-                    email: jsonObject.absEmail,
-
-                },
-                empfaenger: {
-                    firma: jsonObject.empfFirma,
-                    zusatz: jsonObject.empfZusatz,
-                    ansprechpartner: jsonObject.empfAnsprechpartner,
-                    adresse: jsonObject.empfAdresse,
-                    land: jsonObject.empfLand,
-                    plz: jsonObject.empfPlz,
-                    ort: jsonObject.empfOrt,
-                    telefon: jsonObject.empfTel,
-                    email: jsonObject.empfEmail,
-
-                },
-                abholTermin: {
-                    datum: jsonObject.abholDatum,
-                    von: jsonObject.abholZeitVon,
-                    bis: jsonObject.abholZeitBis,
-                },
-                zustellTermin: {
-                    datum: jsonObject.zustellDatum,
-                    von: jsonObject.zustellZeitVon,
-                    bis: jsonObject.zustellZeitBis,
-                    art: jsonObject.zustellArt,
-                    isNachnahme: jsonObject.zustellNachnahme,
-                    nachNachnahmeWert: jsonObject.zustellNachnahmeWert,
-
-                },
-                sendungsdaten: {
-                    gewicht: jsonObject.sendungsdatenGewicht,
-                    wert: jsonObject.sendungsdatenWert,
-                    art: jsonObject.sendungsdatenArt,
-                    transportVers: jsonObject.sendungsdatenVers,
-                },
-                rechnungsDaten: {
-                    email: jsonObject.auftragbestEmail,
-                    telefon: jsonObject.auftragbestTelefon,
-                    adresse: jsonObject.rechnungAdresse,
-                    name: jsonObject.rechnungName,
-                    ort: jsonObject.rechnungOrt,
-                    plz: jsonObject.rechnungPlz,
-                }
-            })
+            order.createdAt = createdAt;
+            order.identificationNumber = identificationNumber
+            return order
         }
-
-
-    }
-
-    ,
+    },
 
     /**
      * Creates Needed Directorys on the Server

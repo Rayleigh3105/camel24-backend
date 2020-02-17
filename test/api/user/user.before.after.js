@@ -8,11 +8,12 @@
  */
 // INTERNAL
 let {User} = require("../../../models/user");
+const mailHelper = require('../../../src/main/helper/mail/MailHelper');
+const mailService = require('../../../src/main/service/mail/mail.service');
 
 // EXTERNAL
 const sinon = require('sinon');
-const mailHelper = require('../../../src/main/helper/mail/MailHelper');
-const mailService = require('../../../src/main/service/mail/mail.service');
+
 
 /**
  * Deletes all Users before each test.

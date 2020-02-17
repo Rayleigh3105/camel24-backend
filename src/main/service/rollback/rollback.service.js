@@ -17,7 +17,7 @@ const path = require('path');
 
 // INTERNAL
 let log = require('../../utils/logger');
-let orderService = require('../order/order.service');
+let orderService = require('./../order/order.service');
 let windowsRootPath = 'C:/';
 let baseDir = path.join(windowsRootPath, '/camel');
 
@@ -32,8 +32,8 @@ module.exports = {
     //////////////////////////////////////////////////////
 
     rollbackChanges: async function (order, directoryToDelete, identificationNumber) {
-        if (order){
-            await orderService.removeOrder(order, identificationNumber);
+        if (order._id != null){
+            await orderService.deleteOrder(order, identificationNumber);
         }
 
         if (directoryToDelete) {

@@ -27,6 +27,7 @@ let ftpDir = path.join(windowsRootPath, '/camel/ftp');
 let baseDir = path.join(windowsRootPath, '/camel');
 let orderDir = path.join(windowsRootPath, '/camel/auftraege');
 let dateDir = moment().format("DDMMYYYY");
+let date = moment().format(pattern.momentPattern);
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -102,10 +103,9 @@ module.exports = {
         })
     },
 
-    createDirectoryForOrder: async function (req) {
+    createDirectoryForOrder: async function (req, order) {
         let isLoggedIn = req.header("x-auth");
         let kundenNummer = req.header('x-kundenNummer');
-        let jsonObject = req.body;
         let kndDir;
         let kndDateDir;
 
@@ -115,12 +115,12 @@ module.exports = {
 
         } else {
             // Create director with E-Mail of Order
-            kndDir = `${orderDir}/${jsonObject.auftragbestEmail}`;
+            kndDir = `${orderDir}/${order.rechnungsDaten.email}`;
         }
 
         kndDateDir = `${kndDir}/${dateDir}`;
 
-        await setup.createKndDirectorys(kndDir, kndDateDir)
+        await this.createKndDirectorys(kndDir, kndDateDir)
             .catch(e => {
                 throw e
             });
@@ -149,6 +149,14 @@ module.exports = {
         return `${baseDir}/tmp/csv/` + identificationNumber + ".csv"
     },
 
+    createDirecotyToSaveBarcodeIn: async function(pathToSave) {
+
+        if (!fs.existsSync(pathToSave)) {
+            fs.mkdirSync(pathToSave);
+            log.info(`Ordner ${pathToSave} wurde erstellt`);
+            console.log(`[${date}] Ordner ${pathToSave} wurde erstellt`);
+        }
+    },
 
     //////////////////////////////////////////////////////
     // PRIVATE METHODS

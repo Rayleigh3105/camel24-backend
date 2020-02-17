@@ -20,6 +20,8 @@ const bwipjs = require('bwip-js');
 let log = require('../../utils/logger');
 let ApplicationError = require('../../../../models/error');
 let pattern = require('../../utils/ValidationPatterns');
+let directoryHelper = require('../../helper/directory/directory.helper');
+let service = require('./barcode.service');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -34,38 +36,34 @@ module.exports = {
     generateBarcode: async function (identificationNumber, pathToSave) {
         let date = moment().format(pattern.momentPattern);
 
-        if (!fs.existsSync(pathToSave)) {
-            fs.mkdirSync(pathToSave);
-            log.info(`Ordner ${pathToSave} wurde erstellt`);
-            console.log(`[${date}] Ordner ${pathToSave} wurde erstellt`);
-        }
+        await directoryHelper.createDirecotyToSaveBarcodeIn(pathToSave);
 
         // Generates Barcode
-        bwipjs.toBuffer({
-            bcid: 'code128',       // Barcode type
-            text: identificationNumber,    // Text to encode
-            scale: 2,               // 3x scaling factor
-            height: 30,              // Bar height, in millimeters
-            includetext: true,            // Show human-readable text
-            textxalign: 'center',        // Always good to set this
-        }, function (err, png) {
-            if (err) {
-                log.error(err);
-                throw new ApplicationError("Camel-26", 400, "Beim erstellen des Barcodes ist etwas schiefgelaufen.", err);
-            }
-
-            fs.writeFile(`${pathToSave}/${identificationNumber}.png`, png, 'binary', function (err) {
+        return new Promise((resolve, reject) => {
+            bwipjs.toBuffer({
+                bcid: 'code128',            // Barcode type
+                text: identificationNumber, // Text to encode
+                scale: 2,                   // 2x scaling factor
+                height: 30,                 // Bar height, in millimeters
+                includetext: true,          // Show human-readable text
+                textxalign: 'center',       // Always good to set this
+            }, async function (err, png) {
                 if (err) {
-                    throw new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err);
+                    log.error(err);
+                    throw new ApplicationError("Camel-26", 400, "Beim erstellen des Barcodes ist etwas schiefgelaufen.", err);
                 }
-                log.info(identificationNumber + " PNG:" + identificationNumber + "wurde erstellt");
-                console.log(`[${date}] ${identificationNumber} PNG: ${identificationNumber} wurde erstellt.`);
+
+                fs.writeFile(`${pathToSave}/${identificationNumber}.png`, png, 'binary', function (err) {
+                    if (err) {
+                        throw new ApplicationError("Camel-27", 400, "Beim Speicher der Datei ist ein Fehler aufgetreten.", err);
+                    }
+                    log.info(identificationNumber + " PNG:" + identificationNumber + "wurde erstellt");
+                    console.log(`[${date}] ${identificationNumber} PNG: ${identificationNumber} wurde erstellt.`);
+
+                    resolve();
+                });
             });
-        });
+
+        })
     },
-
-    //////////////////////////////////////////////////////
-    // PRIVATE METHODS
-    //////////////////////////////////////////////////////
-
 };

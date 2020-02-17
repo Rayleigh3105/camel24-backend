@@ -60,26 +60,38 @@ module.exports = {
         return await this.updateOnDatabase(smtpOptionsToUpdate);
     },
 
-    sentMailAbs: async function (identificationNumber, order, pathAttachment) {
+    prepareSentMailAbs: async function (order, pathAttachment) {
+        await mailHelper.checkConnectionToEmailServer();
+        this.sentMailAbs(pathAttachment, order);
+    },
+
+    sentMailAbs: async function(pathAttachment, order) {
         let date = moment().format(pattern.momentPattern);
 
-        let smtpOptions = await this.getMailOptions();
+        let smtpOptions = await mailHelper.getSmtpOptions();
         let transporter = nodemailer.createTransport(smtpOptions);
-        let mailOptions = this.buildMailOptionsAbs(smtpOptions, pathAttachment);
+        let mailOptions = await this.buildMailOptionsAbs(smtpOptions, pathAttachment, order);
 
         await transporter.sendMail(mailOptions)
             .then(() => {
                 console.log(`[${date}] EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender : ${order._doc.absender.email}`);
                 log.info(`EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender : ${order._doc.absender.email}`);
             })
+            .catch(err => {
+                throw new ApplicationError("Camel-70", 400, "Beim senden der E-Mail an den Absender ist etwas schiefgelaufen.")
+            })
     },
 
-    sentMailEmpf: async function (identificationNumber, order) {
-        let date = moment().format(pattern.momentPattern);
+    prepareSentMailEmpf: async function (order) {
+        await mailHelper.checkConnectionToEmailServer();
+        await this.sentMailEmpf(order);
 
+    },
+
+    sentMailEmpf: async function(order) {
+        let date = moment().format(pattern.momentPattern);
         let smtpOptions = await this.getMailOptions();
         let transporter = nodemailer.createTransport(smtpOptions);
-
         let mailOptions = this.buildMailOptionsEmpf(smtpOptions, order);
 
         // send mail with defined transport object
@@ -88,8 +100,10 @@ module.exports = {
                 console.log(`[${date}] EMAIL-EMPFÄNGER: E-Mail wurde erfolgreich an Empfänger : ${order._doc.empfaenger.email}`);
                 log.info(`EMAIL-EMPFÄNGER: E-Mail wurde erfolgreich an Empfänger : ${order._doc.empfaenger.email}`);
             })
+            .catch(err => {
+                throw new ApplicationError("Camel-71", 400, "Beim senden der E-Mail an den Empfänger ist etwas schiefgelaufen.")
+            })
     },
-
 
     //////////////////////////////////////////////////////
     // PRIVATE METHODS
@@ -157,10 +171,10 @@ module.exports = {
         });
     },
 
-    buildMailOptionsAbs: async function (smtpOptions, pathAttachment) {
+    buildMailOptionsAbs: async function (smtpOptions, pathAttachment, order) {
         return {
             from: `"Camel-24 Transportvermittlung & Kurierdienst" <${smtpOptions.auth.user}>`, // sender address
-            to: order._doc.absender.email, // list of receivers
+            to: order.absender.email, // list of receivers
             subject: `Ihr Camel-24 Paketlabel`, // Subject line
             html: `Guten Tag,<br>im Anhang befindet sich Ihr Paketlabel mit dem Sie das Paket direkt selbst abfertigen können.<br>Bei Fragen zu Ihrer Sendung oder dem Versand stehen wir Ihnen gerne telefonisch zur Verfügung.<br><br><u>Öffnungszeiten:</u><br>Montag bis Freitag 08:00 - 18:00 Uhr<br>Samstag: 09:00 - 12:00 Uhr<br>Mit freundlichen Grüßen Ihr Camel-24 Team<br><br><img src="cid:camellogo"/><br>Transportvermittlung Sina Zenker<br>Wehrweg 3<br>91230 Happurg<br>Telefon: 0911-4008727<br>Fax: 0911-4008717 
 <br><a href="mailto:info@Camel-24.de">info@Camel-24.de</a><br>Web: <a href="www.camel-24.de">www.camel-24.de</a> `, // html body

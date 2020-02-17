@@ -60,34 +60,37 @@ module.exports = {
     },
 
     generateOrder: async function (req) {
-        let order;
         let kundenNummer = req.header('x-kundenNummer');
         let jsonObject = req.body;
+        let order = new Order(jsonObject);
         let successfull;
         let kndDateCountDir;
         let identificationNumber;
 
         try {
-            let user = await userService.checkIfUserAvailable(req);
             // Do preparation before generation
-            await orderValidationService.doPreperationsForOrderGeneration(req);
+            await orderValidationService.doPreperationsForOrderGeneration(req, order);
+
+            // User Validation
+            let user = await userService.checkIfUserAvailable(req);
 
             // Create Needed Directorys
-            let kndDateDir = await directoryHelper.createDirectoryForOrder(req);
+            let kndDateDir = await directoryHelper.createDirectoryForOrder(req, order);
 
             // Resolve Count in Directory
             let resultCount = await this.countFilesInDirectory(kndDateDir);
 
             // Resolve IdentificationNumber
-            identificationNumber = csvService.resolveIdentificationNumber(kundenNummer, resultCount, user, jsonObject);
+            identificationNumber = await csvService.resolveIdentificationNumber(kundenNummer, resultCount, user, order, req);
 
             // Save CSV to File System
-            jsonObject = await csvService.convertToCsvAndSaveItOnFileSystem(req, resultCount, identificationNumber);
+            await csvService.convertToCsvAndSaveItOnFileSystem(order, resultCount, identificationNumber);
 
             // Save Order in Database
-            order = await this.mapOrder(jsonObject, user, new Date(), identificationNumber, kundenNummer);
+            order = await this.mapOrder(order, user, new Date(), identificationNumber, kundenNummer);
             order = await this.saveOrderToDatabase(order);
 
+            // Resolve directory
             kndDateCountDir = `${kndDateDir}/${resultCount}`;
 
             // Generate Barcode
@@ -104,11 +107,11 @@ module.exports = {
         } finally {
             if (successfull) {
                 // Sent E-Mail to Absender
-                await mailService.sentMailAbs(identificationNumber, order, kndDateCountDir);
+                await mailService.prepareSentMailAbs(order, kndDateCountDir);
 
                 // Sent E-Mail to Empfänger if available
-                if (order._doc.empfaenger.email) {
-                    await mailService.sentMailEmpf(identificationNumber, order, kndDateCountDir);
+                if (order.empfaenger.email) {
+                    await mailService.prepareSentMailEmpf(order);
                 }
             }
         }
@@ -126,7 +129,6 @@ module.exports = {
     //////////////////////////////////////////////////////
     // PRIVATE METHODS
     //////////////////////////////////////////////////////
-
 
     countFilesInDirectory: async function (kndDateDir) {
         return await setup.countFilesInDirectory(kndDateDir)
@@ -179,16 +181,8 @@ module.exports = {
 
     },
 
-    mapOrder: async function (jsonObject, user, identificationNumber, kundenNummer) {
-        if (user) {
-            return setup.mapOrder(jsonObject, user, new Date(), identificationNumber, kundenNummer);
-        }
-
-        return setup.mapOrder(jsonObject, null, new Date(), identificationNumber, kundenNummer);
-    },
-
-    removeOrder: async function (order, identificationNumber) {
-        Order.remove({
+    deleteOrder: async function (order, identificationNumber) {
+        await Order.remove({
             _id: order._id
         }, async function (err) {
             if (err) {
@@ -196,6 +190,14 @@ module.exports = {
             }
         });
         log.info(`${identificationNumber} - Auftrag : ${order._id} wurde gelöscht.`);
+    },
+
+    mapOrder: async function (order, user, identificationNumber, kundenNummer) {
+        if (user) {
+            return setup.mapOrder(order, user, new Date(), identificationNumber, kundenNummer);
+        }
+
+        return setup.mapOrder(order, null, new Date(), identificationNumber, kundenNummer);
     },
 
 };

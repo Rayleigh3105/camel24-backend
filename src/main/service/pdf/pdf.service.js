@@ -18,6 +18,7 @@ let PDFDocument = require('pdfkit');
 
 // INTERNAL
 let log = require('../../utils/logger');
+let pattern = require('../../utils/ValidationPatterns')
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -32,7 +33,8 @@ module.exports = {
     generatePdf: async function (identificationNumber, order, pathToSave) {
         let pdfFileName = `Paketlabel.pdf`;
         let doc = new PDFDocument;
-        let formattedZustellDate = moment(order._doc.zustellTermin.datum).format("DD.MM.YYYY");
+        let formattedZustellDate = moment(order.zustellTermin.datum).format("DD.MM.YYYY");
+        let date = moment(order.zustellTermin.datum).format(pattern.momentPattern);
         let pathToBarcode = `${pathToSave}/${identificationNumber}.png`;
 
         // CREATE PDF
@@ -56,14 +58,14 @@ module.exports = {
         this.addAnschrift(doc);
 
         // Munitions Papier
-        if (order._doc.sendungsdaten.art === 'Munition') {
+        if (order.sendungsDaten.art === 'Munition') {
             this.createAmmoPaper(doc, order);
         }
 
         doc.end();
 
         log.info(`${identificationNumber} PDF: Erfolgreich generiert für ${identificationNumber}`);
-        console.log(`[${formattedZustellDate}] ${identificationNumber} PDF: Erfolgreich generiert für ${identificationNumber}`);
+        console.log(`[${date}] ${identificationNumber} PDF: Erfolgreich generiert für ${identificationNumber}`);
     },
 
     //////////////////////////////////////////////////////
@@ -118,30 +120,30 @@ module.exports = {
 
         doc.moveDown(0.1);
 
-        doc.text(`${order._doc.absender.firma}`, {
+        doc.text(`${order.absender.firma}`, {
             width: 250
         });
-        if (order._doc.absender.ansprechpartner) {
+        if (order.absender.ansprechpartner) {
             doc.moveDown(0.1);
-            doc.text(`${order._doc.absender.ansprechpartner}`, {
+            doc.text(`${order.absender.ansprechpartner}`, {
                 width: 250
             });
             doc.moveDown(0.1);
-            doc.text(`${order._doc.absender.adresse}`, {
+            doc.text(`${order.absender.adresse}`, {
                 width: 250
             });
             doc.moveDown(0.1);
-            doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, {
+            doc.text(`${order.absender.plz} - ${order.absender.ort}`, {
                 width: 250
             });
 
         } else {
             doc.moveDown(0.1);
-            doc.text(`${order._doc.absender.adresse}`, {
+            doc.text(`${order.absender.adresse}`, {
                 width: 250
             });
             doc.moveDown(0.1);
-            doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, {
+            doc.text(`${order.absender.plz} - ${order.absender.ort}`, {
                 width: 250
             });
         }
@@ -155,20 +157,20 @@ module.exports = {
 
         doc.moveDown(0.1);
 
-        doc.text(`${order._doc.empfaenger.firma}`);
-        if (order._doc.empfaenger.ansprechpartner) {
+        doc.text(`${order.empfaenger.firma}`);
+        if (order.empfaenger.ansprechpartner) {
             doc.moveDown(0.1);
-            doc.text(`${order._doc.empfaenger.ansprechpartner}`);
+            doc.text(`${order.empfaenger.ansprechpartner}`);
             doc.moveDown(0.1);
-            doc.text(`${order._doc.empfaenger.adresse}`);
+            doc.text(`${order.empfaenger.adresse}`);
             doc.moveDown(0.1);
-            doc.text(`${order._doc.empfaenger.plz} - ${order._doc.empfaenger.ort}`);
+            doc.text(`${order.empfaenger.plz} - ${order.empfaenger.ort}`);
 
         } else {
             doc.moveDown(0.1);
-            doc.text(`${order._doc.empfaenger.adresse}`);
+            doc.text(`${order.empfaenger.adresse}`);
             doc.moveDown(0.1);
-            doc.text(`${order._doc.empfaenger.plz} - ${order._doc.empfaenger.ort}`);
+            doc.text(`${order.empfaenger.plz} - ${order.empfaenger.ort}`);
         }
 
         // PAKET & LIEFERDATEN
@@ -177,10 +179,10 @@ module.exports = {
         });
 
         doc.moveDown(0.1);
-        doc.text(`Paketgewicht: ${order._doc.sendungsdaten.gewicht} kg`);
+        doc.text(`Paketgewicht: ${order.sendungsDaten.gewicht} kg`);
 
         doc.moveDown(0.1);
-        doc.text(`Vorrausichtliches Lieferdatum ${formattedZustellDate} zwischen ${order._doc.zustellTermin.von} - ${order._doc.zustellTermin.bis} Uhr`);
+        doc.text(`Vorrausichtliches Lieferdatum ${formattedZustellDate} zwischen ${order.zustellTermin.von} - ${order.zustellTermin.bis} Uhr`);
 
         doc.lineCap('round')
             .moveTo(5, 320)
@@ -213,30 +215,30 @@ module.exports = {
 
         doc.moveDown(0.1);
 
-        doc.text(`${order._doc.absender.firma}`, {
+        doc.text(`${order.absender.firma}`, {
             width: 250
         });
-        if (order._doc.absender.ansprechpartner) {
+        if (order.absender.ansprechpartner) {
             doc.moveDown(0.1);
-            doc.text(`${order._doc.absender.ansprechpartner}`, {
+            doc.text(`${order.absender.ansprechpartner}`, {
                 width: 250
             });
             doc.moveDown(0.1);
-            doc.text(`${order._doc.absender.adresse}`, {
+            doc.text(`${order.absender.adresse}`, {
                 width: 250
             });
             doc.moveDown(0.1);
-            doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, {
+            doc.text(`${order.absender.plz} - ${order.absender.ort}`, {
                 width: 250
             });
 
         } else {
             doc.moveDown(0.1);
-            doc.text(`${order._doc.absender.adresse}`, {
+            doc.text(`${order.absender.adresse}`, {
                 width: 250
             });
             doc.moveDown(0.1);
-            doc.text(`${order._doc.absender.plz} - ${order._doc.absender.ort}`, {
+            doc.text(`${order.absender.plz} - ${order.absender.ort}`, {
                 width: 250
             });
         }
@@ -248,20 +250,20 @@ module.exports = {
 
         doc.moveDown(0.1);
 
-        doc.text(`${order._doc.empfaenger.firma}`);
-        if (order._doc.empfaenger.ansprechpartner) {
+        doc.text(`${order.empfaenger.firma}`);
+        if (order.empfaenger.ansprechpartner) {
             doc.moveDown(0.1);
-            doc.text(`${order._doc.empfaenger.ansprechpartner}`);
+            doc.text(`${order.empfaenger.ansprechpartner}`);
             doc.moveDown(0.1);
-            doc.text(`${order._doc.empfaenger.adresse}`);
+            doc.text(`${order.empfaenger.adresse}`);
             doc.moveDown(0.1);
-            doc.text(`${order._doc.empfaenger.plz} - ${order._doc.empfaenger.ort}`);
+            doc.text(`${order.empfaenger.plz} - ${order.empfaenger.ort}`);
 
         } else {
             doc.moveDown(0.1);
-            doc.text(`${order._doc.empfaenger.adresse}`);
+            doc.text(`${order.empfaenger.adresse}`);
             doc.moveDown(0.1);
-            doc.text(`${order._doc.empfaenger.plz} - ${order._doc.empfaenger.ort}`);
+            doc.text(`${order.empfaenger.plz} - ${order.empfaenger.ort}`);
         }
 
         doc.text(`Fürth den, ${formattedMuntionsDate}`, 50, 290);
