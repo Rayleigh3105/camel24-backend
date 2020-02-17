@@ -7,7 +7,7 @@
  *  permission of Moritz Vogt
  */
 
-let { User } = require('./../models/user');
+let { User } = require('../src/main/models/user');
 
 
 let authenticateAdmin = ( req, res, next) => {

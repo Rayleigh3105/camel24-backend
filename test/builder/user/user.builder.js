@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////
 
 // INTERNAL
-let {User} = require("../../../models/user");
+let {User} = require("../../../src/main/models/user");
 let rootUrl = "/user/";
 
 module.exports = {

@@ -8,29 +8,39 @@
  */
 
 const mongoose = require('mongoose');
-let conn = require('../db/mongoose').conn;
+let conn = require('../../../db/mongoose').conn;
 
-let PriceOptionsSchema = new mongoose.Schema({
-    type: {
+let SmtpOptionsSchema = new mongoose.Schema({
+    smtpHost: {
         type: String,
         trim: true,
         minlength: 1,
         maxLength: 70,
 
     },
-    time: {
-        type: String,
-        trim: true,
-        maxLength: 70,
-
-    },
-    price: {
+    smtpPort: {
         type: Number,
         trim: true,
     },
+    smtpSecure: {
+        type: Boolean,
+    },
+    smtpUser: {
+        type: String,
+        trim: true,
+        minlength: 1,
+        maxLength: 70,
+    },
+    smtpPassword: {
+        type: String,
+        trim: true,
+        minlength: 1,
+        maxLength: 70,
+    },
+
 });
 
-let PriceOptions = conn.model('PriceOptions', PriceOptionsSchema);
+let SmtpOptions = conn.model('SmtpOptions', SmtpOptionsSchema);
 
-module.exports = {PriceOptions};
+module.exports = {SmtpOptions};
 

@@ -8,7 +8,7 @@
  */
 
 const mongoose = require('mongoose');
-let conn = require('../db/mongoose').conn;
+let conn = require('../../../db/mongoose').conn;
 
 // //////////////////////////////////////////////////////////////////////////
 //                              Empfänger Schema                           //

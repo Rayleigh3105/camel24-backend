@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////
 
 // INTERNAL
-let {SmtpOptions} = require("../../../models/smtpOptions");
+let {SmtpOptions} = require("../../../src/main/models/smtpOptions");
 
 module.exports = {
 

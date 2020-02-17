@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////
 
 // INTERNAL
-const {SmtpOptions} = require('../../../models/smtpOptions');
+const {SmtpOptions} = require('../../../src/main/models/smtpOptions');
 
 // EXTERNAL
 const expect = require('chai').expect;

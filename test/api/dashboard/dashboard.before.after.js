@@ -7,9 +7,9 @@
  *  permission of Moritz Vogt
  */
 // INTERNAL
-let {PriceOptions} = require("../../../models/priceOptions");
-let {User} = require("../../../models/user");
-let {SmtpOptions} = require("../../../models/smtpOptions");
+let {PriceOptions} = require("../../../src/main/models/priceOptions");
+let {User} = require("../../../src/main/models/user");
+let {SmtpOptions} = require("../../../src/main/models/smtpOptions");
 
 /**
  * Deletes all Users before each test.

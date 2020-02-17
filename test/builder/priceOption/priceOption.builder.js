@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////
 
 // INTERNAL
-let {PriceOptions} = require("../../../models/priceOptions");
+let {PriceOptions} = require("../../../src/main/models/priceOptions");
 
 module.exports = {
 

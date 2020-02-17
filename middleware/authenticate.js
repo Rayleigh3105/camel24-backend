@@ -7,7 +7,7 @@
  *  permission of Moritz Vogt
  */
 
-let {User} = require('./../models/user');
+let {User} = require('../src/main/models/user');
 
 /**
  * Authenticates the user with the given Token.

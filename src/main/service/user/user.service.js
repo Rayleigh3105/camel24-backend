@@ -16,9 +16,9 @@ let moment = require('moment');
 let _ = require('lodash');
 
 // INTERNAL
-let {User} = require('../../../../models/user');
-let {Order} = require('../../../../models/order');
-let ApplicationError = require('../../../../models/error');
+let {User} = require('../../models/user');
+let {Order} = require('../../models/order');
+let ApplicationError = require('../../models/error');
 let help = require('../../utils/helper');
 let mailService = require('./../mail/mail.service');
 let userHelper = require('./../../helper/user/UserHelper');

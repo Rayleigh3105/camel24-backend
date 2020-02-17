@@ -16,12 +16,12 @@ let moment = require('moment');
 let nodemailer = require("nodemailer");
 
 // INTERNAL
-let ApplicationError = require('../../../../models/error');
+let ApplicationError = require('../../models/error');
 let utilHelper = require('../../helper/util/UtilHelper');
 let mailHelper = require('../../helper/mail/MailHelper');
 let pattern = require('../../utils/ValidationPatterns');
 let log = require('./../../utils/logger');
-let {SmtpOptions} = require('../../../../models/smtpOptions');
+let {SmtpOptions} = require('../../models/smtpOptions');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT

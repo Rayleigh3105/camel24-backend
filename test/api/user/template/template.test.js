@@ -16,7 +16,7 @@ let templateAssert = require("./template.assert");
 let userBuilder = require("./../../../builder/user/user.builder");
 let rootUrl = "/user/template";
 let {app} = require("../../../../server");
-let {Template} = require("../../../../models/empfaenger_template");
+let {Template} = require("../../../../src/main/models/empfaenger_template");
 
 // EXTERNAL
 const request = require('supertest');

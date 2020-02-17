@@ -18,7 +18,7 @@ const bwipjs = require('bwip-js');
 
 // INTERNAL
 let log = require('../../utils/logger');
-let ApplicationError = require('../../../../models/error');
+let ApplicationError = require('../../models/error');
 let pattern = require('../../utils/ValidationPatterns');
 let directoryHelper = require('../../helper/directory/directory.helper');
 let service = require('./barcode.service');

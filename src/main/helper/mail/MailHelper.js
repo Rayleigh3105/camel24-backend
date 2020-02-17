@@ -16,8 +16,8 @@ let moment = require('moment');
 let nodemailer = require("nodemailer");
 
 // INTERNAL
-let {SmtpOptions} = require('../../../../models/smtpOptions');
-let ApplicationError = require('../../../../models/error');
+let {SmtpOptions} = require('../../models/smtpOptions');
+let ApplicationError = require('../../models/error');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT

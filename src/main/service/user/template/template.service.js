@@ -12,13 +12,13 @@
 //////////////////////////////////////////////////////
 
 // EXTERNAL
-let {Template} = require("../../../../../models/empfaenger_template");
+let {Template} = require("../../../models/empfaenger_template");
 
 let moment = require('moment');
 let _ = require('lodash');
 
 // INTERNAL
-let ApplicationError = require('../../../../../models/error');
+let ApplicationError = require('../../../models/error');
 let help = require('../../../utils/helper');
 let userHelper = require('../../../helper/user/UserHelper');
 let log = require("../../../utils/logger");

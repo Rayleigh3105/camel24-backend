@@ -18,7 +18,7 @@ let loginUrl = rootUrl + "login";
 let getUserInfo = rootUrl + "me";
 let {app} = require("../../../server");
 let userAssert = require('./user.assert');
-let {User} = require('../../../models/user');
+let {User} = require('../../../src/main/models/user');
 
 // EXTERNAL
 const request = require('supertest');

@@ -7,8 +7,8 @@
  *  permission of Moritz Vogt
  */
 // INTERNAL
-let {User} = require("../../../../models/user");
-let {Template} = require("../../../../models/empfaenger_template");
+let {User} = require("../../../../src/main/models/user");
+let {Template} = require("../../../../src/main/models/empfaenger_template");
 
 before(async (done) => {
     await Template.deleteMany({})

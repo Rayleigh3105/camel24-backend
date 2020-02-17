@@ -12,7 +12,7 @@ let absenderEmail = "moritz.vogt@test.de";
 let zustellArt = "persoenlich";
 let ansprechpartner = "Moritz";
 
-let {Order} = require("../../../models/order");
+let {Order} = require("../../../src/main/models/order");
 
 class OrderBuilder {
 

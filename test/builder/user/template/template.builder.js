@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////
 
 // INTERNAL
-let {Template, Empfeanger} = require("../../../../models/empfaenger_template");
+let {Template, Empfeanger} = require("../../../../src/main/models/empfaenger_template");
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT

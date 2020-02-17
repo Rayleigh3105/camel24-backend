@@ -17,9 +17,9 @@ let moment = require('moment');
 // INTERNAL
 let mailHelper = require("../../helper/mail/MailHelper");
 let directoryHelper = require("../../helper/directory/directory.helper");
-let ApplicationError = require('../../../../models/error');
+let ApplicationError = require('../../models/error');
 let pattern = require('../../utils/ValidationPatterns');
-let {Order} = require('../../../../models/order');
+let {Order} = require('../../models/order');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT

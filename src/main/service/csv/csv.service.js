@@ -17,7 +17,7 @@ const fs = require('fs');
 const path = require('path');
 
 // INTERNAL
-let ApplicationError = require('../../../../models/error');
+let ApplicationError = require('../../models/error');
 let pattern = require('../../utils/ValidationPatterns');
 let directoryHelper = require('../../helper/directory/directory.helper');
 let log = require('../../utils/logger');

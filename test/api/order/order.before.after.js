@@ -7,9 +7,9 @@
  *  permission of Moritz Vogt
  */
 // INTERNAL
-let {Order} = require("../../../models/order");
-let {User} = require("../../../models/user");
-let {PriceOptions} = require("../../../models/priceOptions");
+let {Order} = require("../../../src/main/models/order");
+let {User} = require("../../../src/main/models/user");
+let {PriceOptions} = require("../../../src/main/models/priceOptions");
 const mailHelper = require('../../../src/main/helper/mail/MailHelper');
 const mailService = require('../../../src/main/service/mail/mail.service');
 

@@ -12,7 +12,7 @@
 //////////////////////////////////////////////////////
 
 // INTERNAL
-const {PriceOptions} = require('../../../models/priceOptions');
+const {PriceOptions} = require('../../../src/main/models/priceOptions');
 
 // EXTERNAL
 const expect = require('chai').expect;

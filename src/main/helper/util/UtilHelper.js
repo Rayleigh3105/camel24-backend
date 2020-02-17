@@ -15,7 +15,7 @@
 let {ObjectID} = require('mongodb');
 
 // INTERNAL
-let ApplicationError = require('../../../../models/error');
+let ApplicationError = require('../../models/error');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT

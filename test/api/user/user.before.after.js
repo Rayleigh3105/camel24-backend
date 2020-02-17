@@ -7,7 +7,7 @@
  *  permission of Moritz Vogt
  */
 // INTERNAL
-let {User} = require("../../../models/user");
+let {User} = require("../../../src/main/models/user");
 const mailHelper = require('../../../src/main/helper/mail/MailHelper');
 const mailService = require('../../../src/main/service/mail/mail.service');
 
