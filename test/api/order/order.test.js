@@ -579,6 +579,26 @@ describe('ORDER ', () => {
                 })
         });
 
+        it('NOT OK, when sending empfeanger mail can not be sent', async (done) => {
+            beforeAfter.stupCheckConneciton();
+            beforeAfter.stupSentMailAbs();
+            let kundenNummer = 14001;
+            // Create User
+            await userBuilder.saveUser(kundenNummer);
+
+            let order = new OrderBuilder().buildValidUser();
+
+            request(app)
+                .post(rootUrl)
+                .send(order)
+                .set("x-kundenNummer", kundenNummer)
+                .then(res => {
+                    let body = res.body;
+                    orderAssert.checkException("Camel-71", 400, "Beim senden der E-Mail an den Empfänger ist etwas schiefgelaufen.", body);
+                    done()
+                })
+        });
+
     })
 });
 

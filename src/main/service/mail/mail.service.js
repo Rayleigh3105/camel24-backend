@@ -62,48 +62,56 @@ module.exports = {
 
     prepareSentMailAbs: async function (order, pathAttachment) {
         await mailHelper.checkConnectionToEmailServer();
-        this.sentMailAbs(pathAttachment, order);
+        return this.sentMailAbs(pathAttachment, order);
     },
 
-    sentMailAbs: async function(pathAttachment, order) {
+    sentMailAbs: async function (pathAttachment, order) {
         let date = moment().format(pattern.momentPattern);
 
         let smtpOptions = await mailHelper.getSmtpOptions();
         let transporter = nodemailer.createTransport(smtpOptions);
         let mailOptions = await this.buildMailOptionsAbs(smtpOptions, pathAttachment, order);
 
-        await transporter.sendMail(mailOptions)
-            .then(() => {
-                console.log(`[${date}] EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender : ${order._doc.absender.email}`);
-                log.info(`EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender : ${order._doc.absender.email}`);
-            })
-            .catch(err => {
-                throw new ApplicationError("Camel-70", 400, "Beim senden der E-Mail an den Absender ist etwas schiefgelaufen.")
-            })
+        return new Promise((resolve, reject) => {
+            transporter.sendMail(mailOptions)
+                .then(() => {
+                    console.log(`[${date}] EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender : ${order._doc.absender.email}`);
+                    log.info(`EMAIL-ABSENDER: E-Mail wurde erfolgreich an Absender : ${order._doc.absender.email}`);
+                    resolve();
+                })
+                .catch(err => {
+                    log.error(err);
+                    reject(new ApplicationError("Camel-70", 400, "Beim senden der E-Mail an den Absender ist etwas schiefgelaufen."));
+
+                })
+        });
     },
 
-    prepareSentMailEmpf: async function (order) {
+    prepareSentMailEmpf: async function (order, identificationNumber) {
         await mailHelper.checkConnectionToEmailServer();
-        await this.sentMailEmpf(order);
-
+        return await this.sentMailEmpf(order, identificationNumber);
     },
 
-    sentMailEmpf: async function(order) {
+    sentMailEmpf: async function (order, identificationNumber) {
         let date = moment().format(pattern.momentPattern);
 
-        let smtpOptions = await this.getMailOptions();
+        let smtpOptions = await mailHelper.getSmtpOptions();
         let transporter = nodemailer.createTransport(smtpOptions);
-        let mailOptions = this.buildMailOptionsEmpf(smtpOptions, order);
+        let mailOptions = this.buildMailOptionsEmpf(smtpOptions, order, identificationNumber);
 
         // send mail with defined transport object
-        await transporter.sendMail(mailOptions)
-            .then(() => {
-                console.log(`[${date}] EMAIL-EMPFÄNGER: E-Mail wurde erfolgreich an Empfänger : ${order._doc.empfaenger.email}`);
-                log.info(`EMAIL-EMPFÄNGER: E-Mail wurde erfolgreich an Empfänger : ${order._doc.empfaenger.email}`);
-            })
-            .catch(err => {
-                throw new ApplicationError("Camel-71", 400, "Beim senden der E-Mail an den Empfänger ist etwas schiefgelaufen.")
-            })
+        return new Promise((resolve, reject) => {
+            transporter.sendMail(mailOptions)
+                .then(() => {
+                    console.log(`[${date}] EMAIL-EMPFÄNGER: E-Mail wurde erfolgreich an Empfänger : ${order._doc.empfaenger.email}`);
+                    log.info(`EMAIL-EMPFÄNGER: E-Mail wurde erfolgreich an Empfänger : ${order._doc.empfaenger.email}`);
+                    resolve()
+                })
+                .catch(err => {
+                    log.error(err);
+                    reject(new ApplicationError("Camel-71", 400, "Beim senden der E-Mail an den Empfänger ist etwas schiefgelaufen."));
+                })
+        })
     },
 
     //////////////////////////////////////////////////////
@@ -111,6 +119,7 @@ module.exports = {
     //////////////////////////////////////////////////////
 
     checkIfMailOptionIsAvailable: async function (mailId) {
+
         await SmtpOptions.find({_id: mailId})
             .then(foundMail => {
                 if (foundMail.length === 0) {
@@ -191,7 +200,9 @@ module.exports = {
         };
     },
 
-    buildMailOptionsEmpf: async function (smtpOptions) {
+    buildMailOptionsEmpf: async function (smtpOptions, order, identificationNumber) {
+        let formattedDate = moment(order.zustellTermin.datum).format(pattern.momentFormattedDatePattern);
+
         return {
             from: `"Camel-24 Transportvermittlung & Kurierdienst" <${smtpOptions.auth.user}>`, // se/ sender address
             to: order._doc.empfaenger.email, // list of receivers

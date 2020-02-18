@@ -21,10 +21,9 @@ let pattern = require('../../utils/ValidationPatterns');
 let ApplicationError = require('../../models/error');
 let {User} = require('../../models/user');
 let properties = require("../../../../environment/environment").getProperties();
-let rootPath = properties.get('camel.root.path');
-let ftpDir = path.join(rootPath, '/camel/ftp');
-let baseDir = path.join(rootPath, '/camel');
-let orderDir = path.join(rootPath, '/camel/auftraege');
+let baseDir = properties.get('camel.root.path');
+let ftpDir = path.join(baseDir, '/ftp');
+let orderDir = path.join(baseDir, '/auftraege');
 let dateDir = moment().format(pattern.momentDatePattern);
 let date = moment().format(pattern.momentPattern);
 
@@ -35,7 +34,6 @@ let date = moment().format(pattern.momentPattern);
 module.exports = {
 
     properties,
-    rootPath,
     ftpDir,
     baseDir,
     orderDir,

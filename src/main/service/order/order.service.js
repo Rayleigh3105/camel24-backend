@@ -111,7 +111,7 @@ module.exports = {
 
                 // Sent E-Mail to Empfänger if available
                 if (order.empfaenger.email) {
-                    await mailService.prepareSentMailEmpf(order);
+                    await mailService.prepareSentMailEmpf(order, identificationNumber);
                 }
             }
         }

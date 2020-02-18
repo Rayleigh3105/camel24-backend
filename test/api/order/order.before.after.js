@@ -12,15 +12,18 @@ let {User} = require("../../../src/main/models/user");
 let {PriceOptions} = require("../../../src/main/models/priceOptions");
 const mailHelper = require('../../../src/main/helper/mail/MailHelper');
 const mailService = require('../../../src/main/service/mail/mail.service');
+const directoryHelper = require('../../../src/main/helper/directory/directory.helper');
 
 // EXTERNAL
 const sinon = require('sinon');
+const fs = require('fs');
 
 
 /**
  * Deletes all Users before each test.
  */
 beforeEach((done) => {
+
     PriceOptions.deleteMany({})
         .catch((err) => done(err));
     User.deleteMany({})

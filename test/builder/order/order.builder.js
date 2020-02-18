@@ -325,6 +325,7 @@ class OrderBuilder {
             .withEmpfeangerLand("Schweiz")
             .withEmpfeangerAnsprechpartner(ansprechpartner)
             .withArt("Waffe")
+            .withEmpfeangerEmail("Test.test@test.de")
             .withAbholDatum(new Date("February 20, 2020 00:00:00"))
             .withAbholDatumVon("18:00")
             .withAbholDatumBis("18:00")

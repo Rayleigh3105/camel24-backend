@@ -53,7 +53,6 @@ module.exports = {
             throw new ApplicationError("Camel-00", 404, "Kundennummer oder E-Mail konnte nicht gelesen werden.");
         }
 
-
         if (!allowedZustellArt.includes(order.zustellTermin.art)) {
             throw new ApplicationError("Camel-48", 400, "Zustellart darf nur standard | persoenlich | persoenlichIdent sein.")
         }

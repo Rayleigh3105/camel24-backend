@@ -31,7 +31,7 @@ module.exports = {
     //////////////////////////////////////////////////////
 
     rollbackChanges: async function (order, directoryToDelete, identificationNumber) {
-        if (order._id != null){
+        if (orderService.checkIfOrderIsAvailable(identificationNumber)){
             await orderService.deleteOrder(order, identificationNumber);
         }
 
