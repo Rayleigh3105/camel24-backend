@@ -160,13 +160,13 @@ module.exports = {
         // 18
         preparedData.empfTelefon = order.empfaenger.telefon === undefined ? "" : order.empfaenger.telefon;
         // 19
-        preparedData.zustellDatumExport = moment(new Date(order.zustellTermin.datum).toLocaleDateString("en-US", configuration).replace(new RegExp("/", "g"), ".")).format("DD.MM.YYYY");
+        preparedData.zustellDatumExport = moment(new Date(order.zustellTermin.datum).toLocaleDateString("en-US", configuration).replace(new RegExp("/", "g"), ".")).format(pattern.momentFormattedDatePattern);
         // 20
         preparedData.zustellVon = order.zustellTermin.von === undefined ? "" : order.zustellTermin.von;
         // 21
         preparedData.zustellBis = order.zustellTermin.bis === undefined ? "" : order.zustellTermin.bis;
         // 22
-        preparedData.abholDatumExport = moment(new Date(order.abholTermin.datum).toLocaleDateString("en-US", configuration).replace(new RegExp("/", "g"), ".")).format("DD.MM.YYYY");
+        preparedData.abholDatumExport = moment(new Date(order.abholTermin.datum).toLocaleDateString("en-US", configuration).replace(new RegExp("/", "g"), ".")).format(pattern.momentFormattedDatePattern);
         // 23
         preparedData.abholVon = order.abholTermin.von === undefined ? "" : order.abholTermin.von;
         // 24

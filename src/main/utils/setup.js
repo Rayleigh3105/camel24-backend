@@ -16,6 +16,7 @@
 let help = require('./helper');
 let log = require("./logger");
 let Role = require('../models/role');
+let pattern = require('./../utils/ValidationPatterns');
 let {SmtpOptions} = require('../models/smtpOptions');
 let {PriceOptions} = require('../models/priceOptions');
 let ApplicationError = require('../models/error');
@@ -36,7 +37,7 @@ module.exports = {
      * Creates Admin User
      */
     createAdminUser: async function () {
-        let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+        let date = moment().format(patt);
 
         let userData =
             {
@@ -85,7 +86,7 @@ module.exports = {
      * Creates Admin User
      */
     createSmtpOptions: async function () {
-        let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+        let date = moment().format(pattern.momentPattern);
 
         let smtpConfig =
             {
@@ -117,7 +118,7 @@ module.exports = {
      * Creates initial price options
      */
     createPriceOptions: function () {
-        let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+        let date = moment().format(pattern.momentPattern);
 
         let priceOptions = [
             {type: "abhol", time: "09-17", price: "19"},
@@ -169,7 +170,7 @@ module.exports = {
      * Creates Needed Directorys on the Server
      */
     createNeededDirectorys: function () {
-        let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+        let date = moment().format(pattern.momentPattern);
 
         if (!fs.existsSync(`${directoryHelper.baseDir}/tmp`)) {
             fs.mkdirSync(`${directoryHelper.baseDir}/tmp`);
@@ -240,7 +241,7 @@ module.exports = {
      *
      */
     rollBackUserCreation: function (user) {
-        let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
+        let date = moment().format(pattern.momentPattern);
 
         return new Promise((resolve, reject) => {
             try {

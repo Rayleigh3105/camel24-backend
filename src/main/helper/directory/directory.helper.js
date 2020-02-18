@@ -25,7 +25,7 @@ let rootPath = properties.get('camel.root.path');
 let ftpDir = path.join(rootPath, '/camel/ftp');
 let baseDir = path.join(rootPath, '/camel');
 let orderDir = path.join(rootPath, '/camel/auftraege');
-let dateDir = moment().format("DDMMYYYY");
+let dateDir = moment().format(pattern.momentDatePattern);
 let date = moment().format(pattern.momentPattern);
 
 //////////////////////////////////////////////////////

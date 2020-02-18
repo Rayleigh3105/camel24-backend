@@ -90,6 +90,7 @@ module.exports = {
 
     sentMailEmpf: async function(order) {
         let date = moment().format(pattern.momentPattern);
+
         let smtpOptions = await this.getMailOptions();
         let transporter = nodemailer.createTransport(smtpOptions);
         let mailOptions = this.buildMailOptionsEmpf(smtpOptions, order);

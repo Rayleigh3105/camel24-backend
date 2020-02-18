@@ -33,7 +33,7 @@ module.exports = {
     generatePdf: async function (identificationNumber, order, pathToSave) {
         let pdfFileName = `Paketlabel.pdf`;
         let doc = new PDFDocument;
-        let formattedZustellDate = moment(order.zustellTermin.datum).format("DD.MM.YYYY");
+        let formattedZustellDate = moment(order.zustellTermin.datum).format(pattern.momentFormattedDatePattern);
         let date = moment(order.zustellTermin.datum).format(pattern.momentPattern);
         let pathToBarcode = `${pathToSave}/${identificationNumber}.png`;
 
