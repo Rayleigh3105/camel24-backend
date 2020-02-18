@@ -7,15 +7,16 @@
  *  permission of Moritz Vogt
  */
 
+// INTERNAL
+
+
+// EXTERNAL
 const winston = require('winston');
 let format = require('winston').format;
 require('winston-daily-rotate-file');
-const path = require('path');
-let windowsRootPath = 'C:/';
-let baseDir = path.join(windowsRootPath, '/camel');
 
 let transport = new (winston.transports.DailyRotateFile)({
-    filename: `${baseDir}/logs/camelapi-%DATE%.log`,
+    filename: `${require("../helper/directory/directory.helper").baseDir}/logs/camelapi-%DATE%.log`,
     datePattern: 'DD-MM-YYYY',
     zippedArchive: true,
     maxSize: '20m',

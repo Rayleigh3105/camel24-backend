@@ -14,16 +14,12 @@
 // EXTERNAL
 let moment = require('moment');
 const fs = require('fs');
-const path = require('path');
 
 // INTERNAL
 let ApplicationError = require('../../models/error');
 let pattern = require('../../utils/ValidationPatterns');
 let directoryHelper = require('../../helper/directory/directory.helper');
 let log = require('../../utils/logger');
-let windowsRootPath = 'C:/';
-let ftpDir = path.join(windowsRootPath, '/camel/ftp');
-let baseDir = path.join(windowsRootPath, '/camel');
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -45,18 +41,18 @@ module.exports = {
     copyCsvInFinalDir: async function (identificationNumber) {
         let date = moment().format(pattern.momentPattern);
 
-        if (!fs.existsSync(ftpDir)) {
-            fs.mkdirSync(ftpDir);
-            log.info(`Ordner ${ftpDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${ftpDir} wurde erstellt`);
+        if (!fs.existsSync(directoryHelper.ftpDir)) {
+            fs.mkdirSync(directoryHelper.ftpDir);
+            log.info(`Ordner ${directoryHelper.ftpDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${directoryHelper.ftpDir} wurde erstellt`);
         }
 
         return new Promise((resolve, reject) => {
-            fs.copyFile(`${baseDir}/tmp/csv/${identificationNumber}.csv`, `${ftpDir}/${identificationNumber}.csv`, (err) => {
+            fs.copyFile(`${directoryHelper.baseDir}/tmp/csv/${identificationNumber}.csv`, `${directoryHelper.ftpDir}/${identificationNumber}.csv`, (err) => {
                 if (err) reject(false);
 
                 // Delete CSV
-                fs.unlink(`${baseDir}/tmp/csv/` + identificationNumber + ".csv", err => {
+                fs.unlink(`${directoryHelper.baseDir}/tmp/csv/` + identificationNumber + ".csv", err => {
                     if (err) throw err;
                     log.info(`CSV: ${identificationNumber}.csv wurde verschoben.`);
                     console.log(`[${date}] CSV: ${identificationNumber}.csv wurde verschoben.`);

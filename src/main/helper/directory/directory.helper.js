@@ -17,15 +17,14 @@ let fs = require('fs');
 const path = require('path');
 
 // INTERNAL
-let log = require('../../utils/logger');
 let pattern = require('../../utils/ValidationPatterns');
-let setup = require("../../utils/setup");
 let ApplicationError = require('../../models/error');
 let {User} = require('../../models/user');
-let windowsRootPath = 'C:/';
-let ftpDir = path.join(windowsRootPath, '/camel/ftp');
-let baseDir = path.join(windowsRootPath, '/camel');
-let orderDir = path.join(windowsRootPath, '/camel/auftraege');
+let properties = require("../../../../environment/environment").getProperties();
+let rootPath = properties.get('camel.root.path');
+let ftpDir = path.join(rootPath, '/camel/ftp');
+let baseDir = path.join(rootPath, '/camel');
+let orderDir = path.join(rootPath, '/camel/auftraege');
 let dateDir = moment().format("DDMMYYYY");
 let date = moment().format(pattern.momentPattern);
 
@@ -35,50 +34,60 @@ let date = moment().format(pattern.momentPattern);
 
 module.exports = {
 
+    properties,
+    rootPath,
+    ftpDir,
+    baseDir,
+    orderDir,
+
     //////////////////////////////////////////////////////
     // PUBLIC METHODS
     //////////////////////////////////////////////////////
 
     createNeededDirectorys: async function () {
         let date = moment().format(pattern.momentPattern);
+        let logger = require('../../utils/logger');
 
-        if (!fs.existsSync(`${baseDir}/tmp`)) {
-            fs.mkdirSync(`${baseDir}/tmp`);
-            log.info(`Ordner /tmp wurde erstellt`);
-            console.log(`[${date}] Ordner /tmp wurde erstellt`);
-        }
-        if (!fs.existsSync(`${baseDir}/tmp/csv`)) {
-            fs.mkdirSync(`${baseDir}/tmp/csv`);
-            log.info(`Ordner /tmp/csv wurde erstellt`);
-            console.log(`[${date}] Ordner /tmp/csv wurde erstellt`);
-        }
 
         if (!fs.existsSync(baseDir)) {
             fs.mkdirSync(baseDir);
-            log.info(`Ordner ${baseDir} wurde erstellt`);
+            logger.info(`Ordner ${baseDir} wurde erstellt`);
             console.log(`[${date}] Ordner ${baseDir} wurde erstellt`);
+        }
+
+        if (!fs.existsSync(`${baseDir}/tmp`)) {
+            fs.mkdirSync(`${baseDir}/tmp`);
+            logger.info(`Ordner /tmp wurde erstellt`);
+            console.log(`[${date}] Ordner /tmp wurde erstellt`);
+        }
+
+        if (!fs.existsSync(`${baseDir}/tmp/csv`)) {
+            fs.mkdirSync(`${baseDir}/tmp/csv`);
+            logger.info(`Ordner /tmp/csv wurde erstellt`);
+            console.log(`[${date}] Ordner /tmp/csv wurde erstellt`);
         }
 
         if (!fs.existsSync(`${baseDir}/logs`)) {
             fs.mkdirSync(`${baseDir}/logs`);
-            log.info(`Ordner ${baseDir}/logs wurde erstellt`);
+            logger.info(`Ordner ${baseDir}/logs wurde erstellt`);
             console.log(`[${date}] Ordner ${baseDir}/logs wurde erstellt`);
         }
 
         if (!fs.existsSync(ftpDir)) {
             fs.mkdirSync(ftpDir);
-            log.info(`Ordner ${ftpDir} wurde erstellt`);
+            logger.info(`Ordner ${ftpDir} wurde erstellt`);
             console.log(`[${date}] Ordner ${ftpDir} wurde erstellt`);
         }
         if (!fs.existsSync(orderDir)) {
             fs.mkdirSync(orderDir);
-            log.info(`Ordner ${orderDir} wurde erstellt`);
+            logger.info(`Ordner ${orderDir} wurde erstellt`);
             console.log(`[${date}] Ordner ${orderDir} wurde erstellt`);
         }
     },
 
     createKndDirectorys: function (kndDir, kndDateDir) {
         let date = moment().format(pattern.momentPattern);
+        let logger = require('../../utils/logger');
 
         return new Promise((resolve, reject) => {
             try {
@@ -86,14 +95,14 @@ module.exports = {
                 // Creates ./tmp/kundenNummer
                 if (!fs.existsSync(kndDir)) {
                     fs.mkdirSync(kndDir);
-                    log.info(`Ordner ${kndDir} wurde erstellt`);
+                    logger.info(`Ordner ${kndDir} wurde erstellt`);
                     console.log(`[${date}] Ordner ${kndDir} wurde erstellt`);
                 }
 
                 // Creates ./tmp/kundenNummer/date
                 if (!fs.existsSync(kndDateDir)) {
                     fs.mkdirSync(kndDateDir);
-                    log.info(`Ordner ${kndDateDir} wurde erstellt`);
+                    logger.info(`Ordner ${kndDateDir} wurde erstellt`);
                     console.log(`[${date}] Ordner ${kndDateDir} wurde erstellt`);
                 }
                 resolve();
@@ -135,14 +144,15 @@ module.exports = {
      * @returns {string}
      */
     getFilePath: function (identificationNumber) {
+        let logger = require('../../utils/logger');
         if (!fs.existsSync(`${baseDir}/tmp`)) {
             fs.mkdirSync(`${baseDir}/tmp`);
-            log.info(`Ordner /tmp wurde erstellt`);
+            logger.info(`Ordner /tmp wurde erstellt`);
             console.log(`[${date}] Ordner /tmp wurde erstellt`);
         }
         if (!fs.existsSync(`${baseDir}/tmp/csv`)) {
             fs.mkdirSync(`${baseDir}/tmp/csv`);
-            log.info(`Ordner /tmp/csv wurde erstellt`);
+            logger.info(`Ordner /tmp/csv wurde erstellt`);
             console.log(`[${date}] Ordner /tmp/csv wurde erstellt`);
         }
 
@@ -150,10 +160,11 @@ module.exports = {
     },
 
     createDirecotyToSaveBarcodeIn: async function(pathToSave) {
+        let logger = require('../../utils/logger');
 
         if (!fs.existsSync(pathToSave)) {
             fs.mkdirSync(pathToSave);
-            log.info(`Ordner ${pathToSave} wurde erstellt`);
+            logger.info(`Ordner ${pathToSave} wurde erstellt`);
             console.log(`[${date}] Ordner ${pathToSave} wurde erstellt`);
         }
     },
@@ -163,6 +174,7 @@ module.exports = {
     //////////////////////////////////////////////////////
 
     getkndDirLoggedIn: async function (req, kundenNummer) {
+        let logger = require('../../utils/logger');
         let kndDir;
         await User.findByKundenNummer(kundenNummer)
             .then(user => {
@@ -177,7 +189,7 @@ module.exports = {
                 }
             })
             .catch(e => {
-                log.error(e);
+                logger.error(e);
                 throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
             });
 

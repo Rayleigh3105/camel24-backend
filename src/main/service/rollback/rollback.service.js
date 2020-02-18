@@ -18,8 +18,7 @@ const path = require('path');
 // INTERNAL
 let log = require('../../utils/logger');
 let orderService = require('./../order/order.service');
-let windowsRootPath = 'C:/';
-let baseDir = path.join(windowsRootPath, '/camel');
+let directoryHelper = require("../../helper/directory/directory.helper");
 
 //////////////////////////////////////////////////////
 // MODULE EXPORT
@@ -58,18 +57,11 @@ module.exports = {
                 });
 
                 // Delete CSV un tmp directory
-                fs.unlink(`${baseDir}/tmp` + identificationNumber + ".csv", err => {
+                fs.unlink(`${directoryHelper.baseDir}/tmp` + identificationNumber + ".csv", err => {
                     if (err) throw err;
                     log.info(`${identificationNumber} CSV: ${identificationNumber}.csv wurde gelöscht.`);
                 })
             });
         }
-
-
     }
-
-    //////////////////////////////////////////////////////
-    // PRIVATE METHODS
-    //////////////////////////////////////////////////////
-
 };

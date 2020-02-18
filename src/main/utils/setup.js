@@ -7,23 +7,25 @@
  *  permission of Moritz Vogt
  */
 
-let log = require("./logger");
-let {Order} = require('../models/order');
-let {User} = require('../models/user');
 
-let ApplicationError = require('../models/error');
-// MODULES
+//////////////////////////////////////////////////////
+// MODULE VARIABLES
+//////////////////////////////////////////////////////
+
+// INTERNAL
 let help = require('./helper');
-let windowsRootPath = 'C:/';
-let fs = require('fs');
-let moment = require('moment');
-const path = require('path');
-let ftpDir = path.join(windowsRootPath, '/camel/ftp');
-let baseDir = path.join(windowsRootPath, '/camel');
-let orderDir = path.join(windowsRootPath, '/camel/auftraege');
+let log = require("./logger");
 let Role = require('../models/role');
 let {SmtpOptions} = require('../models/smtpOptions');
 let {PriceOptions} = require('../models/priceOptions');
+let ApplicationError = require('../models/error');
+let {User} = require('../models/user');
+let directoryHelper = require('../helper/directory/directory.helper');
+
+// EXTERNAL
+let fs = require('fs');
+let moment = require('moment');
+
 
 /**
  * This is the SETUP
@@ -169,38 +171,38 @@ module.exports = {
     createNeededDirectorys: function () {
         let date = moment().format("DD-MM-YYYY HH:mm:SSSS");
 
-        if (!fs.existsSync(`${baseDir}/tmp`)) {
-            fs.mkdirSync(`${baseDir}/tmp`);
+        if (!fs.existsSync(`${directoryHelper.baseDir}/tmp`)) {
+            fs.mkdirSync(`${directoryHelper.baseDir}/tmp`);
             log.info(`Ordner /tmp wurde erstellt`);
             console.log(`[${date}] Ordner /tmp wurde erstellt`);
         }
-        if (!fs.existsSync(`${baseDir}/tmp/csv`)) {
-            fs.mkdirSync(`${baseDir}/tmp/csv`);
+        if (!fs.existsSync(`${directoryHelper.baseDir}/tmp/csv`)) {
+            fs.mkdirSync(`${directoryHelper.baseDir}/tmp/csv`);
             log.info(`Ordner /tmp/csv wurde erstellt`);
             console.log(`[${date}] Ordner /tmp/csv wurde erstellt`);
         }
 
-        if (!fs.existsSync(baseDir)) {
-            fs.mkdirSync(baseDir);
-            log.info(`Ordner ${baseDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${baseDir} wurde erstellt`);
+        if (!fs.existsSync(directoryHelper.baseDir)) {
+            fs.mkdirSync(directoryHelper.baseDir);
+            log.info(`Ordner ${directoryHelper.baseDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${directoryHelper.baseDir} wurde erstellt`);
         }
 
-        if (!fs.existsSync(`${baseDir}/logs`)) {
-            fs.mkdirSync(`${baseDir}/logs`);
-            log.info(`Ordner ${baseDir}/logs wurde erstellt`);
-            console.log(`[${date}] Ordner ${baseDir}/logs wurde erstellt`);
+        if (!fs.existsSync(`${directoryHelper.baseDir}/logs`)) {
+            fs.mkdirSync(`${directoryHelper.baseDir}/logs`);
+            log.info(`Ordner ${directoryHelper.baseDir}/logs wurde erstellt`);
+            console.log(`[${date}] Ordner ${directoryHelper.baseDir}/logs wurde erstellt`);
         }
 
-        if (!fs.existsSync(ftpDir)) {
-            fs.mkdirSync(ftpDir);
-            log.info(`Ordner ${ftpDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${ftpDir} wurde erstellt`);
+        if (!fs.existsSync(directoryHelper.ftpDir)) {
+            fs.mkdirSync(directoryHelper.ftpDir);
+            log.info(`Ordner ${directoryHelper.ftpDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${directoryHelper.ftpDir} wurde erstellt`);
         }
-        if (!fs.existsSync(orderDir)) {
-            fs.mkdirSync(orderDir);
-            log.info(`Ordner ${orderDir} wurde erstellt`);
-            console.log(`[${date}] Ordner ${orderDir} wurde erstellt`);
+        if (!fs.existsSync(directoryHelper.orderDir)) {
+            fs.mkdirSync(directoryHelper.orderDir);
+            log.info(`Ordner ${directoryHelper.orderDir} wurde erstellt`);
+            console.log(`[${date}] Ordner ${directoryHelper.orderDir} wurde erstellt`);
         }
     }
     ,
@@ -216,12 +218,12 @@ module.exports = {
                 let date = identificationNumber.substring(5, 13);
                 let count = identificationNumber.substring(13, 14);
 
-                fs.readdir(`${orderDir}/${kundenNummer}/${date}/${count}`, (err, files) => {
+                fs.readdir(`${directoryHelper.orderDir}/${kundenNummer}/${date}/${count}`, (err, files) => {
                     if (err) {
                         reject(err);
                     }
                     if (files) {
-                        resolve(`${orderDir}/${kundenNummer}/${date}/${count}/Paketlabel.pdf`);
+                        resolve(`${directoryHelper.orderDir}/${kundenNummer}/${date}/${count}/Paketlabel.pdf`);
                     }
                 });
             } catch (e) {
