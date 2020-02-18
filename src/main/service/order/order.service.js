@@ -41,7 +41,6 @@ module.exports = {
 
     downloadOrder: async function (req) {
         let identificationNumber = req.body.identificationNumber;
-        await utilHelper.checkIfIdIsValid(identificationNumber);
         await this.checkIfOrderIsAvailable(identificationNumber);
         return getFile(identificationNumber);
     },
@@ -68,11 +67,11 @@ module.exports = {
         let identificationNumber;
 
         try {
-            // Do preparation before generation
-            await orderValidationService.doPreperationsForOrderGeneration(req, order);
-
             // User Validation
             let user = await userService.checkIfUserAvailable(req);
+
+            // Do preparation before generation
+            await orderValidationService.doPreperationsForOrderGeneration(req, order);
 
             // Create Needed Directorys
             let kndDateDir = await directoryHelper.createDirectoryForOrder(req, order);
@@ -144,10 +143,16 @@ module.exports = {
     },
 
     checkIfOrderIsAvailable: async function (identificationNumber) {
-        await Order.find({_id: identificationNumber}).then(foundOrder => {
+        await Order.find({identificationNumber: identificationNumber}).then(foundOrder => {
             if (foundOrder.length === 0) {
                 throw new ApplicationError("Camel-56", 400, "Auftrag kann nicht gefunden werden.")
             }
+        })
+    },
+
+    checkIfOrderIsAvailableById: async function (id) {
+        await Order.find({_id: id}).then(foundOrder => {
+            return foundOrder.length !== 0;
         })
     },
 

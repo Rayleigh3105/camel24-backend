@@ -17,7 +17,6 @@ const path = require('path');
 
 // INTERNAL
 let log = require('../../utils/logger');
-let orderService = require('./../order/order.service');
 let directoryHelper = require("../../helper/directory/directory.helper");
 
 //////////////////////////////////////////////////////
@@ -31,7 +30,9 @@ module.exports = {
     //////////////////////////////////////////////////////
 
     rollbackChanges: async function (order, directoryToDelete, identificationNumber) {
-        if (orderService.checkIfOrderIsAvailable(identificationNumber)){
+        let orderService = require('../order/order.service');
+
+        if (await orderService.checkIfOrderIsAvailableById(order._id)){
             await orderService.deleteOrder(order, identificationNumber);
         }
 

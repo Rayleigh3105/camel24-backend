@@ -19,10 +19,13 @@ const sinon = require('sinon');
 const fs = require('fs');
 
 
-/**
- * Deletes all Users before each test.
- */
+before((done) => {
+    sinon.restore();
+    done()
+});
+
 beforeEach((done) => {
+
     PriceOptions.deleteMany({})
         .catch((err) => done(err));
     User.deleteMany({})
@@ -34,6 +37,7 @@ beforeEach((done) => {
 });
 
 afterEach((done) => {
+    sinon.restore();
     PriceOptions.deleteMany({})
         .catch((err) => done(err));
     User.deleteMany({})

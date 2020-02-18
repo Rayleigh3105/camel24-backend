@@ -19,15 +19,18 @@ const sinon = require('sinon');
  * Deletes all Users before each test.
  */
 beforeEach((done) => {
+
     User.deleteMany({})
         .then(() => done())
         .catch((err) => done(err));
 });
 
 afterEach((done) => {
+    sinon.restore();
     User.deleteMany({})
         .then(() => done())
         .catch((err) => done(err));
+
 });
 
 /**
@@ -57,5 +60,9 @@ module.exports = {
 
     stupCheckConneciton: function () {
         sinon.stub(mailHelper, 'checkConnectionToEmailServer');
+    },
+
+    stupSentRegisterMail: function () {
+        sinon.stub(mailService, 'sentEmail')
     }
 };

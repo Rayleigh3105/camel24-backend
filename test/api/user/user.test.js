@@ -38,6 +38,8 @@ describe('USER', () => {
         //////////////////////////////////////////////////////
 
         it('OK, should create a user ', (done) => {
+            beforeAfter.stupCheckConneciton();
+            beforeAfter.stupSentRegisterMail();
             let userObject = userBuilder.buildUser();
 
             request(app)
@@ -53,6 +55,8 @@ describe('USER', () => {
         });
 
         it('OK, should create whole user Object ', (done) => {
+            beforeAfter.stupCheckConneciton();
+            beforeAfter.stupSentRegisterMail();
             let userObject = userBuilder.buildWholeUser();
 
             request(app)
@@ -68,7 +72,8 @@ describe('USER', () => {
         });
 
         it('OK, should create Admin user on startup', async (done) => {
-
+            beforeAfter.stupCheckConneciton();
+            beforeAfter.stupSentRegisterMail();
             let userObject = userBuilder.buildWholeUser();
 
             await request(app)
@@ -132,6 +137,8 @@ describe('USER', () => {
         });
 
         it('NOT OK, should throw Exception when E-Mail exists', async (done) => {
+            beforeAfter.stupCheckConneciton();
+            beforeAfter.stupSentRegisterMail()
             let userObject = userBuilder.buildUser();
 
             await request(app)
