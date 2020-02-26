@@ -12,6 +12,7 @@
 //////////////////////////////////////////////////////
 // INTERNAL
 let rootUrl = "/order/";
+let downloadUrl = "/order/download";
 let {app} = require("../../../server");
 let userBuilder = require('../../builder/user/user.builder');
 let OrderBuilder = require('../../builder/order/order.builder');
@@ -137,7 +138,48 @@ describe('ORDER ', () => {
                 })
         });
 
-    })
+    });
+
+    describe('POST /download', () => {
+
+        //////////////////////////////////////////////
+        // NEGATIVE
+        //////////////////////////////////////////////
+
+        it('NOT OK, should throw error when order is not available', async (done) => {
+            let kundenNummer = 14001;
+            // Create User
+            await userBuilder.saveUser(kundenNummer);
+            let xauth = await loginUser(kundenNummer);
+
+
+            request(app)
+                .post(downloadUrl)
+                .set("x-kundenNummer", kundenNummer)
+                .set("x-auth", xauth)
+                .then(res => {
+                    let body = res.body;
+                    orderAssert.checkException("Camel-56", 400, "Auftrag kann nicht gefunden werden.", body);
+                    done()
+                })
+        });
+
+        it('NOT OK, should throw error when not authorized', async (done) => {
+            let kundenNummer = 14001;
+            // Create User
+            await userBuilder.saveUser(kundenNummer);
+
+            request(app)
+                .post(downloadUrl)
+                .set("x-auth", "xauth")
+                .then(res => {
+                    expect(res.status).to.equal(401);
+
+                    done()
+                })
+        });
+    });
+
 });
 
 async function loginUser(kundenNummer) {
