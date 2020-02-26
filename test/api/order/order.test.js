@@ -12,10 +12,8 @@
 //////////////////////////////////////////////////////
 // INTERNAL
 let rootUrl = "/order/";
-let priceUrl = rootUrl + "price";
 let {app} = require("../../../server");
 let userBuilder = require('../../builder/user/user.builder');
-let priceBuilder = require('../../builder/priceOption/priceOption.builder');
 let OrderBuilder = require('../../builder/order/order.builder');
 let orderAssert = require('./order.assert');
 
@@ -51,7 +49,7 @@ describe('ORDER ', () => {
                 .then(res => {
                     let body = res.body;
 
-                    orderAssert.checkException("Camel-16", 404, "Benutzer (14002) konnte nicht gefunden werden.", body);
+                    orderAssert.checkException("Camel-00", 404, "Kundennummer oder E-Mail konnte nicht gelesen werden.", body);
 
                     done()
                 })
@@ -251,8 +249,8 @@ describe('ORDER ', () => {
                 .withZustellArt(zustellArt)
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 24, 2020 00:00:00"))
-                .withZustellDatum(new Date("February 24, 2020 00:00:00"))
+                .withAbholDatum(new Date("April 4, 2022 00:00:00"))
+                .withZustellDatum(new Date("April 4, 2022 00:00:00"))
                 .build();
 
             request(app)
@@ -276,10 +274,10 @@ describe('ORDER ', () => {
                 .withZustellArt(zustellArt)
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 24, 2020 00:00:00"))
+                .withAbholDatum(new Date("April 4, 2022 00:00:00"))
                 .withAbholDatumVon("22")
                 .withAbholDatumBis("22")
-                .withZustellDatum(new Date("February 25, 2020 00:00:00"))
+                .withZustellDatum(new Date("April 5, 2022 00:00:00"))
                 .build();
 
             request(app)
@@ -303,10 +301,10 @@ describe('ORDER ', () => {
                 .withZustellArt(zustellArt)
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 24, 2020 00:00:00"))
+                .withAbholDatum(new Date("April 4, 2022 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 25, 2020 00:00:00"))
+                .withZustellDatum(new Date("April 5, 2022 00:00:00"))
                 .withZustellDatumVon("22")
                 .withZustellDatumBis("43")
                 .build();
@@ -333,10 +331,10 @@ describe('ORDER ', () => {
                 .withZustellArt(zustellArt)
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 24, 2020 00:00:00"))
+                .withAbholDatum(new Date("April 4, 2022 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 25, 2020 00:00:00"))
+                .withZustellDatum(new Date("April 5, 2022 00:00:00"))
                 .withZustellDatumVon("18:00")
                 .withZustellDatumBis("18:00")
                 .build();
@@ -364,10 +362,10 @@ describe('ORDER ', () => {
                 .withEmpfeangerPlz("849489458")
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 24, 2020 00:00:00"))
+                .withAbholDatum(new Date("April 4, 2022 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 25, 2020 00:00:00"))
+                .withZustellDatum(new Date("April 5, 2022 00:00:00"))
                 .withZustellDatumVon("18:00")
                 .withZustellDatumBis("18:00")
                 .build();
@@ -394,10 +392,10 @@ describe('ORDER ', () => {
                 .withEmpfeangerPlz("849489458")
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 24, 2020 00:00:00"))
+                .withAbholDatum(new Date("April 4, 2022 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 25, 2020 00:00:00"))
+                .withZustellDatum(new Date("April 5, 2022 00:00:00"))
                 .withZustellDatumVon("18:00")
                 .withRechPlz("324523432")
                 .withZustellDatumBis("18:00")
@@ -427,10 +425,10 @@ describe('ORDER ', () => {
                 .withEmpfeangerPlz("91757")
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 24, 2020 00:00:00"))
+                .withAbholDatum(new Date("April 4, 2022 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 25, 2020 00:00:00"))
+                .withZustellDatum(new Date("April 5, 2022 00:00:00"))
                 .withZustellDatumVon("18:00")
                 .withZustellDatumBis("18:00")
                 .withRechPlz("34323")
@@ -461,10 +459,10 @@ describe('ORDER ', () => {
                 .withEmpfeangerLand("invalid")
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 24, 2020 00:00:00"))
+                .withAbholDatum(new Date("April 4, 2022 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 25, 2020 00:00:00"))
+                .withZustellDatum(new Date("April 5, 2022 00:00:00"))
                 .withZustellDatumVon("18:00")
                 .withZustellDatumBis("18:00")
                 .withRechPlz("34323")
@@ -495,10 +493,10 @@ describe('ORDER ', () => {
                 .withEmpfeangerLand("Schweiz")
                 .withEmpfeangerAnsprechpartner(ansprechpartner)
                 .withArt("Waffe")
-                .withAbholDatum(new Date("February 24, 2020 00:00:00"))
+                .withAbholDatum(new Date("April 4, 2022 00:00:00"))
                 .withAbholDatumVon("18:00")
                 .withAbholDatumBis("18:00")
-                .withZustellDatum(new Date("February 25, 2020 00:00:00"))
+                .withZustellDatum(new Date("April 5, 2022 00:00:00"))
                 .withZustellDatumVon("18:00")
                 .withZustellDatumBis("18:00")
                 .withRechPlz("34323")
