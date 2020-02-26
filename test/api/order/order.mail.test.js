@@ -12,10 +12,8 @@
 //////////////////////////////////////////////////////
 // INTERNAL
 let rootUrl = "/order/";
-let priceUrl = rootUrl + "price";
 let {app} = require("../../../server");
 let userBuilder = require('../../builder/user/user.builder');
-let priceBuilder = require('../../builder/priceOption/priceOption.builder');
 let OrderBuilder = require('../../builder/order/order.builder');
 let orderAssert = require('./order.assert');
 
@@ -86,6 +84,55 @@ describe('ORDER ', () => {
                 .then(res => {
                     let body = res.body;
                     orderAssert.checkException("Camel-71", 400, "Beim senden der E-Mail an den Empfänger ist etwas schiefgelaufen.", body);
+                    done()
+                })
+        });
+
+        //////////////////////////////////////////////
+        // POSITIVE
+        //////////////////////////////////////////////
+
+        it('OK, should create Order without login on database', async (done) => {
+            beforeAfter.stupCheckConneciton();
+            beforeAfter.stupSentMailAbs();
+            beforeAfter.stupSentMailEmpf();
+            let kundenNummer = 14001;
+            // Create User
+            await userBuilder.saveUser(kundenNummer);
+
+            let order = new OrderBuilder().buildValidUser();
+
+            request(app)
+                .post(rootUrl)
+                .send(order)
+                .set("x-kundenNummer", kundenNummer)
+                .then(async res => {
+                    let body = res.body;
+                    await orderAssert.checkIfOrderIsAvailableOnDatabase(body);
+                    done()
+                })
+        });
+
+        it('OK, should create Order with login on filesystem and database', async (done) => {
+            beforeAfter.stupCheckConneciton();
+            beforeAfter.stupSentMailAbs();
+            beforeAfter.stupSentMailEmpf();
+            let kundenNummer = 14001;
+            // Create User
+            await userBuilder.saveUser(kundenNummer);
+            let xauth = await loginUser(kundenNummer);
+
+            let order = new OrderBuilder().buildValidUser();
+
+            request(app)
+                .post(rootUrl)
+                .send(order)
+                .set("x-kundenNummer", kundenNummer)
+                .set("x-auth", xauth)
+                .then(async res => {
+                    let body = res.body;
+                    await orderAssert.checkIfOrderIsAvailableOnDatabase(body);
+                    await orderAssert.checkIfOrderIsAvailableOnFileSystem(body, kundenNummer);
                     done()
                 })
         });

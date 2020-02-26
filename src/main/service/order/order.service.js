@@ -86,7 +86,7 @@ module.exports = {
             await csvService.convertToCsvAndSaveItOnFileSystem(order, resultCount, identificationNumber);
 
             // Save Order in Database
-            order = await this.mapOrder(order, user, new Date(), identificationNumber, kundenNummer);
+            order = await this.mapOrder(order, user, identificationNumber, kundenNummer);
             order = await this.saveOrderToDatabase(order);
 
             // Resolve directory
@@ -114,6 +114,7 @@ module.exports = {
                 }
             }
         }
+        return order;
     },
 
     saveOrderToDatabase: async function (order) {
@@ -138,16 +139,19 @@ module.exports = {
 
     getFile: async function (identificationNumber) {
         let file = null;
-        setup.getPdfFilePath(identificationNumber).then(foundfile => file = foundfile);
+        await setup.getPdfFilePath(identificationNumber).then(foundfile => file = foundfile);
         return file;
     },
 
     checkIfOrderIsAvailable: async function (identificationNumber) {
+        let order;
         await Order.find({identificationNumber: identificationNumber}).then(foundOrder => {
             if (foundOrder.length === 0) {
                 throw new ApplicationError("Camel-56", 400, "Auftrag kann nicht gefunden werden.")
             }
-        })
+            order = foundOrder;
+        });
+        return order;
     },
 
     checkIfOrderIsAvailableById: async function (id) {

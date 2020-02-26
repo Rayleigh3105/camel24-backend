@@ -104,13 +104,10 @@ module.exports = {
     },
 
     checkIfUserAvailable: async function(request) {
-        let kundenNummer = request.header('x-kundenNummer');
-
-        return await User.findByKundenNummer(kundenNummer)
-            .catch(e => {
-                log.error(e);
-                throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
-            });
+        let token  = request.header('x-auth');
+        let foundUser;
+        foundUser = await User.findByToken(token);
+        return foundUser
     },
 
     //////////////////////////////////////////////////////

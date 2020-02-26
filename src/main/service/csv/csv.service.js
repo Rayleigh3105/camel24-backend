@@ -68,9 +68,8 @@ module.exports = {
 
     resolveIdentificationNumber: async function (kundenNummer, resultCount, user, order, req) {
         let dateForFile = moment().format(pattern.momentDatePattern);
-        let isLoggedIn = req.header("x-auth");
 
-        if (user && isLoggedIn) {
+        if (user) {
             return kundenNummer + dateForFile + resultCount;
         }
 

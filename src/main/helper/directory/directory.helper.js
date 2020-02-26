@@ -27,6 +27,20 @@ let orderDir = path.join(baseDir, '/auftraege');
 let dateDir = moment().format(pattern.momentDatePattern);
 let date = moment().format(pattern.momentPattern);
 
+let deleteFolderRecursive =  function (dir) {
+    if (fs.existsSync(dir)) {
+        fs.readdirSync(dir).forEach(function (file, index) {
+            let curPath = dir + "/" + file;
+            if (fs.lstatSync(curPath).isDirectory()) {
+                deleteFolderRecursive(curPath);
+            } else {
+                fs.unlinkSync(curPath);
+            }
+        });
+        fs.rmdirSync(dir);
+    }
+};
+
 //////////////////////////////////////////////////////
 // MODULE EXPORT
 //////////////////////////////////////////////////////
@@ -37,6 +51,7 @@ module.exports = {
     ftpDir,
     baseDir,
     orderDir,
+    deleteFolderRecursive,
 
     //////////////////////////////////////////////////////
     // PUBLIC METHODS
@@ -157,7 +172,7 @@ module.exports = {
         return `${baseDir}/tmp/csv/` + identificationNumber + ".csv"
     },
 
-    createDirecotyToSaveBarcodeIn: async function(pathToSave) {
+    createDirecotyToSaveBarcodeIn: async function (pathToSave) {
         let logger = require('../../utils/logger');
 
         if (!fs.existsSync(pathToSave)) {
@@ -191,6 +206,8 @@ module.exports = {
                 throw new ApplicationError("Camel-16", 404, `Benutzer (${kundenNummer}) konnte nicht gefunden werden.`)
             });
 
-        return kndDir
+        return kndDir;
     },
-};
+
+}
+;

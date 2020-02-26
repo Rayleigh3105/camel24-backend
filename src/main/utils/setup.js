@@ -37,7 +37,7 @@ module.exports = {
      * Creates Admin User
      */
     createAdminUser: async function () {
-        let date = moment().format(patt);
+        let date = moment().format(pattern.momentPattern);
 
         let userData =
             {

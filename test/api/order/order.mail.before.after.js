@@ -25,7 +25,7 @@ before((done) => {
 });
 
 beforeEach((done) => {
-
+    sinon.restore();
     PriceOptions.deleteMany({})
         .catch((err) => done(err));
     User.deleteMany({})
@@ -38,6 +38,7 @@ beforeEach((done) => {
 
 afterEach((done) => {
     sinon.restore();
+    directoryHelper.deleteFolderRecursive(directoryHelper.baseDir);
     PriceOptions.deleteMany({})
         .catch((err) => done(err));
     User.deleteMany({})
@@ -61,6 +62,6 @@ module.exports = {
     },
 
     stupSentMailEmpf: function () {
-        sinon.stub(mailService, 'sentMailAbs');
+        sinon.stub(mailService, 'sentMailEmpf');
     }
 };

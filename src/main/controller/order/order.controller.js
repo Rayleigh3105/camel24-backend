@@ -83,9 +83,9 @@ async function getOrdersForKundenNumber(req, res) {
  */
 async function generateOrder(req, res) {
     try {
-        await orderService.generateOrder(req);
+        let order = await orderService.generateOrder(req);
 
-        res.status(200).send(true);
+        res.status(200).send(order);
     } catch (e) {
         errorHandler.handleError(e, res)
     }

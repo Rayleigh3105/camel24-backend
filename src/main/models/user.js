@@ -140,6 +140,10 @@ UserSchema.statics.findByToken = function (token) {
     let User = this;
     let decoded;
 
+    if (!token) {
+        return null;
+    }
+
     try {
         decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (e) {
