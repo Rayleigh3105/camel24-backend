@@ -1,30 +1,24 @@
 version: "3"
 services:
-  camel-backend:
-    container_name: camel-backend
-    restart: always
-    image: mvogt3105/camel-backend:latest
-    ports:
-      - "3000:3000"
-    volumes:
-      - C:\\camel:\\root\\camel
-    links:
-      - mongo
-  camel-frontend:
-    container_name: camel-frontend
-    restart: always
-    image: mvogt3105/camel-frontend:latest
-    ports:
-      - "80:80"
-    volumes:
-      - .:/usr/src/app
-  mongo:
-    container_name: mongo
-    image: mongo
-    ports:
-      - "27017:27017"
-  watchtower:
-    image: v2tec/watchtower
+  haproxy:
+    container_name: camel-load-balance
+    image: dockercloud/haproxy:1.6.7
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: --interval 300
+    ports:
+      - ${HAPROXY_HOST}:80
+    links:
+      - frontend
+  camel-database:
+    container_name: camel-database
+    image: mongo
+    ports:
+      - "${MONGODB_HOST}:27017"
+  backend:
+    image: camel-backend:${CAMEL_VERSION}
+    volumes:
+      - ${CAMEL_SAVE_DIR}:/tmp/camel
+    ports:
+      - "${CAMEL_BACKEND_HOST_PORT}:3000"
+  frontend:
+    image: camel-frontend:${CAMEL_VERSION}

@@ -1,4 +1,9 @@
- # Create image based on the latest node version 
+ ################################################
+ # Dockerfile für das Erstellen eines Images, für
+ # die Logik von Camel
+ ###############################################
+
+ # Create image based on the latest node version
 FROM node:latest
 
 # Create a directory where our app will be placed
@@ -20,4 +25,4 @@ COPY . /usr/src/app
 EXPOSE 3000
 
 # Serve the app
-CMD ["npm", "start"]
+CMD ["npm", "run-script", "start-prod"]
