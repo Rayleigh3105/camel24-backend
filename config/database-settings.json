@@ -8,7 +8,11 @@
     "PORT": 3000,
     "MONGODB_URI": "mongodb://localhost:27017/Camel24",
     "JWT_SECRET": "sadflkasfdjlkasjfdlk34o98r5u90"
+  },
+  "production": {
+    "PORT": 3000,
+    "MONGODB_URI": "mongodb://camel-database:27017/Camel24",
+    "JWT_SECRET": "sadflkasfdjlkasjfdlk34o98r5u90"
   }
-
 }
 

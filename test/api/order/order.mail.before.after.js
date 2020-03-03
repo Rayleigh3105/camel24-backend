@@ -16,7 +16,6 @@ const directoryHelper = require('../../../src/main/helper/directory/directory.he
 
 // EXTERNAL
 const sinon = require('sinon');
-const fs = require('fs');
 
 
 before((done) => {
